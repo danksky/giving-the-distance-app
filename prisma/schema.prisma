@@ -131,18 +131,20 @@ model StravaWebhookSubscription {
 }
 
 model StravaWebhookEvent {
-  id                String   @id @default(cuid())
-  objectType        String   // "activity" or "athlete"
-  objectId          BigInt
-  aspectType        String   // "create", "update", "delete"
-  ownerId           BigInt   // Strava athlete ID
-  subscriptionId    BigInt
-  eventTime         DateTime
-  updates           Json?    // Any updates data
-  processed         Boolean  @default(false)
-  processingError   String?  @db.Text
-  rawPayload        Json     // Full webhook payload for debugging
-  createdAt         DateTime @default(now())
+  id                      String   @id @default(cuid())
+  objectType              String   // "activity" or "athlete"
+  objectId                BigInt
+  aspectType              String   // "create", "update", "delete"
+  ownerId                 BigInt   // Strava athlete ID
+  subscriptionId          BigInt
+  eventTime               DateTime
+  updates                 Json?    // Any updates data
+  processed               Boolean  @default(false)
+  processingError         String?  @db.Text
+  descriptionUpdated      Boolean  @default(false) // Whether activity description was updated
+  descriptionUpdateError  String?  @db.Text // Error message if description update failed
+  rawPayload              Json     // Full webhook payload for debugging
+  createdAt               DateTime @default(now())
 
   @@index([objectType])
   @@index([ownerId])

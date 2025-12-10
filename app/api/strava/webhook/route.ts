@@ -163,6 +163,9 @@ export async function POST(request: NextRequest) {
         console.log(`✅ Activity ${object_id} saved successfully`);
         
         // Update activity description on Strava
+        let descriptionUpdated = false;
+        let descriptionUpdateError: string | null = null;
+        
         try {
           const firstName = stravaAthlete.firstname || 'An athlete';
           const activityType = activity.type?.toLowerCase() || 'activity';
@@ -184,20 +187,27 @@ export async function POST(request: NextRequest) {
 
           if (updateResponse.ok) {
             console.log(`✅ Activity description updated successfully`);
+            descriptionUpdated = true;
           } else {
             const errorText = await updateResponse.text();
-            console.error(`❌ Failed to update activity description: ${updateResponse.status} - ${errorText}`);
+            descriptionUpdateError = `HTTP ${updateResponse.status}: ${errorText}`;
+            console.error(`❌ Failed to update activity description: ${descriptionUpdateError}`);
           }
         } catch (error) {
+          descriptionUpdateError = error instanceof Error ? error.message : String(error);
           console.error('❌ Error updating activity description:', error);
           // Don't fail the webhook - continue processing
         }
         
-        // Mark webhook event as processed
+        // Mark webhook event as processed with description update status
         if (webhookEventId) {
           await db.stravaWebhookEvent.update({
             where: { id: webhookEventId },
-            data: { processed: true },
+            data: { 
+              processed: true,
+              descriptionUpdated,
+              descriptionUpdateError,
+            },
           });
         }
       } else if (aspect_type === 'update') {

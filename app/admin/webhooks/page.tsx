@@ -49,6 +49,8 @@ export default async function WebhooksPage() {
     total: events.length,
     processed: events.filter((e) => e.processed).length,
     failed: events.filter((e) => e.processingError).length,
+    descriptionUpdated: events.filter((e) => e.descriptionUpdated).length,
+    descriptionFailed: events.filter((e) => e.descriptionUpdateError).length,
     byType: {
       activity: events.filter((e) => e.objectType === "activity").length,
       athlete: events.filter((e) => e.objectType === "athlete").length,
@@ -79,7 +81,7 @@ export default async function WebhooksPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="text-sm text-gray-600">Total Events</div>
             <div className="text-3xl font-bold">{stats.total}</div>
@@ -97,8 +99,21 @@ export default async function WebhooksPage() {
             </div>
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-600">Activity Events</div>
+            <div className="text-sm text-gray-600">Desc. Updated</div>
             <div className="text-3xl font-bold text-blue-600">
+              {stats.descriptionUpdated}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              {stats.descriptionFailed > 0 && (
+                <span className="text-red-600">
+                  {stats.descriptionFailed} failed
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="text-sm text-gray-600">Activity Events</div>
+            <div className="text-3xl font-bold text-purple-600">
               {stats.byType.activity}
             </div>
           </div>
@@ -149,6 +164,9 @@ export default async function WebhooksPage() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Description
                   </th>
                 </tr>
               </thead>
@@ -204,6 +222,36 @@ export default async function WebhooksPage() {
                         <span className="px-2 py-1 rounded bg-gray-100 text-gray-800">
                           ⏳ Pending
                         </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {event.objectType === "activity" &&
+                      event.aspectType === "create" ? (
+                        event.descriptionUpdateError ? (
+                          <div className="flex items-start gap-2">
+                            <span
+                              className="px-2 py-1 rounded bg-red-100 text-red-800 whitespace-nowrap cursor-help"
+                              title={event.descriptionUpdateError}
+                            >
+                              ❌ Failed
+                            </span>
+                            <span className="text-xs text-gray-500 line-clamp-2">
+                              {event.descriptionUpdateError.substring(0, 100)}
+                              {event.descriptionUpdateError.length > 100 &&
+                                "..."}
+                            </span>
+                          </div>
+                        ) : event.descriptionUpdated ? (
+                          <span className="px-2 py-1 rounded bg-blue-100 text-blue-800 whitespace-nowrap">
+                            ✅ Updated
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded bg-gray-100 text-gray-600 whitespace-nowrap">
+                            ⏳ Pending
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-gray-400 text-xs">N/A</span>
                       )}
                     </td>
                   </tr>
