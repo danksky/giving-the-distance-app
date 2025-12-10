@@ -24,26 +24,12 @@ export function getStoredCallbackScope(): string | null {
   return callbackScope
 }
 
-interface AccountData {
-  userId: string;
-  type: string;
-  provider: string;
-  providerAccountId: string;
-  access_token?: string | null;
-  refresh_token?: string | null;
-  expires_at?: number | null;
-  token_type?: string | null;
-  scope?: string | null;
-  id_token?: string | null;
-  session_state?: string | null;
-}
-
 export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
   const adapter = PrismaAdapter(prisma)
 
   return {
     ...adapter,
-    async linkAccount(account: AccountData) {
+    async linkAccount(account) {
       console.log('🔗 CustomAdapter linkAccount called with:', JSON.stringify(account, null, 2))
       console.log('🔗 callbackScope from storage:', callbackScope)
       
@@ -51,28 +37,29 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
       const scopeToSave = account.scope || callbackScope
       
       // Ensure scope is included when creating the account
-      const createdAccount = await prisma.account.create({
+      await prisma.account.create({
         data: {
           userId: account.userId,
           type: account.type,
           provider: account.provider,
           providerAccountId: account.providerAccountId,
-          access_token: account.access_token,
-          refresh_token: account.refresh_token,
-          expires_at: account.expires_at,
-          token_type: account.token_type,
-          scope: scopeToSave, // Use scope from callback or account
-          id_token: account.id_token,
-          session_state: account.session_state,
+          access_token: typeof account.access_token === 'string' ? account.access_token : null,
+          refresh_token: typeof account.refresh_token === 'string' ? account.refresh_token : null,
+          expires_at: typeof account.expires_at === 'number' ? account.expires_at : null,
+          token_type: typeof account.token_type === 'string' ? account.token_type : null,
+          scope: scopeToSave ?? null, // Use scope from callback or account
+          id_token: typeof account.id_token === 'string' ? account.id_token : null,
+          session_state: typeof account.session_state === 'string' ? account.session_state : null,
         },
       })
       
-      console.log('✅ Account created with scope:', createdAccount.scope)
+      console.log('✅ Account created with scope:', scopeToSave)
       
       // Clear the temporary scope storage
       callbackScope = null
       
-      return createdAccount
+      // Return undefined as expected by the Adapter interface
+      return undefined
     },
   }
 }
