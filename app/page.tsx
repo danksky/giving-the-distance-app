@@ -51,13 +51,6 @@ export default async function Home() {
           </div>
         )}
       </main>
-
-      <footer className="mt-16 text-center text-sm text-gray-500">
-        <p>
-          © {new Date().getFullYear()} Giving the Distance. Building something
-          great.
-        </p>
-      </footer>
     </div>
   );
 }
