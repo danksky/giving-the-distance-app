@@ -4,6 +4,51 @@ import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
 
+// Helper function to format duration in seconds to HH:MM:SS
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, "0")}`;
+}
+
+// Helper function to get emoji for activity type
+function getActivityEmoji(type: string): string {
+  const emojiMap: Record<string, string> = {
+    Run: "🏃",
+    Ride: "🚴",
+    Swim: "🏊",
+    Walk: "🚶",
+    Hike: "🥾",
+    AlpineSki: "⛷️",
+    BackcountrySki: "⛷️",
+    NordicSki: "⛷️",
+    Snowboard: "🏂",
+    IceSkate: "⛸️",
+    InlineSkate: "⛸️",
+    Kayaking: "🛶",
+    Canoeing: "🛶",
+    Rowing: "🚣",
+    StandUpPaddling: "🏄",
+    Surfing: "🏄",
+    Windsurf: "🏄",
+    Kitesurf: "🪂",
+    WeightTraining: "🏋️",
+    Workout: "💪",
+    Yoga: "🧘",
+    RockClimbing: "🧗",
+    VirtualRide: "🚴",
+    VirtualRun: "🏃",
+  };
+  return emojiMap[type] || "🏃";
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -27,11 +72,18 @@ export default async function DashboardPage({
         where: { provider: "strava" },
       },
       stravaAthlete: true,
+      activities: {
+        orderBy: {
+          startDate: "desc",
+        },
+        take: 20, // Show last 20 activities
+      },
     },
   });
 
   const hasStrava = (user?.accounts.length ?? 0) > 0;
   const stravaAthlete = user?.stravaAthlete;
+  const activities = user?.activities ?? [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -188,6 +240,114 @@ export default async function DashboardPage({
           </div>
         )}
 
+        {/* Recent Activities */}
+        {hasStrava && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              Recent Activities
+            </h3>
+            {activities.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="mb-2">No activities yet.</p>
+                <p className="text-sm">
+                  Activities from Strava will appear here automatically once you
+                  complete them.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Activity
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Distance
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Time
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Elevation
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {activities.map((activity) => {
+                      const distanceKm = activity.distanceMeters
+                        ? (Number(activity.distanceMeters) / 1000).toFixed(2)
+                        : "—";
+                      const distanceMi = activity.distanceMeters
+                        ? (Number(activity.distanceMeters) / 1609.34).toFixed(2)
+                        : "—";
+
+                      const movingTime = activity.movingTimeSeconds
+                        ? formatDuration(activity.movingTimeSeconds)
+                        : "—";
+
+                      const elevationM = activity.totalElevationGain
+                        ? `${Number(activity.totalElevationGain).toFixed(0)}m`
+                        : "—";
+                      const elevationFt = activity.totalElevationGain
+                        ? `${(
+                            Number(activity.totalElevationGain) * 3.28084
+                          ).toFixed(0)}ft`
+                        : "—";
+
+                      const date = activity.startDateLocal
+                        ? new Date(activity.startDateLocal).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )
+                        : "—";
+
+                      return (
+                        <tr key={activity.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {date}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-900">
+                            {activity.name || "Untitled"}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                            {getActivityEmoji(activity.type)} {activity.type}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <div>{distanceKm} km</div>
+                            <div className="text-xs text-gray-500">
+                              {distanceMi} mi
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {movingTime}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <div>{elevationM}</div>
+                            <div className="text-xs text-gray-500">
+                              {elevationFt}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Account Details */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">
@@ -218,6 +378,14 @@ export default async function DashboardPage({
                 {hasStrava ? "✓ Yes" : "✗ Not yet"}
               </dd>
             </div>
+            {hasStrava && (
+              <div className="flex justify-between">
+                <dt className="text-gray-600">Total Activities:</dt>
+                <dd className="font-medium text-gray-900">
+                  {activities.length}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
 

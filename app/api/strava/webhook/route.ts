@@ -1,0 +1,180 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+
+/**
+ * Strava Webhook Endpoint
+ * 
+ * Handles two types of requests:
+ * 1. GET - Verification challenge when creating subscription
+ * 2. POST - Webhook events for activities
+ * 
+ * @see https://developers.strava.com/docs/webhooks/
+ */
+
+// GET handler - Webhook verification
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  
+  // Strava sends these parameters for verification
+  const mode = searchParams.get('hub.mode');
+  const token = searchParams.get('hub.verify_token');
+  const challenge = searchParams.get('hub.challenge');
+
+  console.log('🔍 Webhook verification request:', { mode, token, challenge });
+
+  // Verify the token matches our configured token
+  const expectedToken = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN;
+  
+  if (mode === 'subscribe' && token === expectedToken) {
+    console.log('✅ Webhook verification successful');
+    // Respond with the challenge to verify the endpoint
+    return NextResponse.json({ 'hub.challenge': challenge });
+  } else {
+    console.error('❌ Webhook verification failed - token mismatch');
+    return NextResponse.json(
+      { error: 'Verification failed' },
+      { status: 403 }
+    );
+  }
+}
+
+// POST handler - Webhook events
+export async function POST(request: NextRequest) {
+  try {
+    const event = await request.json();
+    
+    console.log('📨 Received Strava webhook event:', JSON.stringify(event, null, 2));
+
+    // Event structure:
+    // {
+    //   "object_type": "activity" | "athlete",
+    //   "object_id": 12345,
+    //   "aspect_type": "create" | "update" | "delete",
+    //   "updates": {},
+    //   "owner_id": 123456,
+    //   "subscription_id": 12345,
+    //   "event_time": 1516126040
+    // }
+
+    const {
+      object_type,
+      object_id,
+      aspect_type,
+      owner_id,
+      subscription_id,
+      event_time,
+    } = event;
+
+    // Handle activity events
+    if (object_type === 'activity') {
+      console.log(`🏃 Activity ${aspect_type} event for activity ${object_id} by athlete ${owner_id}`);
+
+      // Find the user by their Strava athlete ID
+      const stravaAthlete = await db.stravaAthlete.findUnique({
+        where: { stravaAthleteId: BigInt(owner_id) },
+        include: { user: true },
+      });
+
+      if (!stravaAthlete) {
+        console.warn(`⚠️ No user found for Strava athlete ${owner_id}`);
+        // Still return 200 to acknowledge receipt
+        return NextResponse.json({ success: true });
+      }
+
+      // Get the access token for this user
+      const account = await db.account.findFirst({
+        where: {
+          userId: stravaAthlete.userId,
+          provider: 'strava',
+        },
+      });
+
+      if (!account?.access_token) {
+        console.error('❌ No Strava access token found for user');
+        return NextResponse.json({ success: true });
+      }
+
+      // Handle different event types
+      if (aspect_type === 'create') {
+        // Fetch full activity details from Strava
+        console.log(`📥 Fetching activity ${object_id} from Strava API...`);
+        
+        const activityResponse = await fetch(
+          `https://www.strava.com/api/v3/activities/${object_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${account.access_token}`,
+            },
+          }
+        );
+
+        if (!activityResponse.ok) {
+          console.error(`❌ Failed to fetch activity: ${activityResponse.status}`);
+          return NextResponse.json({ success: true });
+        }
+
+        const activity = await activityResponse.json();
+        console.log('📊 Activity data:', JSON.stringify(activity, null, 2));
+
+        // Store activity in database
+        await db.activity.create({
+          data: {
+            userId: stravaAthlete.userId,
+            stravaActivityId: BigInt(activity.id),
+            name: activity.name,
+            type: activity.type,
+            distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
+            movingTimeSeconds: activity.moving_time,
+            elapsedTimeSeconds: activity.elapsed_time,
+            totalElevationGain: activity.total_elevation_gain
+              ? parseFloat(activity.total_elevation_gain)
+              : null,
+            startDate: activity.start_date ? new Date(activity.start_date) : null,
+            startDateLocal: activity.start_date_local
+              ? new Date(activity.start_date_local)
+              : null,
+            timezone: activity.timezone,
+            isManual: activity.manual || false,
+            isPrivate: activity.private || false,
+          },
+        });
+
+        console.log(`✅ Activity ${object_id} saved successfully`);
+      } else if (aspect_type === 'update') {
+        console.log(`📝 Activity ${object_id} was updated`);
+        // Could implement update logic here
+      } else if (aspect_type === 'delete') {
+        console.log(`🗑️ Activity ${object_id} was deleted`);
+        
+        // Delete from our database
+        await db.activity.deleteMany({
+          where: {
+            stravaActivityId: BigInt(object_id),
+          },
+        });
+
+        console.log(`✅ Activity ${object_id} deleted from database`);
+      }
+    } else if (object_type === 'athlete') {
+      console.log(`👤 Athlete event: ${aspect_type} for athlete ${owner_id}`);
+      
+      if (aspect_type === 'update' && event.updates?.authorized === 'false') {
+        // User deauthorized the app
+        console.log(`❌ Athlete ${owner_id} deauthorized the app`);
+        
+        // Update the athlete record
+        await db.stravaAthlete.updateMany({
+          where: { stravaAthleteId: BigInt(owner_id) },
+          data: { stravaAuthorized: false },
+        });
+      }
+    }
+
+    // Always return 200 to acknowledge receipt
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error processing webhook:', error);
+    // Still return 200 to avoid Strava retrying
+    return NextResponse.json({ success: true });
+  }
+}
