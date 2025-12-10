@@ -1,6 +1,7 @@
 {
   "name": "giving-the-distance-app",
   "version": "0.1.0",
+  "description": "Turn every mile into meaningful impact. Connect your Strava account and create sponsorships where sponsors pay per mile or kilometer you run.",
   "private": true,
   "scripts": {
     "dev": "next dev",
