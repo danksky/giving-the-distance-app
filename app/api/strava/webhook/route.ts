@@ -201,6 +201,7 @@ export async function POST(request: NextRequest) {
         
         // Mark webhook event as processed with description update status
         if (webhookEventId) {
+          console.log(`📊 Updating webhook event status: descriptionUpdated=${descriptionUpdated}, error=${descriptionUpdateError || 'none'}`);
           await db.stravaWebhookEvent.update({
             where: { id: webhookEventId },
             data: { 
@@ -209,6 +210,7 @@ export async function POST(request: NextRequest) {
               descriptionUpdateError,
             },
           });
+          console.log(`✅ Webhook event ${webhookEventId} marked as processed`);
         }
       } else if (aspect_type === 'update') {
         console.log(`📝 Activity ${object_id} was updated`);

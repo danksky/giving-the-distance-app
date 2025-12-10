@@ -4,6 +4,10 @@ import { isAdmin } from "@/lib/auth-helpers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
+// Force dynamic rendering - don't cache this page
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function WebhooksPage() {
   // Check authentication
   const session = await auth();
