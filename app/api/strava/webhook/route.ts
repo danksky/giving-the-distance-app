@@ -61,8 +61,6 @@ export async function POST(request: NextRequest) {
       object_id,
       aspect_type,
       owner_id,
-      subscription_id,
-      event_time,
     } = event;
 
     // Handle activity events

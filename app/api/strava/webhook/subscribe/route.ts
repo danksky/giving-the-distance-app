@@ -12,7 +12,7 @@ import { db } from "@/lib/db";
  */
 
 // GET - View current subscriptions
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const clientId = process.env.STRAVA_CLIENT_ID;
     const clientSecret = process.env.STRAVA_CLIENT_SECRET;
