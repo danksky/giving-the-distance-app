@@ -162,6 +162,37 @@ export async function POST(request: NextRequest) {
 
         console.log(`✅ Activity ${object_id} saved successfully`);
         
+        // Update activity description on Strava
+        try {
+          const firstName = stravaAthlete.firstname || 'An athlete';
+          const activityType = activity.type?.toLowerCase() || 'activity';
+          const description = `${firstName}'s ${activityType} inspired a donation by Giving the Distance to UNICEF - givingthedistance.org`;
+          
+          console.log(`📝 Updating activity description: "${description}"`);
+          
+          const updateResponse = await fetch(
+            `https://www.strava.com/api/v3/activities/${object_id}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${account.access_token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ description }),
+            }
+          );
+
+          if (updateResponse.ok) {
+            console.log(`✅ Activity description updated successfully`);
+          } else {
+            const errorText = await updateResponse.text();
+            console.error(`❌ Failed to update activity description: ${updateResponse.status} - ${errorText}`);
+          }
+        } catch (error) {
+          console.error('❌ Error updating activity description:', error);
+          // Don't fail the webhook - continue processing
+        }
+        
         // Mark webhook event as processed
         if (webhookEventId) {
           await db.stravaWebhookEvent.update({
