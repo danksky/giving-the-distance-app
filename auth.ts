@@ -35,7 +35,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
         
         // Validate scopes
-        const requiredScopes = ['activity:read_all', 'profile:read_all']
+        const requiredScopes = ['activity:read_all', 'profile:read_all', 'activity:write']
         const grantedScopes = scope.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
         
         console.log('🔍 Required scopes:', requiredScopes)

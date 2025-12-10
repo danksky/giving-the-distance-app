@@ -74,6 +74,12 @@ export default async function AuthErrorPage({
                               information
                             </span>
                           )}
+                          {permission === "activity:write" && (
+                            <span className="block text-orange-700 text-xs mt-1">
+                              Required to add donation messages to your
+                              activities
+                            </span>
+                          )}
                         </div>
                       </li>
                     ))}

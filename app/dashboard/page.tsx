@@ -180,11 +180,12 @@ export default async function DashboardPage({
                 </h3>
                 <p className="text-gray-600 mb-2">
                   Link your Strava to start tracking your activities and
-                  creating sponsorships.
+                  creating sponsorships. We&apos;ll automatically add donation
+                  messages to your activities.
                 </p>
                 <p className="text-sm text-gray-500 mb-4">
                   <strong>Required permissions:</strong> Activity Read, Profile
-                  Read
+                  Read, Activity Write
                 </p>
                 <a
                   href="/api/strava/connect"

@@ -142,7 +142,7 @@ curl -X POST http://localhost:3000/api/strava/webhook/subscribe \
 
 2. **Verify user has correct permissions**:
 
-   - User must have granted `activity:read_all` scope
+   - User must have granted `activity:read_all` and `activity:write` scopes
    - Check `stravaAthlete.permissionsGranted` in database
 
 3. **Check logs** in Vercel dashboard for webhook endpoint

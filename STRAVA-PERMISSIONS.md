@@ -12,8 +12,13 @@ This app requires specific Strava permissions to function properly. We validate 
    - Used for sponsorship tracking
 
 2. **`profile:read_all`** - Read detailed profile information
+
    - Needed to display athlete information
    - Used for user identification
+
+3. **`activity:write`** - Create and update activities
+   - Needed to add donation messages to user activities
+   - Used to track which activities inspired donations
 
 ## How It Works
 
@@ -22,7 +27,7 @@ This app requires specific Strava permissions to function properly. We validate 
 When users click "Connect Strava", they're redirected to Strava with:
 
 ```typescript
-scope: "activity:read_all,profile:read_all";
+scope: "activity:read_all,profile:read_all,activity:write";
 approval_prompt: "force"; // Always show permission screen
 ```
 
@@ -31,8 +36,12 @@ approval_prompt: "force"; // Always show permission screen
 After successful OAuth, we validate the granted scopes:
 
 ```typescript
-// In auth.ts - linkAccount event
-const requiredScopes = ["activity:read_all", "profile:read_all"];
+// In auth.ts - signIn callback
+const requiredScopes = [
+  "activity:read_all",
+  "profile:read_all",
+  "activity:write",
+];
 const grantedScopes = (account.scope || "").split(",").map((s) => s.trim());
 
 const missingScopes = requiredScopes.filter(
@@ -95,7 +104,8 @@ To test the validation:
 The granted permissions are stored in the database:
 
 ```typescript
-stravaAthlete.permissionsGranted = "read,activity:read_all,profile:read_all";
+stravaAthlete.permissionsGranted =
+  "read,activity:read_all,profile:read_all,activity:write";
 ```
 
 This allows us to:
@@ -104,27 +114,14 @@ This allows us to:
 - Check if we need to request re-authorization
 - Track permission changes over time
 
-## Future Considerations
+## Adding New Permissions
 
 If you need additional permissions in the future:
 
-1. Update `auth.config.ts`:
-
-   ```typescript
-   scope: "activity:read_all,profile:read_all,activity:write";
-   ```
-
-2. Update validation in `auth.ts`:
-
-   ```typescript
-   const requiredScopes = [
-     "activity:read_all",
-     "profile:read_all",
-     "activity:write",
-   ];
-   ```
-
-3. Existing users will need to reconnect to grant new permissions
+1. Update `auth.config.ts` - add new scope to the authorization params
+2. Update validation in `auth.ts` - add new scope to `requiredScopes` array
+3. Update error page - add description for new permission
+4. **Important:** Existing users will need to disconnect and reconnect to grant new permissions
 
 ## Strava Permission Reference
 
