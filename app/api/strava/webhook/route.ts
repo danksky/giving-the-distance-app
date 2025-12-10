@@ -40,6 +40,8 @@ export async function GET(request: NextRequest) {
 
 // POST handler - Webhook events
 export async function POST(request: NextRequest) {
+  let webhookEventId: string | null = null;
+  
   try {
     const event = await request.json();
     
@@ -61,7 +63,28 @@ export async function POST(request: NextRequest) {
       object_id,
       aspect_type,
       owner_id,
+      subscription_id,
+      event_time,
+      updates,
     } = event;
+
+    // Log the webhook event to database
+    const webhookEvent = await db.stravaWebhookEvent.create({
+      data: {
+        objectType: object_type,
+        objectId: BigInt(object_id),
+        aspectType: aspect_type,
+        ownerId: BigInt(owner_id),
+        subscriptionId: BigInt(subscription_id),
+        eventTime: new Date(event_time * 1000), // Convert Unix timestamp to Date
+        updates: updates || null,
+        rawPayload: event,
+        processed: false,
+      },
+    });
+    
+    webhookEventId = webhookEvent.id;
+    console.log(`💾 Webhook event logged: ${webhookEventId}`);
 
     // Handle activity events
     if (object_type === 'activity') {
@@ -138,6 +161,14 @@ export async function POST(request: NextRequest) {
         });
 
         console.log(`✅ Activity ${object_id} saved successfully`);
+        
+        // Mark webhook event as processed
+        if (webhookEventId) {
+          await db.stravaWebhookEvent.update({
+            where: { id: webhookEventId },
+            data: { processed: true },
+          });
+        }
       } else if (aspect_type === 'update') {
         console.log(`📝 Activity ${object_id} was updated`);
         // Could implement update logic here
@@ -152,6 +183,14 @@ export async function POST(request: NextRequest) {
         });
 
         console.log(`✅ Activity ${object_id} deleted from database`);
+        
+        // Mark webhook event as processed
+        if (webhookEventId) {
+          await db.stravaWebhookEvent.update({
+            where: { id: webhookEventId },
+            data: { processed: true },
+          });
+        }
       }
     } else if (object_type === 'athlete') {
       console.log(`👤 Athlete event: ${aspect_type} for athlete ${owner_id}`);
@@ -168,10 +207,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Mark webhook event as processed
+    if (webhookEventId) {
+      await db.stravaWebhookEvent.update({
+        where: { id: webhookEventId },
+        data: { processed: true },
+      });
+    }
+
     // Always return 200 to acknowledge receipt
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('❌ Error processing webhook:', error);
+    
+    // Log error to webhook event if we have an ID
+    if (webhookEventId) {
+      try {
+        await db.stravaWebhookEvent.update({
+          where: { id: webhookEventId },
+          data: {
+            processingError: error instanceof Error ? error.message : String(error),
+          },
+        });
+      } catch (dbError) {
+        console.error('❌ Failed to log error to database:', dbError);
+      }
+    }
+    
     // Still return 200 to avoid Strava retrying
     return NextResponse.json({ success: true });
   }
