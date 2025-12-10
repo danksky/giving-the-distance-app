@@ -1,6 +1,43 @@
 import { db } from "@/lib/db";
+import { auth } from "@/auth";
+import { isAdmin } from "@/lib/auth-helpers";
+import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function WebhooksPage() {
+  // Check authentication
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    redirect("/signin");
+  }
+
+  // Check admin access
+  if (!isAdmin(session.user.email)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Access Denied
+          </h1>
+          <p className="text-gray-600 mb-6">
+            You don&apos;t have permission to access this page.
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            Admin access is required to view webhook events.
+          </p>
+          <Link
+            href="/dashboard"
+            className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
+          >
+            Go to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const events = await db.stravaWebhookEvent.findMany({
     orderBy: {
       eventTime: "desc",
@@ -26,7 +63,20 @@ export default async function WebhooksPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Strava Webhook Events</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Strava Webhook Events</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">
+              Admin: {session.user.email}
+            </span>
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+            >
+              Back to Dashboard
+            </Link>
+          </div>
+        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
