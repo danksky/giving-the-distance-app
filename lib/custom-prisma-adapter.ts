@@ -24,12 +24,26 @@ export function getStoredCallbackScope(): string | null {
   return callbackScope
 }
 
+interface AccountData {
+  userId: string;
+  type: string;
+  provider: string;
+  providerAccountId: string;
+  access_token?: string | null;
+  refresh_token?: string | null;
+  expires_at?: number | null;
+  token_type?: string | null;
+  scope?: string | null;
+  id_token?: string | null;
+  session_state?: string | null;
+}
+
 export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
   const adapter = PrismaAdapter(prisma)
 
   return {
     ...adapter,
-    async linkAccount(account: any) {
+    async linkAccount(account: AccountData) {
       console.log('🔗 CustomAdapter linkAccount called with:', JSON.stringify(account, null, 2))
       console.log('🔗 callbackScope from storage:', callbackScope)
       

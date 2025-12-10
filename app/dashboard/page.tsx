@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { db } from "@/lib/db";
 
 export default async function DashboardPage({
@@ -29,7 +30,7 @@ export default async function DashboardPage({
     },
   });
 
-  const hasStrava = user?.accounts.length! > 0;
+  const hasStrava = (user?.accounts.length ?? 0) > 0;
   const stravaAthlete = user?.stravaAthlete;
 
   return (
@@ -45,12 +46,12 @@ export default async function DashboardPage({
               <span className="text-sm text-gray-700">
                 {session.user.email}
               </span>
-              <a
+              <Link
                 href="/api/auth/signout"
                 className="text-sm text-gray-600 hover:text-gray-900 underline"
               >
                 Sign Out
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -111,7 +112,7 @@ export default async function DashboardPage({
                 Welcome, {session.user.name}! 👋
               </h2>
               <p className="text-gray-600">
-                Your Google account is connected. Let's set up Strava next.
+                Your Google account is connected. Let&apos;s set up Strava next.
               </p>
             </div>
           </div>

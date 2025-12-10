@@ -5,7 +5,12 @@ import Google from "next-auth/providers/google"
 // NOTE: Strava's OAuth2 has quirks:
 // 1. Returns 'athlete' object in token response (non-standard)
 // 2. Requires client credentials in POST body (not HTTP Basic Auth)
-function Strava(options: any) {
+interface StravaProviderOptions {
+  clientId: string | undefined;
+  clientSecret: string | undefined;
+}
+
+function Strava(options: StravaProviderOptions) {
   return {
     id: "strava",
     name: "Strava",
@@ -31,7 +36,7 @@ function Strava(options: any) {
     },
     userinfo: {
       url: "https://www.strava.com/api/v3/athlete",
-      async request({ tokens }: any) {
+      async request({ tokens }: { tokens: { access_token?: string } }) {
         const response = await fetch("https://www.strava.com/api/v3/athlete", {
           headers: {
             Authorization: `Bearer ${tokens.access_token}`,
@@ -40,7 +45,14 @@ function Strava(options: any) {
         return await response.json()
       },
     },
-    profile(profile: any) {
+    profile(profile: {
+      id: number;
+      firstname?: string;
+      lastname?: string;
+      email?: string;
+      profile?: string;
+      profile_medium?: string;
+    }) {
       return {
         id: profile.id.toString(),
         name: `${profile.firstname} ${profile.lastname}`,
@@ -74,7 +86,7 @@ export const authConfig = {
     error: '/auth/error',
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn() {
       // Additional validation can go here if needed
       return true
     },

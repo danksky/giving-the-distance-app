@@ -1,7 +1,6 @@
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { NextResponse } from "next/server"
-import { redirect } from "next/navigation"
 
 export async function POST() {
   const session = await auth()

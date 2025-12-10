@@ -78,7 +78,20 @@ Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 - [ ] Migrate existing user data (if any)
 - [ ] Test webhooks
 
-### 🔲 Step 10: Go Live
+### 🔲 Step 10: Legal & Compliance
+- [ ] Create Privacy Policy page
+- [ ] Create Terms of Service page
+- [ ] Add support email
+- [ ] Create About page
+
+### 🔲 Step 11: App Approvals
+- [ ] Submit Google OAuth for verification (3-6 weeks)
+- [ ] Submit Strava app for production approval (2-4 weeks)
+- [ ] Wait for approvals before public launch
+
+### 🔲 Step 12: Go Live
+- [ ] Verify Google OAuth approved
+- [ ] Verify Strava production approved
 - [ ] Deploy to production
 - [ ] Monitor errors
 - [ ] Decommission old infrastructure

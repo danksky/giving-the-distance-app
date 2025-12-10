@@ -13,19 +13,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ user, account, profile, credentials }) {
+    async signIn({ account }) {
       // For Strava, validate permissions before allowing sign-in
       if (account?.provider === "strava") {
         console.log('🔍 signIn callback - validating Strava permissions')
         
         // Get scope from account object or from our stored callback scope
-        let scope = (account as any).scope
+        let scope = account.scope as string | undefined
         
         // If not in account, check the stored scope from callback URL
         if (!scope) {
           // Import and check the stored scope
           const { getStoredCallbackScope } = await import('@/lib/custom-prisma-adapter')
-          scope = getStoredCallbackScope()
+          scope = getStoredCallbackScope() ?? undefined
           console.log('🔍 Retrieved scope from storage:', scope)
         }
         
@@ -60,7 +60,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
   events: {
-    async linkAccount({ user, account, profile }) {
+    async linkAccount({ user, account }) {
       // When Strava is linked, save athlete data
       // (Permission validation already happened in signIn callback)
       if (account.provider === "strava") {

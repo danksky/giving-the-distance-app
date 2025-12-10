@@ -1,5 +1,6 @@
 import { signIn, auth } from "@/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function SignInPage() {
   const session = await auth();
@@ -60,18 +61,18 @@ export default async function SignInPage() {
             <p className="text-sm text-gray-500">
               By signing in, you agree to connect your Google account.
               <br />
-              You'll be able to link your Strava account next.
+              You&apos;ll be able to link your Strava account next.
             </p>
           </div>
         </div>
 
         <div className="text-center mt-6">
-          <a
+          <Link
             href="/"
             className="text-sm text-gray-600 hover:text-gray-900 underline"
           >
             ← Back to home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

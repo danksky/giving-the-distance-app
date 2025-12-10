@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default async function AuthErrorPage({
   searchParams,
 }: {
@@ -88,12 +90,12 @@ export default async function AuthErrorPage({
                   💡 How to fix this:
                 </p>
                 <ol className="text-sm text-gray-600 space-y-1 ml-4 list-decimal">
-                  <li>Click "Try Again" below</li>
+                  <li>Click &quot;Try Again&quot; below</li>
                   <li>
                     Make sure <strong>ALL checkboxes</strong> are checked on
                     Strava
                   </li>
-                  <li>Click "Authorize" to connect your account</li>
+                  <li>Click &quot;Authorize&quot; to connect your account</li>
                 </ol>
               </div>
             </div>
@@ -109,18 +111,18 @@ export default async function AuthErrorPage({
           )}
 
           <div className="space-y-3">
-            <a
+            <Link
               href="/dashboard"
               className="block w-full text-center px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-medium rounded-lg hover:from-orange-700 hover:to-red-700 transition-all shadow-lg hover:shadow-xl"
             >
               {isStravaError ? "Try Again" : "Back to Dashboard"}
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
               className="block w-full text-center px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-all"
             >
               Go Home
-            </a>
+            </Link>
           </div>
         </div>
       </div>
