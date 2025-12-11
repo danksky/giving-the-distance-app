@@ -159,11 +159,31 @@ export async function POST(request: NextRequest) {
         const activity = await activityResponse.json();
         console.log('📊 Activity data:', JSON.stringify(activity, null, 2));
 
-        // Store activity in database
-        await db.activity.create({
-          data: {
+        // Store or update activity in database (use upsert to handle duplicates)
+        await db.activity.upsert({
+          where: {
+            stravaActivityId: BigInt(activity.id),
+          },
+          create: {
             userId: stravaAthlete.userId,
             stravaActivityId: BigInt(activity.id),
+            name: activity.name,
+            type: activity.type,
+            distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
+            movingTimeSeconds: activity.moving_time,
+            elapsedTimeSeconds: activity.elapsed_time,
+            totalElevationGain: activity.total_elevation_gain
+              ? parseFloat(activity.total_elevation_gain)
+              : null,
+            startDate: activity.start_date ? new Date(activity.start_date) : null,
+            startDateLocal: activity.start_date_local
+              ? new Date(activity.start_date_local)
+              : null,
+            timezone: activity.timezone,
+            isManual: activity.manual || false,
+            isPrivate: activity.private || false,
+          },
+          update: {
             name: activity.name,
             type: activity.type,
             distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
@@ -188,37 +208,46 @@ export async function POST(request: NextRequest) {
         let descriptionUpdated = false;
         let descriptionUpdateError: string | null = null;
         
-        try {
-          const firstName = stravaAthlete.firstname || 'An athlete';
-          const activityType = activity.type?.toLowerCase() || 'activity';
-          const description = `${firstName}'s ${activityType} inspired a donation by Giving the Distance to UNICEF - givingthedistance.org`;
-          
-          console.log(`📝 Updating activity description: "${description}"`);
-          
-          const updateResponse = await fetch(
-            `https://www.strava.com/api/v3/activities/${object_id}`,
-            {
-              method: 'PUT',
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ description }),
-            }
-          );
+        // Check if description already contains our message (to avoid duplicate updates)
+        const expectedMessage = 'inspired a donation by Giving the Distance to UNICEF';
+        const alreadyHasMessage = activity.description?.includes(expectedMessage);
+        
+        if (alreadyHasMessage) {
+          console.log(`✅ Activity description already contains our message, skipping update`);
+          descriptionUpdated = true;
+        } else {
+          try {
+            const firstName = stravaAthlete.firstname || 'An athlete';
+            const activityType = activity.type?.toLowerCase() || 'activity';
+            const description = `${firstName}'s ${activityType} inspired a donation by Giving the Distance to UNICEF - givingthedistance.org`;
+            
+            console.log(`📝 Updating activity description: "${description}"`);
+            
+            const updateResponse = await fetch(
+              `https://www.strava.com/api/v3/activities/${object_id}`,
+              {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ description }),
+              }
+            );
 
-          if (updateResponse.ok) {
-            console.log(`✅ Activity description updated successfully`);
-            descriptionUpdated = true;
-          } else {
-            const errorText = await updateResponse.text();
-            descriptionUpdateError = `HTTP ${updateResponse.status}: ${errorText}`;
-            console.error(`❌ Failed to update activity description: ${descriptionUpdateError}`);
+            if (updateResponse.ok) {
+              console.log(`✅ Activity description updated successfully`);
+              descriptionUpdated = true;
+            } else {
+              const errorText = await updateResponse.text();
+              descriptionUpdateError = `HTTP ${updateResponse.status}: ${errorText}`;
+              console.error(`❌ Failed to update activity description: ${descriptionUpdateError}`);
+            }
+          } catch (error) {
+            descriptionUpdateError = error instanceof Error ? error.message : String(error);
+            console.error('❌ Error updating activity description:', error);
+            // Don't fail the webhook - continue processing
           }
-        } catch (error) {
-          descriptionUpdateError = error instanceof Error ? error.message : String(error);
-          console.error('❌ Error updating activity description:', error);
-          // Don't fail the webhook - continue processing
         }
         
         // Mark webhook event as processed with description update status
