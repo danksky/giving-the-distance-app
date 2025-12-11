@@ -267,7 +267,79 @@ export async function POST(request: NextRequest) {
         }
       } else if (aspect_type === 'update') {
         console.log(`📝 Activity ${object_id} was updated`);
-        // Could implement update logic here
+        console.log(`📝 Update fields:`, JSON.stringify(updates, null, 2));
+        
+        // Fetch updated activity data from Strava
+        console.log(`📥 Fetching updated activity ${object_id} from Strava API...`);
+        
+        const activityResponse = await fetch(
+          `https://www.strava.com/api/v3/activities/${object_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        if (!activityResponse.ok) {
+          const errorText = await activityResponse.text();
+          const errorMessage = `Failed to fetch updated activity: HTTP ${activityResponse.status} - ${errorText}`;
+          console.error(`❌ ${errorMessage}`);
+          
+          // Mark webhook event as failed
+          if (webhookEventId) {
+            await db.stravaWebhookEvent.update({
+              where: { id: webhookEventId },
+              data: { 
+                processed: true,
+                processingError: errorMessage,
+              },
+            });
+          }
+          
+          return NextResponse.json({ success: true });
+        }
+
+        const activity = await activityResponse.json();
+        console.log('📊 Updated activity data:', JSON.stringify(activity, null, 2));
+
+        // Update activity in database
+        const updateResult = await db.activity.updateMany({
+          where: {
+            stravaActivityId: BigInt(object_id),
+          },
+          data: {
+            name: activity.name,
+            type: activity.type,
+            distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
+            movingTimeSeconds: activity.moving_time,
+            elapsedTimeSeconds: activity.elapsed_time,
+            totalElevationGain: activity.total_elevation_gain
+              ? parseFloat(activity.total_elevation_gain)
+              : null,
+            startDate: activity.start_date ? new Date(activity.start_date) : null,
+            startDateLocal: activity.start_date_local
+              ? new Date(activity.start_date_local)
+              : null,
+            timezone: activity.timezone,
+            isManual: activity.manual || false,
+            isPrivate: activity.private || false,
+          },
+        });
+
+        if (updateResult.count > 0) {
+          console.log(`✅ Activity ${object_id} updated successfully`);
+        } else {
+          console.warn(`⚠️ Activity ${object_id} not found in database, cannot update`);
+        }
+        
+        // Mark webhook event as processed
+        if (webhookEventId) {
+          await db.stravaWebhookEvent.update({
+            where: { id: webhookEventId },
+            data: { processed: true },
+          });
+        }
       } else if (aspect_type === 'delete') {
         console.log(`🗑️ Activity ${object_id} was deleted`);
         
