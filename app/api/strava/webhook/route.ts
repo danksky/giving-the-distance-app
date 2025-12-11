@@ -303,12 +303,14 @@ export async function POST(request: NextRequest) {
         const activity = await activityResponse.json();
         console.log('📊 Updated activity data:', JSON.stringify(activity, null, 2));
 
-        // Update activity in database
-        const updateResult = await db.activity.updateMany({
+        // Upsert activity - update if exists, create if doesn't (self-healing)
+        await db.activity.upsert({
           where: {
             stravaActivityId: BigInt(object_id),
           },
-          data: {
+          create: {
+            userId: stravaAthlete.userId,
+            stravaActivityId: BigInt(activity.id),
             name: activity.name,
             type: activity.type,
             distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
@@ -324,14 +326,30 @@ export async function POST(request: NextRequest) {
             timezone: activity.timezone,
             isManual: activity.manual || false,
             isPrivate: activity.private || false,
+            deletedAt: null,
+          },
+          update: {
+            name: activity.name,
+            type: activity.type,
+            distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
+            movingTimeSeconds: activity.moving_time,
+            elapsedTimeSeconds: activity.elapsed_time,
+            totalElevationGain: activity.total_elevation_gain
+              ? parseFloat(activity.total_elevation_gain)
+              : null,
+            startDate: activity.start_date ? new Date(activity.start_date) : null,
+            startDateLocal: activity.start_date_local
+              ? new Date(activity.start_date_local)
+              : null,
+            timezone: activity.timezone,
+            isManual: activity.manual || false,
+            isPrivate: activity.private || false,
+            deletedAt: null, // If activity was deleted and then updated, undelete it
           },
         });
 
-        if (updateResult.count > 0) {
-          console.log(`✅ Activity ${object_id} updated successfully`);
-        } else {
-          console.warn(`⚠️ Activity ${object_id} not found in database, cannot update`);
-        }
+        console.log(`✅ Activity ${object_id} updated successfully (or created if missing)`);
+
         
         // Mark webhook event as processed
         if (webhookEventId) {
