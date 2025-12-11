@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getValidStravaToken } from "@/lib/strava-token-refresh";
 
 /**
  * Strava Webhook Endpoint
@@ -102,16 +103,23 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true });
       }
 
-      // Get the access token for this user
-      const account = await db.account.findFirst({
-        where: {
-          userId: stravaAthlete.userId,
-          provider: 'strava',
-        },
-      });
+      // Get a valid access token (will refresh if expired)
+      const accessToken = await getValidStravaToken(stravaAthlete.userId);
 
-      if (!account?.access_token) {
-        console.error('❌ No Strava access token found for user');
+      if (!accessToken) {
+        console.error('❌ No valid Strava access token available for user');
+        
+        // Mark webhook event as failed with error
+        if (webhookEventId) {
+          await db.stravaWebhookEvent.update({
+            where: { id: webhookEventId },
+            data: { 
+              processed: true,
+              processingError: 'Failed to get valid Strava access token',
+            },
+          });
+        }
+        
         return NextResponse.json({ success: true });
       }
 
@@ -124,13 +132,27 @@ export async function POST(request: NextRequest) {
           `https://www.strava.com/api/v3/activities/${object_id}`,
           {
             headers: {
-              Authorization: `Bearer ${account.access_token}`,
+              Authorization: `Bearer ${accessToken}`,
             },
           }
         );
 
         if (!activityResponse.ok) {
-          console.error(`❌ Failed to fetch activity: ${activityResponse.status}`);
+          const errorText = await activityResponse.text();
+          const errorMessage = `Failed to fetch activity: HTTP ${activityResponse.status} - ${errorText}`;
+          console.error(`❌ ${errorMessage}`);
+          
+          // Mark webhook event as failed
+          if (webhookEventId) {
+            await db.stravaWebhookEvent.update({
+              where: { id: webhookEventId },
+              data: { 
+                processed: true,
+                processingError: errorMessage,
+              },
+            });
+          }
+          
           return NextResponse.json({ success: true });
         }
 
@@ -178,7 +200,7 @@ export async function POST(request: NextRequest) {
             {
               method: 'PUT',
               headers: {
-                'Authorization': `Bearer ${account.access_token}`,
+                'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({ description }),
