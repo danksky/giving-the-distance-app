@@ -76,7 +76,7 @@ export default async function DashboardPage({
         orderBy: {
           startDate: "desc",
         },
-        take: 20, // Show last 20 activities
+        take: 20, // Show last 20 activities (including deleted)
       },
     },
   });
@@ -282,25 +282,34 @@ export default async function DashboardPage({
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {activities.map((activity) => {
-                      const distanceKm = activity.distanceMeters
-                        ? (Number(activity.distanceMeters) / 1000).toFixed(2)
-                        : "—";
-                      const distanceMi = activity.distanceMeters
-                        ? (Number(activity.distanceMeters) / 1609.34).toFixed(2)
-                        : "—";
+                      const isDeleted = !!activity.deletedAt;
 
-                      const movingTime = activity.movingTimeSeconds
-                        ? formatDuration(activity.movingTimeSeconds)
-                        : "—";
+                      const distanceKm =
+                        !isDeleted && activity.distanceMeters
+                          ? (Number(activity.distanceMeters) / 1000).toFixed(2)
+                          : "—";
+                      const distanceMi =
+                        !isDeleted && activity.distanceMeters
+                          ? (Number(activity.distanceMeters) / 1609.34).toFixed(
+                              2
+                            )
+                          : "—";
 
-                      const elevationM = activity.totalElevationGain
-                        ? `${Number(activity.totalElevationGain).toFixed(0)}m`
-                        : "—";
-                      const elevationFt = activity.totalElevationGain
-                        ? `${(
-                            Number(activity.totalElevationGain) * 3.28084
-                          ).toFixed(0)}ft`
-                        : "—";
+                      const movingTime =
+                        !isDeleted && activity.movingTimeSeconds
+                          ? formatDuration(activity.movingTimeSeconds)
+                          : "—";
+
+                      const elevationM =
+                        !isDeleted && activity.totalElevationGain
+                          ? `${Number(activity.totalElevationGain).toFixed(0)}m`
+                          : "—";
+                      const elevationFt =
+                        !isDeleted && activity.totalElevationGain
+                          ? `${(
+                              Number(activity.totalElevationGain) * 3.28084
+                            ).toFixed(0)}ft`
+                          : "—";
 
                       const date = activity.startDateLocal
                         ? new Date(activity.startDateLocal).toLocaleDateString(
@@ -314,30 +323,64 @@ export default async function DashboardPage({
                         : "—";
 
                       return (
-                        <tr key={activity.id} className="hover:bg-gray-50">
+                        <tr
+                          key={activity.id}
+                          className={`hover:bg-gray-50 ${
+                            isDeleted ? "bg-gray-50 opacity-60" : ""
+                          }`}
+                        >
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {date}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            {activity.name || "Untitled"}
+                          <td className="px-4 py-3 text-sm">
+                            {isDeleted ? (
+                              <span className="text-gray-400 italic">
+                                [Deleted Activity]
+                              </span>
+                            ) : (
+                              <span className="text-gray-900">
+                                {activity.name || "Untitled"}
+                              </span>
+                            )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                            {getActivityEmoji(activity.type)} {activity.type}
+                            {!isDeleted && (
+                              <>
+                                {getActivityEmoji(activity.type)}{" "}
+                                {activity.type}
+                              </>
+                            )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            <div>{distanceKm} km</div>
-                            <div className="text-xs text-gray-500">
-                              {distanceMi} mi
-                            </div>
+                            {!isDeleted ? (
+                              <>
+                                <div>{distanceKm} km</div>
+                                <div className="text-xs text-gray-500">
+                                  {distanceMi} mi
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {movingTime}
+                            {!isDeleted ? (
+                              movingTime
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            <div>{elevationM}</div>
-                            <div className="text-xs text-gray-500">
-                              {elevationFt}
-                            </div>
+                            {!isDeleted ? (
+                              <>
+                                <div>{elevationM}</div>
+                                <div className="text-xs text-gray-500">
+                                  {elevationFt}
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </td>
                         </tr>
                       );

@@ -108,6 +108,7 @@ model Activity {
   timezone             String?
   isManual             Boolean   @default(false)
   isPrivate            Boolean   @default(false)
+  deletedAt            DateTime? // Soft delete - null means not deleted
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
@@ -116,6 +117,7 @@ model Activity {
   @@index([userId])
   @@index([startDate(sort: Desc)])
   @@index([type])
+  @@index([deletedAt]) // Index for filtering deleted activities
   @@map("activities")
 }
 

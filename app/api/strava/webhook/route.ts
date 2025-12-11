@@ -182,6 +182,7 @@ export async function POST(request: NextRequest) {
             timezone: activity.timezone,
             isManual: activity.manual || false,
             isPrivate: activity.private || false,
+            deletedAt: null, // Ensure new activities are not marked as deleted
           },
           update: {
             name: activity.name,
@@ -199,6 +200,7 @@ export async function POST(request: NextRequest) {
             timezone: activity.timezone,
             isManual: activity.manual || false,
             isPrivate: activity.private || false,
+            deletedAt: null, // If activity was previously deleted and is now re-created, undelete it
           },
         });
 
@@ -269,14 +271,22 @@ export async function POST(request: NextRequest) {
       } else if (aspect_type === 'delete') {
         console.log(`🗑️ Activity ${object_id} was deleted`);
         
-        // Delete from our database
-        await db.activity.deleteMany({
+        // Soft delete - mark as deleted but keep the data
+        const result = await db.activity.updateMany({
           where: {
             stravaActivityId: BigInt(object_id),
+            deletedAt: null, // Only update if not already deleted
+          },
+          data: {
+            deletedAt: new Date(),
           },
         });
 
-        console.log(`✅ Activity ${object_id} deleted from database`);
+        if (result.count > 0) {
+          console.log(`✅ Activity ${object_id} marked as deleted (soft delete)`);
+        } else {
+          console.log(`⚠️ Activity ${object_id} not found or already deleted`);
+        }
         
         // Mark webhook event as processed
         if (webhookEventId) {
