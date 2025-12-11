@@ -23,112 +23,113 @@ export default async function AuthErrorPage({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
-      <div className="max-w-2xl w-full mx-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">🔒</div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {isStravaError
-                ? "Strava Permissions Required"
-                : "Authentication Error"}
-            </h1>
-            <p className="text-gray-600">
-              {isStravaError
-                ? "We need your permission to access certain Strava data"
-                : "Something went wrong while signing you in"}
-            </p>
-          </div>
-
-          {isStravaError ? (
-            <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-6 mb-6">
-              <h3 className="font-semibold text-orange-900 mb-3 flex items-center gap-2">
-                <span className="text-xl">⚠️</span>
-                Missing Permissions
-              </h3>
-
-              {missingPermissions.length > 0 ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-orange-800">
-                    The following permissions are required for this app to
-                    function:
-                  </p>
-                  <ul className="space-y-2">
-                    {missingPermissions.map((permission) => (
-                      <li
-                        key={permission}
-                        className="flex items-start gap-2 text-sm text-orange-900"
-                      >
-                        <span className="text-red-500 font-bold">✗</span>
-                        <div>
-                          <span className="font-medium">{permission}</span>
-                          {permission === "activity:read_all" && (
-                            <span className="block text-orange-700 text-xs mt-1">
-                              Required to read your workout data for sponsorship
-                              tracking
-                            </span>
-                          )}
-                          {permission === "profile:read_all" && (
-                            <span className="block text-orange-700 text-xs mt-1">
-                              Required to display your athlete profile
-                              information
-                            </span>
-                          )}
-                          {permission === "activity:write" && (
-                            <span className="block text-orange-700 text-xs mt-1">
-                              Required to add donation messages to your
-                              activities
-                            </span>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <p className="text-sm text-orange-800">
-                  You must authorize all requested permissions to use this app.
-                </p>
-              )}
-
-              <div className="mt-4 p-4 bg-white rounded-lg border border-orange-200">
-                <p className="text-sm text-gray-700 font-medium mb-2">
-                  💡 How to fix this:
-                </p>
-                <ol className="text-sm text-gray-600 space-y-1 ml-4 list-decimal">
-                  <li>Click &quot;Try Again&quot; below</li>
-                  <li>
-                    Make sure <strong>ALL checkboxes</strong> are checked on
-                    Strava
-                  </li>
-                  <li>Click &quot;Authorize&quot; to connect your account</li>
-                </ol>
-              </div>
+    <div className="hero min-h-screen bg-base-200">
+      <div className="hero-content flex-col max-w-2xl">
+        <div className="card bg-base-100 shadow-xl w-full">
+          <div className="card-body">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">🔒</div>
+              <h1 className="card-title text-3xl justify-center mb-2">
+                {isStravaError
+                  ? "Strava Permissions Required"
+                  : "Authentication Error"}
+              </h1>
+              <p>
+                {isStravaError
+                  ? "We need your permission to access certain Strava data"
+                  : "Something went wrong while signing you in"}
+              </p>
             </div>
-          ) : (
-            error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-red-800">
-                  <span className="font-medium">Error:</span>{" "}
-                  {decodeURIComponent(error)}
-                </p>
-              </div>
-            )
-          )}
 
-          <div className="space-y-3">
-            <Link
-              href="/dashboard"
-              className="block w-full text-center px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-medium rounded-lg hover:from-orange-700 hover:to-red-700 transition-all shadow-lg hover:shadow-xl"
-            >
-              {isStravaError ? "Try Again" : "Back to Dashboard"}
-            </Link>
-            <Link
-              href="/"
-              className="block w-full text-center px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-all"
-            >
-              Go Home
-            </Link>
+            {isStravaError ? (
+              <div className="alert alert-warning">
+                <div className="flex-col items-start w-full">
+                  <h3 className="font-semibold flex items-center gap-2 mb-3">
+                    <span className="text-xl">⚠️</span>
+                    Missing Permissions
+                  </h3>
+
+                  {missingPermissions.length > 0 ? (
+                    <div className="space-y-3 w-full">
+                      <p className="text-sm">
+                        The following permissions are required for this app to
+                        function:
+                      </p>
+                      <ul className="space-y-2">
+                        {missingPermissions.map((permission) => (
+                          <li
+                            key={permission}
+                            className="flex items-start gap-2 text-sm"
+                          >
+                            <span className="text-error font-bold">✗</span>
+                            <div>
+                              <span className="font-medium">{permission}</span>
+                              {permission === "activity:read_all" && (
+                                <span className="block text-xs mt-1 opacity-80">
+                                  Required to read your workout data for
+                                  sponsorship tracking
+                                </span>
+                              )}
+                              {permission === "profile:read_all" && (
+                                <span className="block text-xs mt-1 opacity-80">
+                                  Required to display your athlete profile
+                                  information
+                                </span>
+                              )}
+                              {permission === "activity:write" && (
+                                <span className="block text-xs mt-1 opacity-80">
+                                  Required to add donation messages to your
+                                  activities
+                                </span>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="text-sm">
+                      You must authorize all requested permissions to use this
+                      app.
+                    </p>
+                  )}
+
+                  <div className="mt-4 p-4 bg-base-100 rounded-lg w-full">
+                    <p className="text-sm font-medium mb-2">
+                      💡 How to fix this:
+                    </p>
+                    <ol className="text-sm space-y-1 ml-4 list-decimal">
+                      <li>Click &quot;Try Again&quot; below</li>
+                      <li>
+                        Make sure <strong>ALL checkboxes</strong> are checked on
+                        Strava
+                      </li>
+                      <li>
+                        Click &quot;Authorize&quot; to connect your account
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              error && (
+                <div className="alert alert-error">
+                  <div>
+                    <span className="font-medium">Error:</span>{" "}
+                    {decodeURIComponent(error)}
+                  </div>
+                </div>
+              )
+            )}
+
+            <div className="card-actions justify-center mt-4 flex-col gap-3">
+              <Link href="/dashboard" className="btn btn-primary w-full">
+                {isStravaError ? "Try Again" : "Back to Dashboard"}
+              </Link>
+              <Link href="/" className="btn btn-ghost w-full">
+                Go Home
+              </Link>
+            </div>
           </div>
         </div>
       </div>

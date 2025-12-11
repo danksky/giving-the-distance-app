@@ -19,24 +19,25 @@ export default async function WebhooksPage() {
   // Check admin access
   if (!isAdmin(session.user.email)) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="text-6xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Access Denied
-          </h1>
-          <p className="text-gray-600 mb-6">
-            You don&apos;t have permission to access this page.
-          </p>
-          <p className="text-sm text-gray-500 mb-6">
-            Admin access is required to view webhook events.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
-          >
-            Go to Dashboard
-          </Link>
+      <div className="hero min-h-screen bg-base-200">
+        <div className="hero-content">
+          <div className="card bg-base-100 shadow-xl max-w-md">
+            <div className="card-body text-center">
+              <div className="text-6xl mb-4">🔒</div>
+              <h1 className="card-title text-2xl justify-center">
+                Access Denied
+              </h1>
+              <p className="mb-2">
+                You don&apos;t have permission to access this page.
+              </p>
+              <p className="text-sm opacity-70 mb-6">
+                Admin access is required to view webhook events.
+              </p>
+              <Link href="/dashboard" className="btn btn-primary">
+                Go to Dashboard
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -67,211 +68,195 @@ export default async function WebhooksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Strava Webhook Events</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              Admin: {session.user.email}
-            </span>
-            <Link
-              href="/dashboard"
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-            >
-              Back to Dashboard
-            </Link>
-          </div>
+    <div className="min-h-screen bg-base-200">
+      {/* Header */}
+      <div className="navbar bg-base-100 shadow-lg">
+        <div className="flex-1 max-w-7xl mx-auto px-4 w-full">
+          <h1 className="text-2xl font-bold">Strava Webhook Events</h1>
         </div>
+        <div className="flex-none gap-2 px-4">
+          <span className="text-sm opacity-70">
+            Admin: {session.user.email}
+          </span>
+          <Link href="/dashboard" className="btn btn-ghost btn-sm">
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
 
+      <main className="container mx-auto max-w-7xl px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-600">Total Events</div>
-            <div className="text-3xl font-bold">{stats.total}</div>
+        <div className="stats stats-vertical lg:stats-horizontal shadow w-full mb-8">
+          <div className="stat">
+            <div className="stat-title">Total Events</div>
+            <div className="stat-value">{stats.total}</div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-600">Processed</div>
-            <div className="text-3xl font-bold text-green-600">
-              {stats.processed}
-            </div>
+          <div className="stat">
+            <div className="stat-title">Processed</div>
+            <div className="stat-value text-success">{stats.processed}</div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-600">Failed</div>
-            <div className="text-3xl font-bold text-red-600">
-              {stats.failed}
-            </div>
+          <div className="stat">
+            <div className="stat-title">Failed</div>
+            <div className="stat-value text-error">{stats.failed}</div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-600">Desc. Updated</div>
-            <div className="text-3xl font-bold text-blue-600">
+          <div className="stat">
+            <div className="stat-title">Desc. Updated</div>
+            <div className="stat-value text-info">
               {stats.descriptionUpdated}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {stats.descriptionFailed > 0 && (
-                <span className="text-red-600">
-                  {stats.descriptionFailed} failed
-                </span>
-              )}
-            </div>
+            {stats.descriptionFailed > 0 && (
+              <div className="stat-desc text-error">
+                {stats.descriptionFailed} failed
+              </div>
+            )}
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-600">Activity Events</div>
-            <div className="text-3xl font-bold text-purple-600">
+          <div className="stat">
+            <div className="stat-title">Activity Events</div>
+            <div className="stat-value text-secondary">
               {stats.byType.activity}
             </div>
           </div>
         </div>
 
         {/* Event Type Breakdown */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Event Breakdown</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm text-gray-600">Creates</div>
-              <div className="text-2xl font-bold">{stats.byAspect.create}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Updates</div>
-              <div className="text-2xl font-bold">{stats.byAspect.update}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Deletes</div>
-              <div className="text-2xl font-bold">{stats.byAspect.delete}</div>
+        <div className="card bg-base-100 shadow-xl mb-8">
+          <div className="card-body">
+            <h2 className="card-title">Event Breakdown</h2>
+            <div className="stats stats-vertical lg:stats-horizontal shadow">
+              <div className="stat">
+                <div className="stat-title">Creates</div>
+                <div className="stat-value text-2xl">
+                  {stats.byAspect.create}
+                </div>
+              </div>
+              <div className="stat">
+                <div className="stat-title">Updates</div>
+                <div className="stat-value text-2xl">
+                  {stats.byAspect.update}
+                </div>
+              </div>
+              <div className="stat">
+                <div className="stat-title">Deletes</div>
+                <div className="stat-value text-2xl">
+                  {stats.byAspect.delete}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Events Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold">Recent Events</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Time
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Aspect
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Object ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Owner ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {events.map((event) => (
-                  <tr key={event.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(event.eventTime).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span
-                        className={`px-2 py-1 rounded ${
-                          event.objectType === "activity"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-purple-100 text-purple-800"
-                        }`}
-                      >
-                        {event.objectType}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span
-                        className={`px-2 py-1 rounded ${
-                          event.aspectType === "create"
-                            ? "bg-green-100 text-green-800"
-                            : event.aspectType === "delete"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {event.aspectType}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
-                      {event.objectId.toString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
-                      {event.ownerId.toString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {event.processingError ? (
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h2 className="card-title">Recent Events</h2>
+            <div className="overflow-x-auto">
+              <table className="table table-zebra">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Aspect</th>
+                    <th>Object ID</th>
+                    <th>Owner ID</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {events.map((event) => (
+                    <tr key={event.id}>
+                      <td className="text-sm">
+                        {new Date(event.eventTime).toLocaleString()}
+                      </td>
+                      <td>
                         <span
-                          className="px-2 py-1 rounded bg-red-100 text-red-800"
-                          title={event.processingError}
+                          className={`badge ${
+                            event.objectType === "activity"
+                              ? "badge-info"
+                              : "badge-secondary"
+                          }`}
                         >
-                          ❌ Error
+                          {event.objectType}
                         </span>
-                      ) : event.processed ? (
-                        <span className="px-2 py-1 rounded bg-green-100 text-green-800">
-                          ✅ Processed
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            event.aspectType === "create"
+                              ? "badge-success"
+                              : event.aspectType === "delete"
+                              ? "badge-error"
+                              : "badge-warning"
+                          }`}
+                        >
+                          {event.aspectType}
                         </span>
-                      ) : (
-                        <span className="px-2 py-1 rounded bg-gray-100 text-gray-800">
-                          ⏳ Pending
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      {event.objectType === "activity" &&
-                      event.aspectType === "create" ? (
-                        event.descriptionUpdateError ? (
-                          <div className="flex items-start gap-2">
-                            <span
-                              className="px-2 py-1 rounded bg-red-100 text-red-800 whitespace-nowrap cursor-help"
-                              title={event.descriptionUpdateError}
-                            >
-                              ❌ Failed
-                            </span>
-                            <span className="text-xs text-gray-500 line-clamp-2">
-                              {event.descriptionUpdateError.substring(0, 100)}
-                              {event.descriptionUpdateError.length > 100 &&
-                                "..."}
-                            </span>
-                          </div>
-                        ) : event.descriptionUpdated ? (
-                          <span className="px-2 py-1 rounded bg-blue-100 text-blue-800 whitespace-nowrap">
-                            ✅ Updated
+                      </td>
+                      <td className="font-mono text-sm opacity-70">
+                        {event.objectId.toString()}
+                      </td>
+                      <td className="font-mono text-sm opacity-70">
+                        {event.ownerId.toString()}
+                      </td>
+                      <td>
+                        {event.processingError ? (
+                          <span
+                            className="badge badge-error cursor-help"
+                            title={event.processingError}
+                          >
+                            ❌ Error
+                          </span>
+                        ) : event.processed ? (
+                          <span className="badge badge-success">
+                            ✅ Processed
                           </span>
                         ) : (
-                          <span className="px-2 py-1 rounded bg-gray-100 text-gray-600 whitespace-nowrap">
-                            ⏳ Pending
-                          </span>
-                        )
-                      ) : (
-                        <span className="text-gray-400 text-xs">N/A</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                          <span className="badge badge-ghost">⏳ Pending</span>
+                        )}
+                      </td>
+                      <td>
+                        {event.objectType === "activity" &&
+                        event.aspectType === "create" ? (
+                          event.descriptionUpdateError ? (
+                            <div className="flex items-start gap-2">
+                              <span
+                                className="badge badge-error cursor-help"
+                                title={event.descriptionUpdateError}
+                              >
+                                ❌ Failed
+                              </span>
+                              <span className="text-xs opacity-60 line-clamp-2">
+                                {event.descriptionUpdateError.substring(0, 100)}
+                                {event.descriptionUpdateError.length > 100 &&
+                                  "..."}
+                              </span>
+                            </div>
+                          ) : event.descriptionUpdated ? (
+                            <span className="badge badge-info">✅ Updated</span>
+                          ) : (
+                            <span className="badge badge-ghost">
+                              ⏳ Pending
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-xs opacity-40">N/A</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         {events.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 opacity-60">
             No webhook events yet. Create an activity on Strava to see events
             appear here!
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

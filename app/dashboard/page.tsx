@@ -86,41 +86,72 @@ export default async function DashboardPage({
   const activities = user?.activities ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Giving the Distance
-            </h1>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-700">
-                {session.user.email}
-              </span>
-              <Link
-                href="/api/auth/signout"
-                className="text-sm text-gray-600 hover:text-gray-900 underline"
-              >
-                Sign Out
-              </Link>
+      <div className="navbar bg-base-100 shadow-lg">
+        <div className="flex-1">
+          <Link href="/" className="btn btn-ghost text-xl">
+            Giving the Distance
+          </Link>
+        </div>
+        <div className="flex-none gap-2">
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle avatar placeholder"
+            >
+              {session.user.image ? (
+                <Image
+                  src={session.user.image}
+                  alt={session.user.name || "User"}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="bg-neutral text-neutral-content w-10 rounded-full">
+                  <span className="text-xl">
+                    {session.user.name?.charAt(0) || "U"}
+                  </span>
+                </div>
+              )}
             </div>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+            >
+              <li className="menu-title">{session.user.email}</li>
+              <li>
+                <Link href="/api/auth/signout">Sign Out</Link>
+              </li>
+            </ul>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Success Message */}
         {successMessage && (
-          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">✅</span>
-              <div className="flex-1">
-                <h3 className="text-green-900 font-semibold mb-1">Success!</h3>
-                <p className="text-green-700 text-sm">
-                  {decodeURIComponent(successMessage)}
-                </p>
+          <div role="alert" className="alert alert-success mb-6">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div>
+              <h3 className="font-bold">Success!</h3>
+              <div className="text-sm">
+                {decodeURIComponent(successMessage)}
               </div>
             </div>
           </div>
@@ -128,321 +159,318 @@ export default async function DashboardPage({
 
         {/* Error Message */}
         {errorMessage && (
-          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">⚠️</span>
-              <div className="flex-1">
-                <h3 className="text-red-900 font-semibold mb-1">
-                  Connection Failed
-                </h3>
-                <p className="text-red-700 text-sm mb-3">
-                  {decodeURIComponent(errorMessage)}
-                </p>
-                <p className="text-red-600 text-xs">
-                  Please make sure to authorize all requested permissions when
-                  connecting to Strava.
-                </p>
+          <div role="alert" className="alert alert-error mb-6">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div>
+              <h3 className="font-bold">Connection Failed</h3>
+              <div className="text-sm">{decodeURIComponent(errorMessage)}</div>
+              <div className="text-xs mt-1">
+                Please make sure to authorize all requested permissions when
+                connecting to Strava.
               </div>
             </div>
           </div>
         )}
 
         {/* Welcome Section */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex items-center gap-4">
-            {session.user.image && (
-              <Image
-                src={session.user.image}
-                alt={session.user.name || "User"}
-                width={64}
-                height={64}
-                className="rounded-full"
-              />
-            )}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Welcome, {session.user.name}! 👋
-              </h2>
-              <p className="text-gray-600">
-                Your Google account is connected. Let&apos;s set up Strava next.
-              </p>
+        <div className="card bg-base-100 shadow-xl mb-8">
+          <div className="card-body">
+            <div className="flex items-center gap-4">
+              {session.user.image && (
+                <div className="avatar">
+                  <div className="w-16 rounded-full">
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name || "User"}
+                      width={64}
+                      height={64}
+                    />
+                  </div>
+                </div>
+              )}
+              <div>
+                <h2 className="card-title text-2xl">
+                  Welcome, {session.user.name}! 👋
+                </h2>
+                <p>
+                  Your Google account is connected. Let&apos;s set up Strava
+                  next.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Strava Connection Card */}
         {!hasStrava ? (
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg shadow p-6 mb-8 border-2 border-orange-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Connect Your Strava Account
-                </h3>
-                <p className="text-gray-600 mb-2">
-                  Link your Strava to start tracking your activities and
-                  creating sponsorships. We&apos;ll automatically add donation
-                  messages to your activities.
-                </p>
-                <p className="text-sm text-gray-500 mb-4">
-                  <strong>Required permissions:</strong> Activity Read, Profile
-                  Read, Activity Write
-                </p>
-                <a
-                  href="/api/strava/connect"
-                  className="inline-block px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-all shadow-lg hover:shadow-xl"
-                >
-                  🔗 Connect Strava
-                </a>
+          <div className="card bg-warning text-warning-content shadow-xl mb-8">
+            <div className="card-body">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="card-title text-xl mb-2">
+                    Connect Your Strava Account
+                  </h3>
+                  <p className="mb-2">
+                    Link your Strava to start tracking your activities and
+                    creating sponsorships. We&apos;ll automatically add donation
+                    messages to your activities.
+                  </p>
+                  <div className="text-sm opacity-80 mb-4">
+                    <strong>Required permissions:</strong> Activity Read,
+                    Profile Read, Activity Write
+                  </div>
+                  <a href="/api/strava/connect" className="btn btn-primary">
+                    🔗 Connect Strava
+                  </a>
+                </div>
+                <div className="text-6xl">🏃‍♂️</div>
               </div>
-              <div className="text-6xl">🏃‍♂️</div>
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg shadow p-6 mb-8 border-2 border-green-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {stravaAthlete?.profile && (
-                  <Image
-                    src={stravaAthlete.profile}
-                    alt="Strava Profile"
-                    width={64}
-                    height={64}
-                    className="rounded-full border-2 border-orange-400"
-                  />
-                )}
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">
-                    ✓ Strava Connected
-                  </h3>
-                  <p className="text-gray-600">
-                    {stravaAthlete?.firstname} {stravaAthlete?.lastname}
-                  </p>
-                  {stravaAthlete?.city && stravaAthlete?.state && (
-                    <p className="text-sm text-gray-500">
-                      {stravaAthlete.city}, {stravaAthlete.state}
-                    </p>
+          <div className="card bg-success text-success-content shadow-xl mb-8">
+            <div className="card-body">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1">
+                  {stravaAthlete?.profile && (
+                    <div className="avatar">
+                      <div className="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                        <Image
+                          src={stravaAthlete.profile}
+                          alt="Strava Profile"
+                          width={64}
+                          height={64}
+                        />
+                      </div>
+                    </div>
                   )}
-                  <form
-                    action="/api/strava/disconnect"
-                    method="POST"
-                    className="mt-3"
-                  >
-                    <button
-                      type="submit"
-                      className="text-sm text-red-600 hover:text-red-800 underline"
+                  <div>
+                    <h3 className="card-title text-xl">✓ Strava Connected</h3>
+                    <p className="font-semibold">
+                      {stravaAthlete?.firstname} {stravaAthlete?.lastname}
+                    </p>
+                    {stravaAthlete?.city && stravaAthlete?.state && (
+                      <p className="text-sm opacity-80">
+                        {stravaAthlete.city}, {stravaAthlete.state}
+                      </p>
+                    )}
+                    <form
+                      action="/api/strava/disconnect"
+                      method="POST"
+                      className="mt-3"
                     >
-                      Disconnect Strava
-                    </button>
-                  </form>
+                      <button type="submit" className="btn btn-ghost btn-xs">
+                        Disconnect Strava
+                      </button>
+                    </form>
+                  </div>
                 </div>
+                <div className="text-6xl">✅</div>
               </div>
-              <div className="text-6xl">✅</div>
             </div>
           </div>
         )}
 
         {/* Recent Activities */}
         {hasStrava && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
-              Recent Activities
-            </h3>
-            {activities.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p className="mb-2">No activities yet.</p>
-                <p className="text-sm">
-                  Activities from Strava will appear here automatically once you
-                  complete them.
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Activity
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Distance
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Time
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Elevation
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {activities.map((activity) => {
-                      const isDeleted = !!activity.deletedAt;
+          <div className="card bg-base-100 shadow-xl mb-8">
+            <div className="card-body">
+              <h3 className="card-title">Recent Activities</h3>
+              {activities.length === 0 ? (
+                <div className="text-center py-8 opacity-60">
+                  <p className="mb-2">No activities yet.</p>
+                  <p className="text-sm">
+                    Activities from Strava will appear here automatically once
+                    you complete them.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="table table-zebra">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Activity</th>
+                        <th>Type</th>
+                        <th>Distance</th>
+                        <th>Time</th>
+                        <th>Elevation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activities.map((activity) => {
+                        const isDeleted = !!activity.deletedAt;
 
-                      const distanceKm =
-                        !isDeleted && activity.distanceMeters
-                          ? (Number(activity.distanceMeters) / 1000).toFixed(2)
-                          : "—";
-                      const distanceMi =
-                        !isDeleted && activity.distanceMeters
-                          ? (Number(activity.distanceMeters) / 1609.34).toFixed(
-                              2
-                            )
-                          : "—";
+                        const distanceKm =
+                          !isDeleted && activity.distanceMeters
+                            ? (Number(activity.distanceMeters) / 1000).toFixed(
+                                2
+                              )
+                            : "—";
+                        const distanceMi =
+                          !isDeleted && activity.distanceMeters
+                            ? (
+                                Number(activity.distanceMeters) / 1609.34
+                              ).toFixed(2)
+                            : "—";
 
-                      const movingTime =
-                        !isDeleted && activity.movingTimeSeconds
-                          ? formatDuration(activity.movingTimeSeconds)
-                          : "—";
+                        const movingTime =
+                          !isDeleted && activity.movingTimeSeconds
+                            ? formatDuration(activity.movingTimeSeconds)
+                            : "—";
 
-                      const elevationM =
-                        !isDeleted && activity.totalElevationGain
-                          ? `${Number(activity.totalElevationGain).toFixed(0)}m`
-                          : "—";
-                      const elevationFt =
-                        !isDeleted && activity.totalElevationGain
-                          ? `${(
-                              Number(activity.totalElevationGain) * 3.28084
-                            ).toFixed(0)}ft`
-                          : "—";
+                        const elevationM =
+                          !isDeleted && activity.totalElevationGain
+                            ? `${Number(activity.totalElevationGain).toFixed(
+                                0
+                              )}m`
+                            : "—";
+                        const elevationFt =
+                          !isDeleted && activity.totalElevationGain
+                            ? `${(
+                                Number(activity.totalElevationGain) * 3.28084
+                              ).toFixed(0)}ft`
+                            : "—";
 
-                      const date = activity.startDateLocal
-                        ? new Date(activity.startDateLocal).toLocaleDateString(
-                            "en-US",
-                            {
+                        const date = activity.startDateLocal
+                          ? new Date(
+                              activity.startDateLocal
+                            ).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
                               year: "numeric",
-                            }
-                          )
-                        : "—";
+                            })
+                          : "—";
 
-                      return (
-                        <tr
-                          key={activity.id}
-                          className={`hover:bg-gray-50 ${
-                            isDeleted ? "bg-gray-50 opacity-60" : ""
-                          }`}
-                        >
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {date}
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            {isDeleted ? (
-                              <span className="text-gray-400 italic">
-                                [Deleted Activity]
-                              </span>
-                            ) : (
-                              <span className="text-gray-900">
-                                {activity.name || "Untitled"}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                            {!isDeleted && (
-                              <>
-                                {getActivityEmoji(activity.type)}{" "}
-                                {activity.type}
-                              </>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {!isDeleted ? (
-                              <>
-                                <div>{distanceKm} km</div>
-                                <div className="text-xs text-gray-500">
-                                  {distanceMi} mi
-                                </div>
-                              </>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {!isDeleted ? (
-                              movingTime
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {!isDeleted ? (
-                              <>
-                                <div>{elevationM}</div>
-                                <div className="text-xs text-gray-500">
-                                  {elevationFt}
-                                </div>
-                              </>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                        return (
+                          <tr
+                            key={activity.id}
+                            className={isDeleted ? "opacity-50" : ""}
+                          >
+                            <td>{date}</td>
+                            <td>
+                              {isDeleted ? (
+                                <span className="italic opacity-60">
+                                  [Deleted Activity]
+                                </span>
+                              ) : (
+                                <span>{activity.name || "Untitled"}</span>
+                              )}
+                            </td>
+                            <td>
+                              {!isDeleted && (
+                                <>
+                                  {getActivityEmoji(activity.type)}{" "}
+                                  {activity.type}
+                                </>
+                              )}
+                            </td>
+                            <td>
+                              {!isDeleted ? (
+                                <>
+                                  <div>{distanceKm} km</div>
+                                  <div className="text-xs opacity-60">
+                                    {distanceMi} mi
+                                  </div>
+                                </>
+                              ) : (
+                                <span className="opacity-40">—</span>
+                              )}
+                            </td>
+                            <td>
+                              {!isDeleted ? (
+                                movingTime
+                              ) : (
+                                <span className="opacity-40">—</span>
+                              )}
+                            </td>
+                            <td>
+                              {!isDeleted ? (
+                                <>
+                                  <div>{elevationM}</div>
+                                  <div className="text-xs opacity-60">
+                                    {elevationFt}
+                                  </div>
+                                </>
+                              ) : (
+                                <span className="opacity-40">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {/* Account Details */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">
-            Account Information
-          </h3>
-          <dl className="space-y-3">
-            <div className="flex justify-between">
-              <dt className="text-gray-600">Email:</dt>
-              <dd className="font-medium text-gray-900">
-                {session.user.email}
-              </dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-gray-600">Name:</dt>
-              <dd className="font-medium text-gray-900">{session.user.name}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-gray-600">Google Connected:</dt>
-              <dd className="font-medium text-green-600">✓ Yes</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-gray-600">Strava Connected:</dt>
-              <dd
-                className={`font-medium ${
-                  hasStrava ? "text-green-600" : "text-gray-400"
-                }`}
-              >
-                {hasStrava ? "✓ Yes" : "✗ Not yet"}
-              </dd>
-            </div>
-            {hasStrava && (
-              <div className="flex justify-between">
-                <dt className="text-gray-600">Total Activities:</dt>
-                <dd className="font-medium text-gray-900">
-                  {activities.length}
-                </dd>
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h3 className="card-title">Account Information</h3>
+            <div className="stats stats-vertical lg:stats-horizontal shadow">
+              <div className="stat">
+                <div className="stat-title">Email</div>
+                <div className="stat-value text-sm">{session.user.email}</div>
               </div>
-            )}
-          </dl>
+              <div className="stat">
+                <div className="stat-title">Name</div>
+                <div className="stat-value text-sm">{session.user.name}</div>
+              </div>
+              <div className="stat">
+                <div className="stat-title">Google</div>
+                <div className="stat-value text-sm text-success">
+                  ✓ Connected
+                </div>
+              </div>
+              <div className="stat">
+                <div className="stat-title">Strava</div>
+                <div
+                  className={`stat-value text-sm ${
+                    hasStrava ? "text-success" : "text-base-content opacity-40"
+                  }`}
+                >
+                  {hasStrava ? "✓ Connected" : "✗ Not yet"}
+                </div>
+              </div>
+              {hasStrava && (
+                <div className="stat">
+                  <div className="stat-title">Total Activities</div>
+                  <div className="stat-value text-sm">{activities.length}</div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Debug Info (Development Only) */}
         {process.env.NODE_ENV === "development" && (
-          <details className="mt-8 bg-gray-100 rounded-lg p-4">
-            <summary className="cursor-pointer font-medium text-gray-700">
+          <div className="collapse collapse-arrow bg-base-100 mt-8">
+            <input type="checkbox" />
+            <div className="collapse-title font-medium">
               🔧 Debug Info (Dev Only)
-            </summary>
-            <pre className="mt-4 text-xs overflow-auto bg-white p-4 rounded border">
-              {JSON.stringify(session, null, 2)}
-            </pre>
-          </details>
+            </div>
+            <div className="collapse-content">
+              <div className="mockup-code text-xs">
+                <pre>{JSON.stringify(session, null, 2)}</pre>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>

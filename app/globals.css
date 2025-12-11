@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes: pastel --default, light, dark;
+}
 
 :root {
   --background: #ffffff;
