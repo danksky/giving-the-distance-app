@@ -138,12 +138,16 @@ export default async function ActivityPage({
   // Calculate pace (min/km and min/mi)
   // Pace is in seconds per km/mi, need to convert to min:sec format
   const paceSecondsPerKm =
-    activity.movingTimeSeconds && activity.distanceMeters && Number(activity.distanceMeters) > 0
+    activity.movingTimeSeconds &&
+    activity.distanceMeters &&
+    Number(activity.distanceMeters) > 0
       ? activity.movingTimeSeconds / (Number(activity.distanceMeters) / 1000)
       : null;
-  
+
   const paceSecondsPerMi =
-    activity.movingTimeSeconds && activity.distanceMeters && Number(activity.distanceMeters) > 0
+    activity.movingTimeSeconds &&
+    activity.distanceMeters &&
+    Number(activity.distanceMeters) > 0
       ? activity.movingTimeSeconds / (Number(activity.distanceMeters) / 1609.34)
       : null;
 
