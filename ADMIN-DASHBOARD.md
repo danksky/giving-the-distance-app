@@ -45,7 +45,7 @@ The main landing page for admin functions.
 
 ### 2. Campaign Management (`/admin/campaigns`)
 
-Comprehensive view of all sponsor campaigns, budgets, and placement logs.
+Comprehensive view of all sponsor campaigns, budgets, and sponsor matches.
 
 #### Overall Statistics
 
@@ -100,7 +100,7 @@ Each campaign displays:
 - Result status, activity ID, timestamp
 - Amount deducted (if successful)
 
-#### Recent Placement Logs Table
+#### Recent Sponsor Matches Table
 
 Complete list of recent placements across all campaigns showing:
 
@@ -202,7 +202,7 @@ await db.campaign.update({
 1. Go to `/admin/campaigns`
 2. Check "Placement Results" breakdown
 3. Investigate any high failure rates
-4. Review error messages in placement logs
+4. Review error messages in sponsor match records
 
 ### 3. Add New Sponsors/Campaigns
 
@@ -214,7 +214,7 @@ await db.campaign.update({
 ### 4. Investigate Failed Matches
 
 1. Go to `/admin/campaigns`
-2. Scroll to "Recent Placement Logs"
+2. Scroll to "Recent Sponsor Matches"
 3. Look for badges with error states
 4. Check "Notes" column for error details
 5. Cross-reference with webhook events at `/admin/webhooks`
@@ -271,7 +271,7 @@ Admin status is determined in `lib/auth-helpers.ts`. By default, check the imple
 
 ### Data Analysis
 
-- Export placement logs via Prisma Studio for deeper analysis
+- Export sponsor match records via Prisma Studio for deeper analysis
 - Track success rates over time
 - Correlate failures with specific campaigns or time periods
 
@@ -299,9 +299,9 @@ Admin status is determined in `lib/auth-helpers.ts`. By default, check the imple
 ### Budget Not Decreasing
 
 - Verify activities are being created (check webhooks)
-- Check placement logs for match failures
+- Check sponsor match records for match failures
 - Ensure campaign is active
-- Review error messages in placement logs
+- Review error messages in sponsor match records
 
 ## Related Documentation
 
@@ -314,7 +314,7 @@ Admin status is determined in `lib/auth-helpers.ts`. By default, check the imple
 
 For issues or questions:
 
-1. Check placement logs for error messages
+1. Check sponsor match records for error messages
 2. Review webhook events for processing failures
 3. Use Prisma Studio to inspect database state
 4. Check application logs for detailed errors

@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { isAdmin } from "@/lib/auth-helpers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { PlacementResult } from "@prisma/client";
+import { SponsorMatchResult } from "@prisma/client";
 
 // Force dynamic rendering - don't cache this page
 export const dynamic = "force-dynamic";
@@ -51,14 +51,14 @@ export default async function CampaignsPage() {
       topUps: {
         orderBy: { createdAt: "desc" },
       },
-      placementLogs: {
+      sponsorMatches: {
         orderBy: { createdAt: "desc" },
         take: 10,
       },
       charityCommitments: true,
       _count: {
         select: {
-          placementLogs: true,
+          sponsorMatches: true,
           charityCommitments: true,
         },
       },
@@ -68,8 +68,8 @@ export default async function CampaignsPage() {
     },
   });
 
-  // Fetch recent placement logs across all campaigns
-  const recentPlacements = await db.placementLog.findMany({
+  // Fetch recent sponsor matches across all campaigns
+  const recentMatches = await db.sponsorMatch.findMany({
     include: {
       campaign: {
         include: {
@@ -98,30 +98,30 @@ export default async function CampaignsPage() {
     0
   );
   const totalBudgetSpent = totalBudgetAllocated - totalBudgetRemaining;
-  const totalActivitiesMatched = recentPlacements.filter(
-    (p) => p.result === PlacementResult.MATCHED
+  const totalActivitiesMatched = recentMatches.filter(
+    (m) => m.result === SponsorMatchResult.MATCHED
   ).length;
   const totalCommitments = campaigns.reduce(
     (sum, c) => sum + c._count.charityCommitments,
     0
   );
 
-  // Calculate placement results breakdown
-  const placementStats = {
-    matched: recentPlacements.filter(
-      (p) => p.result === PlacementResult.MATCHED
+  // Calculate sponsor match results breakdown
+  const matchStats = {
+    matched: recentMatches.filter(
+      (m) => m.result === SponsorMatchResult.MATCHED
     ).length,
-    noBudget: recentPlacements.filter(
-      (p) => p.result === PlacementResult.SKIPPED_NO_BUDGET
+    noBudget: recentMatches.filter(
+      (m) => m.result === SponsorMatchResult.SKIPPED_NO_BUDGET
     ).length,
-    noCampaign: recentPlacements.filter(
-      (p) => p.result === PlacementResult.SKIPPED_NO_ACTIVE_CAMPAIGN
+    noCampaign: recentMatches.filter(
+      (m) => m.result === SponsorMatchResult.SKIPPED_NO_ACTIVE_CAMPAIGN
     ).length,
-    alreadySponsored: recentPlacements.filter(
-      (p) => p.result === PlacementResult.SKIPPED_ALREADY_SPONSORED
+    alreadySponsored: recentMatches.filter(
+      (m) => m.result === SponsorMatchResult.SKIPPED_ALREADY_SPONSORED
     ).length,
-    updateFailed: recentPlacements.filter(
-      (p) => p.result === PlacementResult.SKIPPED_UPDATE_FAILED
+    updateFailed: recentMatches.filter(
+      (m) => m.result === SponsorMatchResult.SKIPPED_UPDATE_FAILED
     ).length,
   };
 
@@ -182,42 +182,42 @@ export default async function CampaignsPage() {
           </div>
         </div>
 
-        {/* Placement Results Breakdown */}
+        {/* Sponsor Match Results Breakdown */}
         <div className="card bg-base-100 shadow-xl mb-8">
           <div className="card-body">
             <h2 className="card-title">
               <span className="text-2xl mr-2">📈</span>
-              Placement Results (Last 20)
+              Sponsor Match Results (Last 20)
             </h2>
             <div className="stats stats-vertical lg:stats-horizontal shadow">
               <div className="stat">
                 <div className="stat-title">✅ Matched</div>
                 <div className="stat-value text-success text-2xl">
-                  {placementStats.matched}
+                  {matchStats.matched}
                 </div>
               </div>
               <div className="stat">
                 <div className="stat-title">💸 No Budget</div>
                 <div className="stat-value text-warning text-2xl">
-                  {placementStats.noBudget}
+                  {matchStats.noBudget}
                 </div>
               </div>
               <div className="stat">
                 <div className="stat-title">🚫 No Campaign</div>
                 <div className="stat-value text-error text-2xl">
-                  {placementStats.noCampaign}
+                  {matchStats.noCampaign}
                 </div>
               </div>
               <div className="stat">
                 <div className="stat-title">🔁 Already Sponsored</div>
                 <div className="stat-value text-info text-2xl">
-                  {placementStats.alreadySponsored}
+                  {matchStats.alreadySponsored}
                 </div>
               </div>
               <div className="stat">
                 <div className="stat-title">⚠️ Update Failed</div>
                 <div className="stat-value text-error text-2xl">
-                  {placementStats.updateFailed}
+                  {matchStats.updateFailed}
                 </div>
               </div>
             </div>
@@ -356,42 +356,42 @@ export default async function CampaignsPage() {
                     </div>
                   )}
 
-                  {/* Recent Placements for this campaign */}
-                  {campaign.placementLogs.length > 0 && (
+                  {/* Recent Sponsor Matches for this campaign */}
+                  {campaign.sponsorMatches.length > 0 && (
                     <div className="mt-4">
                       <h4 className="font-semibold mb-2">
-                        📊 Recent Placements
+                        📊 Recent Sponsor Matches
                       </h4>
                       <div className="space-y-2">
-                        {campaign.placementLogs.map((log) => (
+                        {campaign.sponsorMatches.map((match) => (
                           <div
-                            key={log.id}
+                            key={match.id}
                             className="flex items-center justify-between bg-base-200 p-2 rounded"
                           >
                             <div className="flex items-center gap-2">
                               <span
                                 className={`badge badge-sm ${
-                                  log.result === PlacementResult.MATCHED
+                                  match.result === SponsorMatchResult.MATCHED
                                     ? "badge-success"
-                                    : log.result ===
-                                      PlacementResult.SKIPPED_NO_BUDGET
+                                    : match.result ===
+                                      SponsorMatchResult.SKIPPED_NO_BUDGET
                                     ? "badge-warning"
                                     : "badge-error"
                                 }`}
                               >
-                                {log.result}
+                                {match.result}
                               </span>
                               <span className="text-xs opacity-70">
-                                Activity {log.stravaActivityId.toString()}
+                                Activity {match.stravaActivityId.toString()}
                               </span>
                             </div>
                             <div className="text-right">
                               <div className="text-xs opacity-70">
-                                {new Date(log.createdAt).toLocaleString()}
+                                {new Date(match.createdAt).toLocaleString()}
                               </div>
-                              {log.decrementCents > 0 && (
+                              {match.decrementCents > 0 && (
                                 <div className="text-xs text-success">
-                                  -${(log.decrementCents / 100).toFixed(2)}
+                                  -${(match.decrementCents / 100).toFixed(2)}
                                 </div>
                               )}
                             </div>
@@ -406,12 +406,12 @@ export default async function CampaignsPage() {
           })}
         </div>
 
-        {/* Recent Placement Logs */}
+        {/* Recent Sponsor Matches */}
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
             <h2 className="card-title text-2xl">
               <span className="mr-2">📋</span>
-              Recent Placement Logs
+              Recent Sponsor Matches
             </h2>
             <div className="overflow-x-auto">
               <table className="table table-zebra">
@@ -427,19 +427,19 @@ export default async function CampaignsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentPlacements.map((log) => (
-                    <tr key={log.id}>
+                  {recentMatches.map((match) => (
+                    <tr key={match.id}>
                       <td className="text-xs">
-                        {new Date(log.createdAt).toLocaleString()}
+                        {new Date(match.createdAt).toLocaleString()}
                       </td>
                       <td>
-                        {log.campaign ? (
+                        {match.campaign ? (
                           <div>
                             <div className="font-semibold text-sm">
-                              {log.campaign.sponsor.businessName}
+                              {match.campaign.sponsor.businessName}
                             </div>
                             <div className="text-xs opacity-60">
-                              {log.campaign.name}
+                              {match.campaign.name}
                             </div>
                           </div>
                         ) : (
@@ -447,51 +447,52 @@ export default async function CampaignsPage() {
                         )}
                       </td>
                       <td>
-                        {log.activity ? (
+                        {match.activity ? (
                           <Link
-                            href={`/activities/${log.activity.id}`}
+                            href={`/activities/${match.activity.id}`}
                             className="link link-primary text-xs font-mono"
                           >
-                            {log.stravaActivityId.toString().substring(0, 10)}
+                            {match.stravaActivityId.toString().substring(0, 10)}
                             ...
                           </Link>
                         ) : (
                           <span className="text-xs font-mono opacity-40">
-                            {log.stravaActivityId.toString().substring(0, 10)}
+                            {match.stravaActivityId.toString().substring(0, 10)}
                             ...
                           </span>
                         )}
                       </td>
                       <td className="text-xs">
-                        {log.activity?.user?.name || "Unknown"}
+                        {match.activity?.user?.name || "Unknown"}
                       </td>
                       <td>
                         <span
                           className={`badge badge-sm ${
-                            log.result === PlacementResult.MATCHED
+                            match.result === SponsorMatchResult.MATCHED
                               ? "badge-success"
-                              : log.result === PlacementResult.SKIPPED_NO_BUDGET
+                              : match.result ===
+                                SponsorMatchResult.SKIPPED_NO_BUDGET
                               ? "badge-warning"
-                              : log.result ===
-                                PlacementResult.SKIPPED_ALREADY_SPONSORED
+                              : match.result ===
+                                SponsorMatchResult.SKIPPED_ALREADY_SPONSORED
                               ? "badge-info"
                               : "badge-error"
                           }`}
                         >
-                          {log.result}
+                          {match.result}
                         </span>
                       </td>
                       <td>
-                        {log.decrementCents > 0 ? (
+                        {match.decrementCents > 0 ? (
                           <span className="text-success font-semibold text-sm">
-                            ${(log.decrementCents / 100).toFixed(2)}
+                            ${(match.decrementCents / 100).toFixed(2)}
                           </span>
                         ) : (
                           <span className="opacity-40">—</span>
                         )}
                       </td>
                       <td className="text-xs opacity-70 max-w-xs truncate">
-                        {log.notes || "—"}
+                        {match.notes || "—"}
                       </td>
                     </tr>
                   ))}

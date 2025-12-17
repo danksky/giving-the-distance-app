@@ -65,7 +65,7 @@ Each campaign shows:
 - **Top-ups History**: All budget additions with dates and notes
 - **Recent Placements**: Last 10 placement attempts with results
 
-#### Recent Placement Logs Table
+#### Recent Sponsor Matches Table
 
 Complete audit trail showing:
 
@@ -148,7 +148,7 @@ Admin access is controlled in `lib/auth-helpers.ts`
 
 1. Check "Placement Results" breakdown
 2. Look for high counts of failures
-3. Review "Recent Placement Logs" table
+3. Review "Recent Sponsor Matches" table
 4. Check error messages in Notes column
 5. Cross-reference with webhook events
 
@@ -228,7 +228,7 @@ ADMIN-FEATURES.md (This file)
 - `campaigns` table
 - `sponsors` table
 - `campaign_top_ups` table
-- `placement_logs` table
+- `sponsor_matches` table
 - `charity_commitments` table
 - `strava_webhook_events` table
 
@@ -238,7 +238,7 @@ ADMIN-FEATURES.md (This file)
 2. **View Campaigns**: Click "⚙️ Admin" in navbar → Campaigns
 3. **Monitor Activity**: Check placement results and recent logs
 4. **Manage Budgets**: Use progress bars to identify low budgets
-5. **Investigate Issues**: Review error messages in placement logs
+5. **Investigate Issues**: Review error messages in sponsor match records
 
 ## 📖 Documentation
 
@@ -255,7 +255,7 @@ For detailed information:
 - Investigate failed placements immediately
 - Keep top-up notes descriptive for audit trail
 - Use Prisma Studio for bulk operations
-- Export placement logs for deeper analysis
+- Export sponsor match records for deeper analysis
 
 ## 🎉 Ready to Use
 

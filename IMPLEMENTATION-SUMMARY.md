@@ -4,8 +4,8 @@
 
 ### 1. Database Schema ✓
 
-- Added 5 new models: `Sponsor`, `Campaign`, `CampaignTopUp`, `PlacementLog`, `CharityCommitment`
-- Added `PlacementResult` enum with 5 states
+- Added 5 new models: `Sponsor`, `Campaign`, `CampaignTopUp`, `SponsorMatch`, `CharityCommitment`
+- Added `SponsorMatchResult` enum with 5 states
 - Updated existing models with new relationships
 - Schema successfully pushed to database
 
@@ -73,7 +73,7 @@
 ✅ sponsors (2 records)
 ✅ campaigns (2 records)
 ✅ campaign_top_ups (2 records)
-✅ placement_logs (ready for activity matching)
+✅ sponsor_matches (ready for activity matching)
 ✅ charity_commitments (ready for tracking donations)
 ```
 
@@ -84,14 +84,14 @@
 1. **Create a test activity** on Strava
 2. **Watch the webhook** process the activity
 3. **Check Prisma Studio** (`npm run db:studio`) to see:
-   - PlacementLog record created
+   - SponsorMatch record created
    - Campaign budget decremented
    - CharityCommitment record created
 
 ### Monitoring
 
 - Use Prisma Studio to monitor campaign budgets
-- Check PlacementLog for matching results
+- Check SponsorMatch for matching results
 - View CharityCommitments for generated donations
 - Review StravaWebhookEvent for webhook processing status
 
@@ -164,7 +164,7 @@ npm test
 
 ### Idempotency
 
-- Activities are only matched once using unique constraint on `PlacementLog.activityId`
+- Activities are only matched once using unique constraint on `SponsorMatch.activityId`
 - GTD marker in description prevents duplicate updates
 
 ### Error Handling

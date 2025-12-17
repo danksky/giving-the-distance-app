@@ -6,7 +6,7 @@
  */
 
 import { db } from '@/lib/db';
-import { PlacementResult } from '@prisma/client';
+import { SponsorMatchResult } from '@prisma/client';
 
 // Constants
 export const COMMITMENT_AMOUNT_CENTS = 10; // $0.10
@@ -14,8 +14,8 @@ const GTD_MARKER = '#GTD';
 
 export interface MatchingResult {
   success: boolean;
-  result: PlacementResult;
-  placementLogId?: string;
+  result: SponsorMatchResult;
+  sponsorMatchId?: string;
   charityCommitmentId?: string;
   campaignId?: string;
   message?: string;
@@ -42,18 +42,18 @@ export async function matchActivityWithSponsor(
   accessToken: string
 ): Promise<MatchingResult> {
   try {
-    // Step 1: Check if activity already has a placement log (idempotency)
-    const existingPlacement = await db.placementLog.findUnique({
+    // Step 1: Check if activity already has a sponsor match (idempotency)
+    const existingMatch = await db.sponsorMatch.findUnique({
       where: { activityId: activity.id },
     });
 
-    if (existingPlacement) {
-      console.log(`✅ Activity ${activity.stravaActivityId} already has placement log: ${existingPlacement.result}`);
+    if (existingMatch) {
+      console.log(`✅ Activity ${activity.stravaActivityId} already has sponsor match: ${existingMatch.result}`);
       return {
         success: false,
-        result: PlacementResult.SKIPPED_ALREADY_SPONSORED,
-        placementLogId: existingPlacement.id,
-        message: 'Activity already has a placement log',
+        result: SponsorMatchResult.SKIPPED_ALREADY_SPONSORED,
+        sponsorMatchId: existingMatch.id,
+        message: 'Activity already has a sponsor match',
       };
     }
 
@@ -62,14 +62,14 @@ export async function matchActivityWithSponsor(
 
     if (!campaign) {
       // Log as SKIPPED_NO_ACTIVE_CAMPAIGN
-      const placementLog = await db.placementLog.create({
+      const sponsorMatch = await db.sponsorMatch.create({
         data: {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: null,
-          result: PlacementResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
+          result: SponsorMatchResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
           decrementCents: 0,
           notes: 'No active campaign with budget available',
         },
@@ -77,8 +77,8 @@ export async function matchActivityWithSponsor(
 
       return {
         success: false,
-        result: PlacementResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
-        placementLogId: placementLog.id,
+        result: SponsorMatchResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
+        sponsorMatchId: sponsorMatch.id,
         message: 'No active campaign available',
       };
     }
@@ -86,14 +86,14 @@ export async function matchActivityWithSponsor(
     // Step 3: Check if campaign has enough budget
     if (campaign.budgetRemainingCents < COMMITMENT_AMOUNT_CENTS) {
       // Log as SKIPPED_NO_BUDGET
-      const placementLog = await db.placementLog.create({
+      const sponsorMatch = await db.sponsorMatch.create({
         data: {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
-          result: PlacementResult.SKIPPED_NO_BUDGET,
+          result: SponsorMatchResult.SKIPPED_NO_BUDGET,
           decrementCents: 0,
           notes: `Campaign budget (${campaign.budgetRemainingCents} cents) insufficient for commitment (${COMMITMENT_AMOUNT_CENTS} cents)`,
         },
@@ -101,8 +101,8 @@ export async function matchActivityWithSponsor(
 
       return {
         success: false,
-        result: PlacementResult.SKIPPED_NO_BUDGET,
-        placementLogId: placementLog.id,
+        result: SponsorMatchResult.SKIPPED_NO_BUDGET,
+        sponsorMatchId: sponsorMatch.id,
         campaignId: campaign.id,
         message: 'Campaign has insufficient budget',
       };
@@ -116,14 +116,14 @@ export async function matchActivityWithSponsor(
 
     if (!user?.selectedCharityId) {
       // Log as SKIPPED_UPDATE_FAILED with note about missing charity
-      const placementLog = await db.placementLog.create({
+      const sponsorMatch = await db.sponsorMatch.create({
         data: {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
-          result: PlacementResult.SKIPPED_UPDATE_FAILED,
+          result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
           decrementCents: 0,
           notes: 'User has no selected charity',
         },
@@ -131,8 +131,8 @@ export async function matchActivityWithSponsor(
 
       return {
         success: false,
-        result: PlacementResult.SKIPPED_UPDATE_FAILED,
-        placementLogId: placementLog.id,
+        result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
+        sponsorMatchId: sponsorMatch.id,
         campaignId: campaign.id,
         error: 'User has no selected charity',
       };
@@ -160,14 +160,14 @@ export async function matchActivityWithSponsor(
 
     if (!updateResult.success) {
       // Log as SKIPPED_UPDATE_FAILED
-      const placementLog = await db.placementLog.create({
+      const sponsorMatch = await db.sponsorMatch.create({
         data: {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
-          result: PlacementResult.SKIPPED_UPDATE_FAILED,
+          result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
           decrementCents: 0,
           notes: `Failed to update Strava description: ${updateResult.error}`,
         },
@@ -175,8 +175,8 @@ export async function matchActivityWithSponsor(
 
       return {
         success: false,
-        result: PlacementResult.SKIPPED_UPDATE_FAILED,
-        placementLogId: placementLog.id,
+        result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
+        sponsorMatchId: sponsorMatch.id,
         campaignId: campaign.id,
         error: updateResult.error,
       };
@@ -196,15 +196,15 @@ export async function matchActivityWithSponsor(
         },
       });
 
-      // Create placement log
-      const placementLog = await tx.placementLog.create({
+      // Create sponsor match
+      const sponsorMatch = await tx.sponsorMatch.create({
         data: {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
-          result: PlacementResult.MATCHED,
+          result: SponsorMatchResult.MATCHED,
           decrementCents: COMMITMENT_AMOUNT_CENTS,
           notes: 'Successfully matched and description updated',
         },
@@ -221,15 +221,15 @@ export async function matchActivityWithSponsor(
         },
       });
 
-      return { placementLog, charityCommitment };
+      return { sponsorMatch, charityCommitment };
     });
 
     console.log(`✅ Successfully matched activity ${activity.stravaActivityId} with campaign ${campaign.id}`);
 
     return {
       success: true,
-      result: PlacementResult.MATCHED,
-      placementLogId: result.placementLog.id,
+      result: SponsorMatchResult.MATCHED,
+      sponsorMatchId: result.sponsorMatch.id,
       charityCommitmentId: result.charityCommitment.id,
       campaignId: campaign.id,
       message: 'Successfully matched activity with sponsor',
@@ -238,7 +238,7 @@ export async function matchActivityWithSponsor(
     console.error('Error in sponsor matching:', error);
     return {
       success: false,
-      result: PlacementResult.SKIPPED_UPDATE_FAILED,
+      result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
       error: error instanceof Error ? error.message : String(error),
     };
   }
@@ -375,12 +375,12 @@ async function buildSponsorMessage(
 }
 
 /**
- * Helper function to check if an activity already has a placement
+ * Helper function to check if an activity already has a sponsor match
  * (for use in webhook handler)
  */
-export async function hasExistingPlacement(activityId: string): Promise<boolean> {
-  const placement = await db.placementLog.findUnique({
+export async function hasExistingSponsorMatch(activityId: string): Promise<boolean> {
+  const match = await db.sponsorMatch.findUnique({
     where: { activityId },
   });
-  return placement !== null;
+  return match !== null;
 }

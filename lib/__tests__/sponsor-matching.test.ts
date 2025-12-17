@@ -3,13 +3,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { matchActivityWithSponsor, COMMITMENT_AMOUNT_CENTS, hasExistingPlacement } from '../sponsor-matching';
-import { PlacementResult } from '@prisma/client';
+import { matchActivityWithSponsor, COMMITMENT_AMOUNT_CENTS, hasExistingSponsorMatch } from '../sponsor-matching';
+import { SponsorMatchResult } from '@prisma/client';
 
 // Mock the db module
 vi.mock('@/lib/db', () => ({
   db: {
-    placementLog: {
+    sponsorMatch: {
       findUnique: vi.fn(),
       create: vi.fn(),
     },
@@ -79,21 +79,21 @@ describe('Sponsor Matching Service', () => {
   });
 
   describe('matchActivityWithSponsor', () => {
-    it('should skip if activity already has placement log (idempotency)', async () => {
-      const existingPlacement = {
-        id: 'placement-existing',
+    it('should skip if activity already has sponsor match (idempotency)', async () => {
+      const existingMatch = {
+        id: 'match-existing',
         activityId: mockActivity.id,
-        result: PlacementResult.MATCHED,
+        result: SponsorMatchResult.MATCHED,
       };
 
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(existingPlacement as any);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(existingMatch as any);
 
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(false);
-      expect(result.result).toBe(PlacementResult.SKIPPED_ALREADY_SPONSORED);
-      expect(result.placementLogId).toBe(existingPlacement.id);
-      expect(db.placementLog.findUnique).toHaveBeenCalledWith({
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_ALREADY_SPONSORED);
+      expect(result.sponsorMatchId).toBe(existingMatch.id);
+      expect(db.sponsorMatch.findUnique).toHaveBeenCalledWith({
         where: { activityId: mockActivity.id },
       });
       // Verify that Strava API was never called (already sponsored = no re-update)
@@ -101,19 +101,19 @@ describe('Sponsor Matching Service', () => {
     });
 
     it('should skip if no active campaign available', async () => {
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([]);
       
-      const createdPlacement = {
-        id: 'placement-no-campaign',
-        result: PlacementResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
+      const createdMatch = {
+        id: 'match-no-campaign',
+        result: SponsorMatchResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
       };
-      vi.mocked(db.placementLog.create).mockResolvedValue(createdPlacement as any);
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
 
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(false);
-      expect(result.result).toBe(PlacementResult.SKIPPED_NO_ACTIVE_CAMPAIGN);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_NO_ACTIVE_CAMPAIGN);
       expect(db.campaign.findMany).toHaveBeenCalledWith({
         where: {
           isActive: true,
@@ -125,9 +125,9 @@ describe('Sponsor Matching Service', () => {
           sponsor: true,
         },
       });
-      expect(db.placementLog.create).toHaveBeenCalledWith({
+      expect(db.sponsorMatch.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          result: PlacementResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
+          result: SponsorMatchResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
           decrementCents: 0,
         }),
       });
@@ -141,23 +141,23 @@ describe('Sponsor Matching Service', () => {
         budgetRemainingCents: 5, // Less than COMMITMENT_AMOUNT_CENTS (10)
       };
 
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([lowBudgetCampaign as any]);
       
-      const createdPlacement = {
-        id: 'placement-no-budget',
-        result: PlacementResult.SKIPPED_NO_BUDGET,
+      const createdMatch = {
+        id: 'match-no-budget',
+        result: SponsorMatchResult.SKIPPED_NO_BUDGET,
       };
-      vi.mocked(db.placementLog.create).mockResolvedValue(createdPlacement as any);
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
 
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(false);
-      expect(result.result).toBe(PlacementResult.SKIPPED_NO_BUDGET);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_NO_BUDGET);
       expect(result.campaignId).toBe(lowBudgetCampaign.id);
-      expect(db.placementLog.create).toHaveBeenCalledWith({
+      expect(db.sponsorMatch.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          result: PlacementResult.SKIPPED_NO_BUDGET,
+          result: SponsorMatchResult.SKIPPED_NO_BUDGET,
           campaignId: lowBudgetCampaign.id,
           decrementCents: 0,
         }),
@@ -167,7 +167,7 @@ describe('Sponsor Matching Service', () => {
     });
 
     it('should skip if Strava API fetch fails', async () => {
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
       // Mock user with selected charity
@@ -195,16 +195,16 @@ describe('Sponsor Matching Service', () => {
         text: async () => 'Unauthorized',
       });
 
-      const createdPlacement = {
-        id: 'placement-update-failed',
-        result: PlacementResult.SKIPPED_UPDATE_FAILED,
+      const createdMatch = {
+        id: 'match-update-failed',
+        result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
       };
-      vi.mocked(db.placementLog.create).mockResolvedValue(createdPlacement as any);
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
 
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(false);
-      expect(result.result).toBe(PlacementResult.SKIPPED_UPDATE_FAILED);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_UPDATE_FAILED);
       expect(result.error).toContain('401');
       expect(mockFetch).toHaveBeenCalledWith(
         `https://www.strava.com/api/v3/activities/${mockActivity.stravaActivityId}`,
@@ -217,7 +217,7 @@ describe('Sponsor Matching Service', () => {
     });
 
     it('should skip if Strava description update fails', async () => {
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
       // Mock user with selected charity
@@ -259,21 +259,21 @@ describe('Sponsor Matching Service', () => {
           text: async () => 'Forbidden',
         });
 
-      const createdPlacement = {
-        id: 'placement-update-failed',
-        result: PlacementResult.SKIPPED_UPDATE_FAILED,
+      const createdMatch = {
+        id: 'match-update-failed',
+        result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
       };
-      vi.mocked(db.placementLog.create).mockResolvedValue(createdPlacement as any);
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
 
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(false);
-      expect(result.result).toBe(PlacementResult.SKIPPED_UPDATE_FAILED);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_UPDATE_FAILED);
       expect(result.error).toContain('403');
     });
 
     it('should skip if user has no selected charity', async () => {
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
       // Mock successful Strava update
@@ -296,21 +296,21 @@ describe('Sponsor Matching Service', () => {
         selectedCharityId: null,
       } as any);
 
-      const createdPlacement = {
-        id: 'placement-no-charity',
-        result: PlacementResult.SKIPPED_UPDATE_FAILED,
+      const createdMatch = {
+        id: 'match-no-charity',
+        result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
       };
-      vi.mocked(db.placementLog.create).mockResolvedValue(createdPlacement as any);
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
 
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(false);
-      expect(result.result).toBe(PlacementResult.SKIPPED_UPDATE_FAILED);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_UPDATE_FAILED);
       expect(result.error).toContain('no selected charity');
     });
 
     it('should successfully match activity with campaign', async () => {
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
       // Mock user with selected charity
@@ -352,9 +352,9 @@ describe('Sponsor Matching Service', () => {
         });
 
       // Mock transaction
-      const mockPlacementLog = {
-        id: 'placement-matched',
-        result: PlacementResult.MATCHED,
+      const mockSponsorMatch = {
+        id: 'match-matched',
+        result: SponsorMatchResult.MATCHED,
       };
       const mockCharityCommitment = {
         id: 'commitment-123',
@@ -365,8 +365,8 @@ describe('Sponsor Matching Service', () => {
           campaign: {
             update: vi.fn().mockResolvedValue({}),
           },
-          placementLog: {
-            create: vi.fn().mockResolvedValue(mockPlacementLog),
+          sponsorMatch: {
+            create: vi.fn().mockResolvedValue(mockSponsorMatch),
           },
           charityCommitment: {
             create: vi.fn().mockResolvedValue(mockCharityCommitment),
@@ -377,14 +377,14 @@ describe('Sponsor Matching Service', () => {
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(true);
-      expect(result.result).toBe(PlacementResult.MATCHED);
-      expect(result.placementLogId).toBe(mockPlacementLog.id);
+      expect(result.result).toBe(SponsorMatchResult.MATCHED);
+      expect(result.sponsorMatchId).toBe(mockSponsorMatch.id);
       expect(result.charityCommitmentId).toBe(mockCharityCommitment.id);
       expect(result.campaignId).toBe(mockCampaign.id);
     });
 
     it('should successfully match even if GTD marker already exists', async () => {
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
       // Mock user with selected charity
@@ -428,9 +428,9 @@ describe('Sponsor Matching Service', () => {
       });
 
       // Mock transaction
-      const mockPlacementLog = {
-        id: 'placement-matched',
-        result: PlacementResult.MATCHED,
+      const mockSponsorMatch = {
+        id: 'match-matched',
+        result: SponsorMatchResult.MATCHED,
       };
       const mockCharityCommitment = {
         id: 'commitment-123',
@@ -441,8 +441,8 @@ describe('Sponsor Matching Service', () => {
           campaign: {
             update: vi.fn().mockResolvedValue({}),
           },
-          placementLog: {
-            create: vi.fn().mockResolvedValue(mockPlacementLog),
+          sponsorMatch: {
+            create: vi.fn().mockResolvedValue(mockSponsorMatch),
           },
           charityCommitment: {
             create: vi.fn().mockResolvedValue(mockCharityCommitment),
@@ -455,32 +455,32 @@ describe('Sponsor Matching Service', () => {
       // Should still succeed - GTD marker check returns success without PUT,
       // but matching process completes (budget decrement, logs, commitments)
       expect(result.success).toBe(true);
-      expect(result.result).toBe(PlacementResult.MATCHED);
-      expect(result.placementLogId).toBe(mockPlacementLog.id);
+      expect(result.result).toBe(SponsorMatchResult.MATCHED);
+      expect(result.sponsorMatchId).toBe(mockSponsorMatch.id);
       expect(result.charityCommitmentId).toBe(mockCharityCommitment.id);
     });
   });
 
-  describe('hasExistingPlacement', () => {
-    it('should return true when placement exists', async () => {
-      const mockPlacement = {
-        id: 'placement-123',
+  describe('hasExistingSponsorMatch', () => {
+    it('should return true when sponsor match exists', async () => {
+      const mockMatch = {
+        id: 'match-123',
         activityId: 'activity-123',
       };
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(mockPlacement as any);
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(mockMatch as any);
 
-      const result = await hasExistingPlacement('activity-123');
+      const result = await hasExistingSponsorMatch('activity-123');
 
       expect(result).toBe(true);
-      expect(db.placementLog.findUnique).toHaveBeenCalledWith({
+      expect(db.sponsorMatch.findUnique).toHaveBeenCalledWith({
         where: { activityId: 'activity-123' },
       });
     });
 
-    it('should return false when placement does not exist', async () => {
-      vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
+    it('should return false when sponsor match does not exist', async () => {
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
 
-      const result = await hasExistingPlacement('activity-123');
+      const result = await hasExistingSponsorMatch('activity-123');
 
       expect(result).toBe(false);
     });
