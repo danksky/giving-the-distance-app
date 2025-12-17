@@ -246,8 +246,8 @@ export default async function DashboardPage({
                   <table className="table table-zebra">
                     <thead>
                       <tr>
-                        <th>Date</th>
-                        <th>Activity</th>
+                        <th className="whitespace-nowrap">Date</th>
+                        <th className="min-w-[16rem]">Activity</th>
                         <th>Type</th>
                         <th>Distance</th>
                         <th>Time</th>
@@ -306,8 +306,8 @@ export default async function DashboardPage({
                               isDeleted ? "opacity-50" : "hover:bg-base-200"
                             }
                           >
-                            <td>{date}</td>
-                            <td>
+                            <td className="whitespace-nowrap">{date}</td>
+                            <td className="min-w-[16rem]">
                               {isDeleted ? (
                                 <span className="italic opacity-60">
                                   [Deleted Activity]
@@ -315,20 +315,13 @@ export default async function DashboardPage({
                               ) : (
                                 <Link
                                   href={`/activities/${activity.id}`}
-                                  className="link link-hover font-medium"
+                                  className="link link-hover font-bold underline"
                                 >
                                   {activity.name || "Untitled"}
                                 </Link>
                               )}
                             </td>
-                            <td>
-                              {!isDeleted && (
-                                <>
-                                  {getActivityEmoji(activity.type)}{" "}
-                                  {activity.type}
-                                </>
-                              )}
-                            </td>
+                            <td>{!isDeleted && activity.type}</td>
                             <td>
                               {!isDeleted ? (
                                 <>
