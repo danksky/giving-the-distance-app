@@ -5,14 +5,9 @@
 Create a `.env.local` file in the project root with these variables:
 
 ```bash
-# Database (Get from Vercel Postgres after setup)
-POSTGRES_URL=
-POSTGRES_PRISMA_URL=
-POSTGRES_URL_NON_POOLING=
-
-# Optional (local convenience)
-# If you already have a standard `DATABASE_URL`, the app will use it as a fallback
-# for `POSTGRES_PRISMA_URL` / `POSTGRES_URL_NON_POOLING` during development.
+# Database
+# Standard DATABASE_URL - works with any Postgres provider
+# If using Vercel Postgres, their env vars (POSTGRES_*) are auto-detected
 DATABASE_URL=
 
 # NextAuth

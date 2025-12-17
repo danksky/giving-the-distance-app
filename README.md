@@ -67,7 +67,7 @@ Key variables:
 - `STRAVA_CLIENT_ID` & `STRAVA_CLIENT_SECRET` - Strava integration
 - `STRIPE_SECRET_KEY` - Payment processing
 - `NEXTAUTH_SECRET` - Session encryption
-- `POSTGRES_URL` - Database connection (auto-configured on Vercel)
+- `DATABASE_URL` - Database connection
 
 ## 🌐 Domains
 
