@@ -10,6 +10,11 @@ POSTGRES_URL=
 POSTGRES_PRISMA_URL=
 POSTGRES_URL_NON_POOLING=
 
+# Optional (local convenience)
+# If you already have a standard `DATABASE_URL`, the app will use it as a fallback
+# for `POSTGRES_PRISMA_URL` / `POSTGRES_URL_NON_POOLING` during development.
+DATABASE_URL=
+
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=  # Generate: openssl rand -base64 32

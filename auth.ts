@@ -3,12 +3,36 @@ import { CustomPrismaAdapter } from "@/lib/custom-prisma-adapter"
 import { db } from "@/lib/db"
 import { authConfig } from "./auth.config"
 
+const hasDatabaseConfigured = Boolean(
+  process.env.POSTGRES_PRISMA_URL?.trim() ||
+    process.env.DATABASE_URL?.trim() ||
+    process.env.POSTGRES_URL?.trim()
+)
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
-  adapter: CustomPrismaAdapter(db),
-  session: { 
-    strategy: "database",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+  ...(hasDatabaseConfigured
+    ? {
+        adapter: CustomPrismaAdapter(db),
+        session: {
+          strategy: "database" as const,
+          maxAge: 30 * 24 * 60 * 60, // 30 days
+        },
+      }
+    : {
+        // Local/dev fallback: allow app to boot without DB configured.
+        // Auth flows that require persistence will not work until DB env vars are set.
+        session: {
+          strategy: "jwt" as const,
+          maxAge: 30 * 24 * 60 * 60, // 30 days
+        },
+        // Avoid colliding with an existing database-session cookie.
+        // Otherwise a prior session token (random string) will be parsed as a JWE and error.
+        cookies: {
+          sessionToken: {
+            name: "authjs.session-token-jwt",
+          },
+        },
+      }),
   secret: process.env.NEXTAUTH_SECRET,
   ...authConfig,
   callbacks: {
@@ -61,6 +85,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   events: {
     async linkAccount({ user, account }) {
+      if (!hasDatabaseConfigured) {
+        console.warn(
+          "[auth] Database not configured; skipping linkAccount persistence."
+        )
+        return
+      }
+
       // When Strava is linked, save athlete data
       // (Permission validation already happened in signIn callback)
       if (account.provider === "strava") {
