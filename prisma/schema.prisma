@@ -8,7 +8,6 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL") // Optional: for migrations with connection pooling
 }
 
 // ============================================
@@ -115,6 +114,7 @@ model Activity {
   isManual             Boolean   @default(false)
   isPrivate            Boolean   @default(false)
   isPublicProfile      Boolean   @default(false) // User can make their profile public on this activity
+  gpxBlobUrl           String?   // URL to GPX file in Vercel Blob Storage
   deletedAt            DateTime? // Soft delete - null means not deleted
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt

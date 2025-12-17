@@ -84,6 +84,25 @@ export default async function AdminPage() {
             </div>
           </Link>
 
+          {/* GPX Backfill Card */}
+          <Link
+            href="/admin/gpx"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
+          >
+            <div className="card-body">
+              <div className="flex items-start justify-between">
+                <div className="badge badge-warning">Maintenance</div>
+              </div>
+              <h2 className="card-title text-2xl mt-4">GPX Management</h2>
+              <p className="opacity-70">
+                View GPX statistics and backfill missing route files
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-warning">Manage GPX →</button>
+              </div>
+            </div>
+          </Link>
+
           {/* Database Card */}
           <a
             href="http://localhost:5555"

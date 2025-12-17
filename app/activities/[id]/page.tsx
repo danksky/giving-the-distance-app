@@ -12,6 +12,7 @@ import {
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
 import ActivityPrivacyToggle from "@/components/ActivityPrivacyToggle";
+import ActivityMap from "@/components/ActivityMap";
 import type { Metadata } from "next";
 
 // Helper function to format duration in seconds to HH:MM:SS
@@ -456,6 +457,46 @@ export default async function ActivityPage({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Route Map - Only visible to owner */}
+        {isOwner && activity.gpxBlobUrl && (
+          <div className="card bg-base-100 mb-6">
+            <div className="card-body">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold">Route Map</h3>
+                <a
+                  href={activity.gpxBlobUrl}
+                  download={`${activity.name || "activity"}.gpx`}
+                  className="btn btn-sm btn-outline btn-primary"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  Download GPX
+                </a>
+              </div>
+              <ActivityMap
+                gpxBlobUrl={activity.gpxBlobUrl}
+                activityName={activity.name || "Activity"}
+              />
+              <p className="text-sm text-base-content/60 mt-2">
+                Your route is only visible to you. Use the privacy toggle below
+                to control who can see your profile information.
+              </p>
             </div>
           </div>
         )}

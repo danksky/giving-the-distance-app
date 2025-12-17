@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { getValidStravaToken } from "@/lib/strava-token-refresh";
 import { matchActivityWithSponsor } from "@/lib/sponsor-matching";
 import { generateUniqueShortcode } from "@/lib/shortcode";
+import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
+import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
 
 /**
  * Strava Webhook Endpoint
@@ -38,6 +40,73 @@ export async function GET(request: NextRequest) {
       { error: 'Verification failed' },
       { status: 403 }
     );
+  }
+}
+
+/**
+ * Process and store GPX file for an activity
+ * Only downloads if we don't already have it
+ */
+async function processAndStoreGPX(
+  activityId: string,
+  stravaActivityId: bigint,
+  userId: string,
+  accessToken: string,
+  activityData: {
+    name: string;
+    startDate?: Date;
+    type?: string;
+  },
+  existingGpxUrl?: string | null
+): Promise<string | null> {
+  // Skip if blob storage is not configured
+  if (!isBlobStorageConfigured()) {
+    console.log('⚠️  Blob storage not configured - skipping GPX download');
+    return null;
+  }
+
+  // Skip if we already have a GPX file
+  if (existingGpxUrl) {
+    console.log(`✅ GPX already exists for activity ${activityId}: ${existingGpxUrl}`);
+    return existingGpxUrl;
+  }
+
+  try {
+    console.log(`🎯 Processing GPX for activity ${activityId}...`);
+
+    // Fetch streams and generate GPX
+    const gpxContent = await fetchAndGenerateGPX(
+      stravaActivityId.toString(),
+      accessToken,
+      {
+        name: activityData.name,
+        startDate: activityData.startDate,
+        type: activityData.type,
+      }
+    );
+
+    if (!gpxContent) {
+      console.log(`⚠️  No GPX content generated for activity ${activityId} (likely no GPS data)`);
+      return null;
+    }
+
+    // Upload to Vercel Blob
+    const blobUrl = await uploadGPXToBlob(
+      gpxContent,
+      stravaActivityId.toString(),
+      userId
+    );
+
+    if (blobUrl) {
+      console.log(`✅ GPX stored successfully: ${blobUrl}`);
+      return blobUrl;
+    } else {
+      console.error(`❌ Failed to upload GPX to blob storage`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`❌ Error processing GPX for activity ${activityId}:`, error);
+    return null;
   }
 }
 
@@ -230,6 +299,35 @@ export async function POST(request: NextRequest) {
 
         console.log(`✅ Activity ${object_id} saved successfully`);
         
+        // Process GPX download and storage (non-blocking - errors won't fail the webhook)
+        let gpxBlobUrl: string | null = null;
+        try {
+          gpxBlobUrl = await processAndStoreGPX(
+            savedActivity.id,
+            savedActivity.stravaActivityId,
+            savedActivity.userId,
+            accessToken,
+            {
+              name: savedActivity.name || 'Untitled Activity',
+              startDate: savedActivity.startDate || undefined,
+              type: savedActivity.type,
+            },
+            null // No existing GPX for new activities
+          );
+
+          // Update activity with GPX URL if we got one
+          if (gpxBlobUrl) {
+            await db.activity.update({
+              where: { id: savedActivity.id },
+              data: { gpxBlobUrl },
+            });
+            console.log(`✅ Activity ${object_id} updated with GPX URL`);
+          }
+        } catch (error) {
+          console.error(`⚠️  GPX processing failed (non-critical):`, error);
+          // Don't fail the webhook - GPX is optional
+        }
+        
         // Process sponsor matching and description update
         let descriptionUpdated = false;
         let descriptionUpdateError: string | null = null;
@@ -322,7 +420,7 @@ export async function POST(request: NextRequest) {
         console.log('📊 Updated activity data:', JSON.stringify(activity, null, 2));
 
         // Upsert activity - update if exists, create if doesn't (self-healing)
-        await db.activity.upsert({
+        const updatedActivity = await db.activity.upsert({
           where: {
             stravaActivityId: BigInt(object_id),
           },
@@ -368,6 +466,33 @@ export async function POST(request: NextRequest) {
 
         console.log(`✅ Activity ${object_id} updated successfully (or created if missing)`);
 
+        // Process GPX download and storage if we don't have it yet
+        try {
+          const gpxBlobUrl = await processAndStoreGPX(
+            updatedActivity.id,
+            updatedActivity.stravaActivityId,
+            updatedActivity.userId,
+            accessToken,
+            {
+              name: updatedActivity.name || 'Untitled Activity',
+              startDate: updatedActivity.startDate || undefined,
+              type: updatedActivity.type,
+            },
+            updatedActivity.gpxBlobUrl // Check if we already have it
+          );
+
+          // Update activity with GPX URL if we got a new one
+          if (gpxBlobUrl && gpxBlobUrl !== updatedActivity.gpxBlobUrl) {
+            await db.activity.update({
+              where: { id: updatedActivity.id },
+              data: { gpxBlobUrl },
+            });
+            console.log(`✅ Activity ${object_id} updated with GPX URL`);
+          }
+        } catch (error) {
+          console.error(`⚠️  GPX processing failed (non-critical):`, error);
+          // Don't fail the webhook - GPX is optional
+        }
         
         // Mark webhook event as processed
         if (webhookEventId) {
