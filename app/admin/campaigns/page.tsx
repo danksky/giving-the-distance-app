@@ -447,12 +447,18 @@ export default async function CampaignsPage() {
                         )}
                       </td>
                       <td>
-                        <Link
-                          href={`/activities/${log.stravaActivityId}`}
-                          className="link link-primary text-xs font-mono"
-                        >
-                          {log.stravaActivityId.toString().substring(0, 10)}...
-                        </Link>
+                        {log.activity ? (
+                          <Link
+                            href={`/activities/${log.activity.id}`}
+                            className="link link-primary text-xs font-mono"
+                          >
+                            {log.stravaActivityId.toString().substring(0, 10)}...
+                          </Link>
+                        ) : (
+                          <span className="text-xs font-mono opacity-40">
+                            {log.stravaActivityId.toString().substring(0, 10)}...
+                          </span>
+                        )}
                       </td>
                       <td className="text-xs">
                         {log.activity?.user?.name || "Unknown"}
