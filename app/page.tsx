@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import Link from "next/link";
+import RotatingText from "@/components/RotatingText";
 
 export default async function Home() {
   const session = await auth();
@@ -10,14 +11,11 @@ export default async function Home() {
         <div className="max-w-2xl">
           <h1 className="text-5xl font-bold">Giving the Distance</h1>
 
-          <p className="py-6 text-lg">
-            Connect your Strava account and turn every mile into meaningful
-            impact.
-          </p>
+          <RotatingText />
 
           {session?.user ? (
             <div className="space-y-4">
-              <div className="alert alert-info">
+              <div className="bg-[#badcff] rounded-lg py-3 px-6 text-base-content">
                 <span>
                   Welcome back, <strong>{session.user.name}</strong>!
                 </span>
