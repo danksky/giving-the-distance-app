@@ -51,9 +51,9 @@ export default async function SettingsPage() {
           <Link href="/settings/strava">
             <div className="card bg-base-100 hover:border-gray-300 transition-colors cursor-pointer">
               <div className="card-body">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-12 h-12 relative flex-shrink-0">
+                <div className="flex items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className="w-12 h-12 sm:w-12 sm:h-12 relative flex-shrink-0">
                       <Image
                         src="/logos/services/strava.svg"
                         alt="Strava"
@@ -61,9 +61,20 @@ export default async function SettingsPage() {
                         height={48}
                       />
                     </div>
-                    <div className="flex-1">
-                      <h2 className="card-title">Strava Connection</h2>
-                      <p className="text-base-content/60">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h2 className="card-title text-lg sm:text-xl">
+                          Strava Connection
+                        </h2>
+                        <div
+                          className={`badge badge-sm sm:badge-lg flex-shrink-0 ${
+                            hasStrava ? "badge-success" : "badge-warning"
+                          }`}
+                        >
+                          {hasStrava ? "Connected" : "Not Connected"}
+                        </div>
+                      </div>
+                      <p className="text-sm sm:text-base text-base-content/60">
                         {hasStrava
                           ? "Manage your Strava account connection"
                           : "Connect your Strava account to track activities"}
@@ -72,7 +83,7 @@ export default async function SettingsPage() {
                         <div className="flex items-center gap-2 mt-2">
                           {stravaAthlete.profile && (
                             <div className="avatar">
-                              <div className="w-8 h-8 rounded-full">
+                              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full">
                                 <Image
                                   src={stravaAthlete.profile}
                                   alt="Strava Profile"
@@ -82,19 +93,12 @@ export default async function SettingsPage() {
                               </div>
                             </div>
                           )}
-                          <span className="text-sm font-semibold text-success">
+                          <span className="text-xs sm:text-sm font-semibold text-success">
                             Connected as {stravaAthlete.firstname}{" "}
                             {stravaAthlete.lastname}
                           </span>
                         </div>
                       )}
-                    </div>
-                    <div
-                      className={`badge badge-lg ${
-                        hasStrava ? "badge-success" : "badge-warning"
-                      }`}
-                    >
-                      {hasStrava ? "Connected" : "Not Connected"}
                     </div>
                   </div>
                   <svg
@@ -103,7 +107,7 @@ export default async function SettingsPage() {
                     viewBox="0 0 24 24"
                     strokeWidth={2}
                     stroke="currentColor"
-                    className="w-6 h-6 opacity-50"
+                    className="w-5 h-5 sm:w-6 sm:h-6 opacity-50 flex-shrink-0 mt-1"
                   >
                     <path
                       strokeLinecap="round"
@@ -125,16 +129,24 @@ export default async function SettingsPage() {
           <Link href="/settings/charity">
             <div className="card bg-base-100 hover:border-gray-300 transition-colors cursor-pointer">
               <div className="card-body">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                     <CharityLogo
                       name={currentCharity?.name || "Charity"}
                       logoUrl={currentCharity?.logoUrl}
                       size="md"
+                      className="flex-shrink-0"
                     />
-                    <div className="flex-1">
-                      <h2 className="card-title">Charity Selection</h2>
-                      <p className="text-base-content/60">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h2 className="card-title text-lg sm:text-xl">
+                          Charity Selection
+                        </h2>
+                        <div className="badge badge-sm sm:badge-lg badge-outline flex-shrink-0">
+                          Optional
+                        </div>
+                      </div>
+                      <p className="text-sm sm:text-base text-base-content/60">
                         Choose which charity your activities will benefit
                       </p>
                       {currentCharity && (
@@ -144,7 +156,7 @@ export default async function SettingsPage() {
                             logoUrl={currentCharity.logoUrl}
                             size="sm"
                           />
-                          <span className="text-sm font-semibold text-primary">
+                          <span className="text-xs sm:text-sm font-semibold text-primary">
                             {currentCharity.name}
                             {currentCharity.isDefault &&
                               !user?.selectedCharityId &&
@@ -153,7 +165,6 @@ export default async function SettingsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="badge badge-lg badge-outline">Optional</div>
                   </div>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -161,7 +172,7 @@ export default async function SettingsPage() {
                     viewBox="0 0 24 24"
                     strokeWidth={2}
                     stroke="currentColor"
-                    className="w-6 h-6 opacity-50"
+                    className="w-5 h-5 sm:w-6 sm:h-6 opacity-50 flex-shrink-0 mt-1"
                   >
                     <path
                       strokeLinecap="round"
@@ -178,22 +189,30 @@ export default async function SettingsPage() {
         {/* Account Information */}
         <div className="card bg-base-100 mt-8">
           <div className="card-body">
-            <h3 className="card-title mb-4">Account Information</h3>
+            <h3 className="card-title text-lg sm:text-xl mb-4">
+              Account Information
+            </h3>
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="font-semibold w-24">Email:</span>
-                <span className="text-base-content/70">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="font-semibold text-sm sm:text-base sm:w-24">
+                  Email:
+                </span>
+                <span className="text-sm sm:text-base text-base-content/70 break-all">
                   {session.user.email}
                 </span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold w-24">Name:</span>
-                <span className="text-base-content/70">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="font-semibold text-sm sm:text-base sm:w-24">
+                  Name:
+                </span>
+                <span className="text-sm sm:text-base text-base-content/70">
                   {session.user.name}
                 </span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold w-24">Google:</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="font-semibold text-sm sm:text-base sm:w-24">
+                  Google:
+                </span>
                 <span className="badge badge-success badge-sm">Connected</span>
               </div>
             </div>
