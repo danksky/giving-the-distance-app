@@ -404,14 +404,14 @@ export async function POST(request: NextRequest) {
           data: { stravaAuthorized: false },
         });
       }
-    }
-
-    // Mark webhook event as processed
-    if (webhookEventId) {
-      await db.stravaWebhookEvent.update({
-        where: { id: webhookEventId },
-        data: { processed: true },
-      });
+      
+      // Mark athlete webhook event as processed
+      if (webhookEventId) {
+        await db.stravaWebhookEvent.update({
+          where: { id: webhookEventId },
+          data: { processed: true },
+        });
+      }
     }
 
     // Always return 200 to acknowledge receipt
