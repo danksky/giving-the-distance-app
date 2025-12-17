@@ -2,9 +2,16 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
+import { auth } from "@/auth";
 import { getCharityAtTime } from "@/lib/charity-helpers";
+import {
+  getDisplayName,
+  getDisplayAvatar,
+  canViewRealProfile,
+} from "@/lib/activity-privacy";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
+import ActivityPrivacyToggle from "@/components/ActivityPrivacyToggle";
 import type { Metadata } from "next";
 
 // Helper function to format duration in seconds to HH:MM:SS
@@ -98,6 +105,50 @@ export default async function ActivityPage({
     notFound();
   }
 
+  // Get current session to check if viewer is owner
+  const session = await auth();
+  const viewerUserId = session?.user?.email
+    ? (
+        await db.user.findUnique({
+          where: { email: session.user.email },
+          select: { id: true },
+        })
+      )?.id
+    : undefined;
+
+  // Check if viewer can see real profile details
+  const showRealProfile = canViewRealProfile(
+    activity.userId,
+    activity.isPublicProfile,
+    viewerUserId
+  );
+  const isOwner = viewerUserId === activity.userId;
+
+  // Debug logging (remove in production)
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Activity Privacy Debug]", {
+      activityId: activity.id,
+      isPublicProfile: activity.isPublicProfile,
+      isOwner,
+      showRealProfile,
+      viewerUserId: viewerUserId ? "present" : "none",
+    });
+  }
+
+  // Get display name and avatar based on privacy settings
+  const displayName = getDisplayName(
+    activity.user.name,
+    activity.userId,
+    activity.isPublicProfile,
+    viewerUserId
+  );
+  const displayAvatar = getDisplayAvatar(
+    activity.user.image,
+    activity.userId,
+    activity.isPublicProfile,
+    viewerUserId
+  );
+
   // Calculate distances
   const distanceKm = activity.distanceMeters
     ? (Number(activity.distanceMeters) / 1000).toFixed(2)
@@ -148,8 +199,10 @@ export default async function ActivityPage({
     ? `${(Number(activity.totalElevationGain) * 3.28084).toFixed(0)}`
     : "0";
 
-  // Format for header: "[First name] [activity] on [Month Day], [year]"
-  const firstName = activity.user.name?.split(" ")[0] || "Athlete";
+  // Format for header: "[Name] [activity] on [Month Day], [year]"
+  const firstName = showRealProfile
+    ? activity.user.name?.split(" ")[0] || "Athlete"
+    : displayName;
   const activityDateShort = activity.startDateLocal
     ? new Date(activity.startDateLocal).toLocaleDateString("en-US", {
         year: "numeric",
@@ -194,26 +247,16 @@ export default async function ActivityPage({
           <div className="card-body">
             {/* Activity Header */}
             <div className="flex items-start gap-4 mb-6">
-              {activity.user.image ? (
-                <div className="avatar">
-                  <div className="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                    <Image
-                      src={activity.user.image}
-                      alt={activity.user.name || "Athlete"}
-                      width={64}
-                      height={64}
-                    />
-                  </div>
+              <div className="avatar">
+                <div className="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                  <Image
+                    src={displayAvatar}
+                    alt={displayName}
+                    width={64}
+                    height={64}
+                  />
                 </div>
-              ) : (
-                <div className="avatar placeholder">
-                  <div className="bg-neutral text-neutral-content w-16 rounded-full">
-                    <span className="text-2xl">
-                      {activity.user.name?.charAt(0) || "A"}
-                    </span>
-                  </div>
-                </div>
-              )}
+              </div>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold mb-1">
                   {firstName}&apos;s {activity.type} on {activityDateShort}
@@ -221,9 +264,16 @@ export default async function ActivityPage({
                 <h2 className="text-xl mb-2">
                   {activity.name || "Untitled Activity"}
                 </h2>
-                <p className="text-sm text-base-content/60">
-                  Imported from Strava™ • {activityTime}
-                </p>
+                <div className="flex items-center gap-3">
+                  <p className="text-sm text-base-content/60">
+                    Imported from Strava™ • {activityTime}
+                  </p>
+                  {!showRealProfile && (
+                    <span className="badge badge-ghost badge-sm">
+                      Private Profile
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -408,6 +458,15 @@ export default async function ActivityPage({
               </div>
             </div>
           </div>
+        )}
+
+        {/* Privacy Settings - Only visible to owner */}
+        {isOwner && (
+          <ActivityPrivacyToggle
+            activityId={activity.id}
+            userName={activity.user.name}
+            initialIsPublic={activity.isPublicProfile}
+          />
         )}
 
         {/* Back to Dashboard */}
