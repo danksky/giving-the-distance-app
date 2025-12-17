@@ -3,6 +3,7 @@ import Link from "next/link";
 import fs from "fs";
 import path from "path";
 import LightboxImage from "@/components/LightboxImage";
+import type { Metadata } from "next";
 
 interface SponsorProfile {
   id: string;
@@ -83,6 +84,51 @@ function extractIframeSrc(maybeIframeOrUrl?: string) {
     return trimmed;
   const match = trimmed.match(/src\s*=\s*"([^"]+)"/i);
   return match?.[1] ?? null;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const profile = await getSponsorProfile(slug);
+
+  if (!profile) {
+    return {
+      title: "Sponsor Not Found | Giving the Distance",
+    };
+  }
+
+  const title = `${profile.businessName} | Giving the Distance Sponsor`;
+  const description = profile.blurb;
+
+  // Get base URL from environment or use Vercel URL
+  const baseUrl =
+    process.env.NEXTAUTH_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "https://givingthedistance.com";
+
+  const coverImageUrl = profile.images.cover
+    ? `${baseUrl}${profile.images.cover}`
+    : undefined;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: coverImageUrl ? [{ url: coverImageUrl }] : [],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: coverImageUrl ? [coverImageUrl] : [],
+    },
+  };
 }
 
 export default async function SponsorProfilePage({
