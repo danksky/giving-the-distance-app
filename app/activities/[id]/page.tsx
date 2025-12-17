@@ -136,20 +136,29 @@ export default async function ActivityPage({
     : "0.00";
 
   // Calculate pace (min/km and min/mi)
-  const paceMinPerKm =
-    activity.movingTimeSeconds && activity.distanceMeters
-      ? (
-          activity.movingTimeSeconds /
-          (Number(activity.distanceMeters) / 1000)
-        ).toFixed(0)
+  // Pace is in seconds per km/mi, need to convert to min:sec format
+  const paceSecondsPerKm =
+    activity.movingTimeSeconds && activity.distanceMeters && Number(activity.distanceMeters) > 0
+      ? activity.movingTimeSeconds / (Number(activity.distanceMeters) / 1000)
       : null;
-  const paceMinPerMi =
-    activity.movingTimeSeconds && activity.distanceMeters
-      ? (
-          activity.movingTimeSeconds /
-          (Number(activity.distanceMeters) / 1609.34)
-        ).toFixed(0)
+  
+  const paceSecondsPerMi =
+    activity.movingTimeSeconds && activity.distanceMeters && Number(activity.distanceMeters) > 0
+      ? activity.movingTimeSeconds / (Number(activity.distanceMeters) / 1609.34)
       : null;
+
+  // Format pace as min:sec
+  const paceMinPerKm = paceSecondsPerKm
+    ? `${Math.floor(paceSecondsPerKm / 60)}:${Math.floor(paceSecondsPerKm % 60)
+        .toString()
+        .padStart(2, "0")}`
+    : null;
+
+  const paceMinPerMi = paceSecondsPerMi
+    ? `${Math.floor(paceSecondsPerMi / 60)}:${Math.floor(paceSecondsPerMi % 60)
+        .toString()
+        .padStart(2, "0")}`
+    : null;
 
   // Format moving time
   const movingTime = activity.movingTimeSeconds
@@ -264,56 +273,6 @@ export default async function ActivityPage({
           </div>
         </div>
 
-        {/* Activity Stats */}
-        <div className="card bg-base-100 shadow-xl mb-6">
-          <div className="card-body">
-            <h3 className="card-title mb-4">Activity Details</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Distance */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Distance</div>
-                <div className="stat-value text-2xl">{distanceKm}</div>
-                <div className="stat-desc">km ({distanceMi} mi)</div>
-              </div>
-
-              {/* Time */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Time</div>
-                <div className="stat-value text-2xl">{movingTime}</div>
-                <div className="stat-desc">moving time</div>
-              </div>
-
-              {/* Pace */}
-              {paceMinPerKm && (
-                <div className="stat bg-base-200 rounded-lg p-4">
-                  <div className="stat-title">Pace</div>
-                  <div className="stat-value text-2xl">
-                    {Math.floor(Number(paceMinPerKm))}:
-                    {(
-                      ((Number(paceMinPerKm) % 1) * 60).toFixed(0) as string
-                    ).padStart(2, "0")}
-                  </div>
-                  <div className="stat-desc">
-                    min/km (
-                    {paceMinPerMi &&
-                      `${Math.floor(Number(paceMinPerMi))}:${(
-                        ((Number(paceMinPerMi) % 1) * 60).toFixed(0) as string
-                      ).padStart(2, "0")} min/mi`}
-                    )
-                  </div>
-                </div>
-              )}
-
-              {/* Elevation */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Elevation Gain</div>
-                <div className="stat-value text-2xl">{elevationM}</div>
-                <div className="stat-desc">m ({elevationFt} ft)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Donation Impact Card - Only show if sponsored */}
         {hasSponsorship ? (
           <div className="relative rounded-lg shadow-xl mb-6 overflow-hidden">
@@ -417,6 +376,46 @@ export default async function ActivityPage({
             </div>
           </div>
         )}
+
+        {/* Activity Stats */}
+        <div className="card bg-base-100 shadow-xl mb-6">
+          <div className="card-body">
+            <h3 className="card-title mb-4">Activity Details</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Distance */}
+              <div className="stat bg-base-200 rounded-lg p-4">
+                <div className="stat-title">Distance</div>
+                <div className="stat-value text-2xl">{distanceKm}</div>
+                <div className="stat-desc">km ({distanceMi} mi)</div>
+              </div>
+
+              {/* Time */}
+              <div className="stat bg-base-200 rounded-lg p-4">
+                <div className="stat-title">Time</div>
+                <div className="stat-value text-2xl">{movingTime}</div>
+                <div className="stat-desc">moving time</div>
+              </div>
+
+              {/* Pace */}
+              {paceMinPerKm && (
+                <div className="stat bg-base-200 rounded-lg p-4">
+                  <div className="stat-title">Pace</div>
+                  <div className="stat-value text-2xl">{paceMinPerKm}</div>
+                  <div className="stat-desc">
+                    min/km ({paceMinPerMi} min/mi)
+                  </div>
+                </div>
+              )}
+
+              {/* Elevation */}
+              <div className="stat bg-base-200 rounded-lg p-4">
+                <div className="stat-title">Elevation Gain</div>
+                <div className="stat-value text-2xl">{elevationM}</div>
+                <div className="stat-desc">m ({elevationFt} ft)</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Additional Activity Info */}
         {(activity.timezone || activity.isManual) && (
