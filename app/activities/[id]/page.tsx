@@ -19,37 +19,6 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
 
-// Helper function to get emoji for activity type
-function getActivityEmoji(type: string): string {
-  const emojiMap: Record<string, string> = {
-    Run: "🏃",
-    Ride: "🚴",
-    Swim: "🏊",
-    Walk: "🚶",
-    Hike: "🥾",
-    AlpineSki: "⛷️",
-    BackcountrySki: "⛷️",
-    NordicSki: "⛷️",
-    Snowboard: "🏂",
-    IceSkate: "⛸️",
-    InlineSkate: "⛸️",
-    Kayaking: "🛶",
-    Canoeing: "🛶",
-    Rowing: "🚣",
-    StandUpPaddling: "🏄",
-    Surfing: "🏄",
-    Windsurf: "🏄",
-    Kitesurf: "🪂",
-    WeightTraining: "🏋️",
-    Workout: "💪",
-    Yoga: "🧘",
-    RockClimbing: "🧗",
-    VirtualRide: "🚴",
-    VirtualRun: "🏃",
-  };
-  return emojiMap[type] || "🏃";
-}
-
 async function getActivity(id: string) {
   try {
     const activity = await db.activity.findUnique({
@@ -177,15 +146,15 @@ export default async function ActivityPage({
     ? `${(Number(activity.totalElevationGain) * 3.28084).toFixed(0)}`
     : "0";
 
-  // Format date
-  const activityDate = activity.startDateLocal
+  // Format for header: "[First name] [activity] on [Month Day], [year]"
+  const firstName = activity.user.name?.split(" ")[0] || "Athlete";
+  const activityDateShort = activity.startDateLocal
     ? new Date(activity.startDateLocal).toLocaleDateString("en-US", {
-        weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric",
       })
-    : "—";
+    : "Unknown date";
 
   const activityTime = activity.startDateLocal
     ? new Date(activity.startDateLocal).toLocaleTimeString("en-US", {
@@ -229,11 +198,11 @@ export default async function ActivityPage({
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Activity Header Card */}
+        {/* Activity Header Card with Stats */}
         <div className="card bg-base-100 shadow-xl mb-6">
           <div className="card-body">
-            {/* Athlete Info */}
-            <div className="flex items-center gap-4 mb-4">
+            {/* Activity Header */}
+            <div className="flex items-start gap-4 mb-6">
               {activity.user.image ? (
                 <div className="avatar">
                   <div className="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
@@ -254,24 +223,51 @@ export default async function ActivityPage({
                   </div>
                 </div>
               )}
-              <div>
-                <h2 className="text-2xl font-bold">{activity.user.name}</h2>
-                <p className="text-base-content/60">
-                  {activityDate} at {activityTime}
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold mb-1">
+                  {firstName}&apos;s {activity.type} on {activityDateShort}
+                </h1>
+                <h2 className="text-xl mb-2">
+                  {activity.name || "Untitled Activity"}
+                </h2>
+                <p className="text-sm text-base-content/60">
+                  Imported from Strava™ • {activityTime}
                 </p>
               </div>
             </div>
 
-            {/* Activity Title */}
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-4xl">
-                {getActivityEmoji(activity.type)}
-              </span>
-              <div>
-                <h1 className="text-3xl font-bold">
-                  {activity.name || "Untitled Activity"}
-                </h1>
-                <p className="text-xl text-base-content/60">{activity.type}</p>
+            {/* Activity Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Distance */}
+              <div className="stat bg-base-200 rounded-lg p-4">
+                <div className="stat-title">Distance</div>
+                <div className="stat-value text-2xl">{distanceKm}</div>
+                <div className="stat-desc">km ({distanceMi} mi)</div>
+              </div>
+
+              {/* Time */}
+              <div className="stat bg-base-200 rounded-lg p-4">
+                <div className="stat-title">Time</div>
+                <div className="stat-value text-2xl">{movingTime}</div>
+                <div className="stat-desc">moving time</div>
+              </div>
+
+              {/* Pace */}
+              {paceMinPerKm && (
+                <div className="stat bg-base-200 rounded-lg p-4">
+                  <div className="stat-title">Pace</div>
+                  <div className="stat-value text-2xl">{paceMinPerKm}</div>
+                  <div className="stat-desc">
+                    min/km ({paceMinPerMi} min/mi)
+                  </div>
+                </div>
+              )}
+
+              {/* Elevation */}
+              <div className="stat bg-base-200 rounded-lg p-4">
+                <div className="stat-title">Elevation Gain</div>
+                <div className="stat-value text-2xl">{elevationM}</div>
+                <div className="stat-desc">m ({elevationFt} ft)</div>
               </div>
             </div>
           </div>
@@ -340,7 +336,7 @@ export default async function ActivityPage({
                     </div>
                     <Link
                       href={`/sponsors/${sponsorSlug}`}
-                      className="btn btn-outline btn-sm btn-primary"
+                      className="btn btn-primary btn-sm"
                     >
                       View Sponsor
                     </Link>
@@ -381,48 +377,8 @@ export default async function ActivityPage({
           </div>
         )}
 
-        {/* Activity Stats */}
-        <div className="card bg-base-100 shadow-xl mb-6">
-          <div className="card-body">
-            <h3 className="card-title mb-4">Activity Details</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Distance */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Distance</div>
-                <div className="stat-value text-2xl">{distanceKm}</div>
-                <div className="stat-desc">km ({distanceMi} mi)</div>
-              </div>
-
-              {/* Time */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Time</div>
-                <div className="stat-value text-2xl">{movingTime}</div>
-                <div className="stat-desc">moving time</div>
-              </div>
-
-              {/* Pace */}
-              {paceMinPerKm && (
-                <div className="stat bg-base-200 rounded-lg p-4">
-                  <div className="stat-title">Pace</div>
-                  <div className="stat-value text-2xl">{paceMinPerKm}</div>
-                  <div className="stat-desc">
-                    min/km ({paceMinPerMi} min/mi)
-                  </div>
-                </div>
-              )}
-
-              {/* Elevation */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Elevation Gain</div>
-                <div className="stat-value text-2xl">{elevationM}</div>
-                <div className="stat-desc">m ({elevationFt} ft)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Additional Activity Info */}
-        {(activity.timezone || activity.isManual) && (
+        {(activity.timezone || activity.isManual || activity.isPrivate) && (
           <div className="card bg-base-100 shadow-xl mb-6">
             <div className="card-body">
               <h3 className="card-title mb-2">Additional Information</h3>
@@ -435,11 +391,19 @@ export default async function ActivityPage({
                     </span>
                   </div>
                 )}
-                {activity.isManual && (
-                  <div className="badge badge-outline">Manually Entered</div>
-                )}
-                {activity.isPrivate && (
-                  <div className="badge badge-outline">Private Activity</div>
+                {(activity.isManual || activity.isPrivate) && (
+                  <div className="flex items-center gap-2">
+                    {activity.isManual && (
+                      <div className="badge badge-outline">
+                        Manually Entered
+                      </div>
+                    )}
+                    {activity.isPrivate && (
+                      <div className="badge badge-outline">
+                        Private Activity
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
