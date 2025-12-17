@@ -11,8 +11,8 @@ export default async function SignInPage() {
   }
 
   return (
-    <div className="hero min-h-screen bg-base-200">
-      <div className="hero-content flex-col">
+    <div className="flex min-h-screen bg-base-200 items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
         <div className="card bg-base-100  w-full max-w-md">
           <div className="card-body">
             <h1 className="card-title text-3xl justify-center mb-2">

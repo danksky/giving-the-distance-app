@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 import { isAdmin } from "@/lib/auth-helpers";
 import Link from "next/link";
 import Image from "next/image";
@@ -57,7 +57,16 @@ export default async function Navbar() {
                 <Link href="/settings">Settings</Link>
               </li>
               <li>
-                <Link href="/api/auth/signout">Sign Out</Link>
+                <form
+                  action={async () => {
+                    "use server";
+                    await signOut({ redirectTo: "/" });
+                  }}
+                >
+                  <button type="submit" className="w-full text-left">
+                    Sign Out
+                  </button>
+                </form>
               </li>
             </ul>
           </div>
