@@ -56,6 +56,17 @@ async function getActivity(id: string) {
       where: { id },
       include: {
         user: true,
+        charityCommitments: {
+          include: {
+            charity: true,
+            campaign: {
+              include: {
+                sponsor: true,
+              },
+            },
+          },
+          take: 1, // Should only be one commitment per activity
+        },
       },
     });
 
@@ -170,16 +181,20 @@ export default async function ActivityPage({
       })
     : "—";
 
-  // Get the charity that was selected at the time of this activity
-  const activityCharity = await getCharityAtTime(
+  // Get the charity commitment for this activity (if sponsored)
+  const commitment = activity.charityCommitments?.[0];
+  const hasSponsorship = !!commitment;
+
+  // Get charity - either from commitment or fallback to user's charity at time of activity
+  const activityCharity = commitment?.charity || await getCharityAtTime(
     activity.userId,
     activity.startDateLocal || activity.createdAt
   );
 
-  // Hard-coded values for sponsor (for now)
-  const sponsorName = "Balkan Grind";
-  const sponsorSlug = "balkan-grind-brooklyn-nyc";
-  const donationAmount = 25.0; // Hard-coded donation amount
+  // Get sponsor data from commitment
+  const sponsorName = commitment?.campaign.sponsor.businessName;
+  const sponsorSlug = commitment?.campaign.sponsor.slug;
+  const donationAmount = commitment ? commitment.amountCents / 100 : 0;
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -297,76 +312,109 @@ export default async function ActivityPage({
           </div>
         </div>
 
-        {/* Donation Impact Card */}
-        <div className="relative rounded-lg shadow-xl mb-6 overflow-hidden">
-          {/* Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#af2878] via-[#d68bb5] to-[#f3dce8] opacity-90"></div>
+        {/* Donation Impact Card - Only show if sponsored */}
+        {hasSponsorship ? (
+          <div className="relative rounded-lg shadow-xl mb-6 overflow-hidden">
+            {/* Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#af2878] via-[#d68bb5] to-[#f3dce8] opacity-90"></div>
 
-          {/* Content overlay */}
-          <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg m-1 p-6 shadow-md">
-            <h3 className="text-2xl font-bold mb-4">💝 Impact</h3>
+            {/* Content overlay */}
+            <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg m-1 p-6 shadow-md">
+              <h3 className="text-2xl font-bold mb-4">💝 Impact</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Charity Section */}
-              <div>
-                <div className="text-sm font-semibold text-base-content/60 mb-2">
-                  BENEFITING CHARITY
-                </div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="text-4xl">
-                    {activityCharity?.emoji || "🌍"}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Charity Section */}
+                <div>
+                  <div className="text-sm font-semibold text-base-content/60 mb-2">
+                    BENEFITING CHARITY
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-[#af2878]">
-                      {activityCharity?.name || "UNICEF"}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="text-4xl">
+                      {activityCharity?.emoji || "🌍"}
                     </div>
-                    <div className="text-sm text-base-content/60">
-                      {activityCharity?.fullName ||
-                        "United Nations Children's Fund"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Donation Amount */}
-              <div>
-                <div className="text-sm font-semibold text-base-content/60 mb-2">
-                  AMOUNT DONATED
-                </div>
-                <div className="text-5xl font-bold text-[#af2878] mb-2">
-                  ${donationAmount.toFixed(2)}
-                </div>
-                <div className="text-sm text-base-content/60">
-                  Generated from this activity
-                </div>
-              </div>
-            </div>
-
-            {/* Sponsor Section */}
-            <div className="mt-6 pt-6 border-t border-base-300">
-              <div className="text-sm font-semibold text-base-content/60 mb-3">
-                MADE POSSIBLE BY
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl">🏪</div>
-                  <div>
-                    <div className="text-xl font-bold">{sponsorName}</div>
-                    <div className="text-sm text-base-content/60">
-                      Local Business Sponsor
+                    <div>
+                      <div className="text-2xl font-bold text-[#af2878]">
+                        {activityCharity?.name || "Charity"}
+                      </div>
+                      <div className="text-sm text-base-content/60">
+                        {activityCharity?.fullName || ""}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <Link
-                  href={`/sponsors/${sponsorSlug}`}
-                  className="btn btn-outline btn-sm btn-primary"
-                >
-                  View Sponsor
-                </Link>
+
+                {/* Donation Amount */}
+                <div>
+                  <div className="text-sm font-semibold text-base-content/60 mb-2">
+                    COMMITMENT AMOUNT
+                  </div>
+                  <div className="text-5xl font-bold text-[#af2878] mb-2">
+                    ${donationAmount.toFixed(2)}
+                  </div>
+                  <div className="text-sm text-base-content/60">
+                    Generated from this activity
+                  </div>
+                </div>
               </div>
+
+              {/* Sponsor Section */}
+              {sponsorName && sponsorSlug && (
+                <div className="mt-6 pt-6 border-t border-base-300">
+                  <div className="text-sm font-semibold text-base-content/60 mb-3">
+                    MADE POSSIBLE BY
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">🏪</div>
+                      <div>
+                        <div className="text-xl font-bold">{sponsorName}</div>
+                        <div className="text-sm text-base-content/60">
+                          Local Business Sponsor
+                        </div>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/sponsors/${sponsorSlug}`}
+                      className="btn btn-outline btn-sm btn-primary"
+                    >
+                      View Sponsor
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        ) : (
+          /* No Sponsorship Card */
+          <div className="card bg-base-100 shadow-xl mb-6">
+            <div className="card-body">
+              <h3 className="text-xl font-bold mb-2">💝 Impact</h3>
+              <p className="text-base-content/70">
+                This activity has not been matched with a sponsor yet. New
+                activities are automatically matched when sponsors have
+                available budget.
+              </p>
+              {activityCharity && (
+                <div className="mt-4 p-4 bg-base-200 rounded-lg">
+                  <div className="text-sm font-semibold text-base-content/60 mb-2">
+                    YOUR SELECTED CHARITY
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">{activityCharity.emoji}</div>
+                    <div>
+                      <div className="text-lg font-bold">
+                        {activityCharity.name}
+                      </div>
+                      <div className="text-sm text-base-content/60">
+                        {activityCharity.fullName}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Additional Activity Info */}
         {(activity.timezone || activity.isManual) && (
