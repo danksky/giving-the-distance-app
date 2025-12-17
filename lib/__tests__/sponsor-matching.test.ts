@@ -96,6 +96,8 @@ describe('Sponsor Matching Service', () => {
       expect(db.placementLog.findUnique).toHaveBeenCalledWith({
         where: { activityId: mockActivity.id },
       });
+      // Verify that Strava API was never called (already sponsored = no re-update)
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it('should skip if no active campaign available', async () => {
@@ -129,6 +131,8 @@ describe('Sponsor Matching Service', () => {
           decrementCents: 0,
         }),
       });
+      // Verify that Strava API was never called (no campaign = no description update)
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it('should skip if campaign has insufficient budget', async () => {
@@ -158,6 +162,8 @@ describe('Sponsor Matching Service', () => {
           decrementCents: 0,
         }),
       });
+      // Verify that Strava API was never called (no budget = no description update)
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it('should skip if Strava API fetch fails', async () => {
