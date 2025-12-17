@@ -186,10 +186,12 @@ export default async function ActivityPage({
   const hasSponsorship = !!commitment;
 
   // Get charity - either from commitment or fallback to user's charity at time of activity
-  const activityCharity = commitment?.charity || await getCharityAtTime(
-    activity.userId,
-    activity.startDateLocal || activity.createdAt
-  );
+  const activityCharity =
+    commitment?.charity ||
+    (await getCharityAtTime(
+      activity.userId,
+      activity.startDateLocal || activity.createdAt
+    ));
 
   // Get sponsor data from commitment
   const sponsorName = commitment?.campaign.sponsor.businessName;
