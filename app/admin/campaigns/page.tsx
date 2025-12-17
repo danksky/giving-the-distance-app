@@ -452,11 +452,13 @@ export default async function CampaignsPage() {
                             href={`/activities/${log.activity.id}`}
                             className="link link-primary text-xs font-mono"
                           >
-                            {log.stravaActivityId.toString().substring(0, 10)}...
+                            {log.stravaActivityId.toString().substring(0, 10)}
+                            ...
                           </Link>
                         ) : (
                           <span className="text-xs font-mono opacity-40">
-                            {log.stravaActivityId.toString().substring(0, 10)}...
+                            {log.stravaActivityId.toString().substring(0, 10)}
+                            ...
                           </span>
                         )}
                       </td>
