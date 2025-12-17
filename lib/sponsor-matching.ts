@@ -367,7 +367,7 @@ async function buildSponsorMessage(
   });
   
   const shortcode = dbActivity?.shortcode || 'xxxxx';
-  const activityUrl = `givingthedistance.org/a/${shortcode}`;
+  const activityUrl = `beta.givingthedistance.org/a/${shortcode}`;
 
   const message = `${firstName}'s ${activityType} inspired ${sponsorName} to donate to ${firstName}'s chosen charity, ${charityName} - ${activityUrl} ${GTD_MARKER}`;
   
