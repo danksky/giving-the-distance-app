@@ -102,6 +102,7 @@ model Activity {
   id                   String    @id @default(cuid())
   userId               String
   stravaActivityId     BigInt    @unique
+  shortcode            String?   @unique // 5-character shortcode for public URLs
   name                 String?
   type                 String    // Run, Ride, Swim, Walk, etc.
   distanceMeters       Decimal?  @db.Decimal(10, 2)
@@ -125,6 +126,7 @@ model Activity {
   @@index([startDate(sort: Desc)])
   @@index([type])
   @@index([deletedAt]) // Index for filtering deleted activities
+  @@index([shortcode]) // Index for shortcode lookups
   @@map("activities")
 }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getValidStravaToken } from "@/lib/strava-token-refresh";
 import { matchActivityWithSponsor } from "@/lib/sponsor-matching";
+import { generateUniqueShortcode } from "@/lib/shortcode";
 
 /**
  * Strava Webhook Endpoint
@@ -160,6 +161,13 @@ export async function POST(request: NextRequest) {
         const activity = await activityResponse.json();
         console.log('📊 Activity data:', JSON.stringify(activity, null, 2));
 
+        // Generate unique shortcode for new activities
+        const shortcode = await generateUniqueShortcode();
+        
+        if (!shortcode) {
+          console.error('⚠️ Failed to generate unique shortcode for activity');
+        }
+
         // Store or update activity in database (use upsert to handle duplicates)
         const savedActivity = await db.activity.upsert({
           where: {
@@ -168,6 +176,7 @@ export async function POST(request: NextRequest) {
           create: {
             userId: stravaAthlete.userId,
             stravaActivityId: BigInt(activity.id),
+            shortcode: shortcode || undefined, // Use generated shortcode
             name: activity.name,
             type: activity.type,
             distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
@@ -202,6 +211,7 @@ export async function POST(request: NextRequest) {
             isManual: activity.manual || false,
             isPrivate: activity.private || false,
             deletedAt: null, // If activity was previously deleted and is now re-created, undelete it
+            // Don't update shortcode on update - keep original
           },
         });
 

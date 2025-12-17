@@ -108,38 +108,7 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 4: Update Strava activity description
-    const updateResult = await updateStravaDescription(
-      activity,
-      campaign,
-      accessToken
-    );
-
-    if (!updateResult.success) {
-      // Log as SKIPPED_UPDATE_FAILED
-      const placementLog = await db.placementLog.create({
-        data: {
-          activityId: activity.id,
-          stravaActivityId: activity.stravaActivityId,
-          athleteId: activity.athleteId,
-          stravaAthleteId: activity.stravaAthleteId,
-          campaignId: campaign.id,
-          result: PlacementResult.SKIPPED_UPDATE_FAILED,
-          decrementCents: 0,
-          notes: `Failed to update Strava description: ${updateResult.error}`,
-        },
-      });
-
-      return {
-        success: false,
-        result: PlacementResult.SKIPPED_UPDATE_FAILED,
-        placementLogId: placementLog.id,
-        campaignId: campaign.id,
-        error: updateResult.error,
-      };
-    }
-
-    // Step 5: Get user's selected charity
+    // Step 4: Get user's selected charity and athlete info for description
     const user = await db.user.findUnique({
       where: { id: activity.userId },
       select: { selectedCharityId: true },
@@ -169,8 +138,52 @@ export async function matchActivityWithSponsor(
       };
     }
 
+    // Get charity details and athlete name for description
+    const charity = await db.charity.findUnique({
+      where: { id: user.selectedCharityId },
+      select: { name: true },
+    });
+
+    const athlete = await db.stravaAthlete.findUnique({
+      where: { id: activity.athleteId },
+      select: { firstname: true },
+    });
+
+    // Step 5: Update Strava activity description
+    const updateResult = await updateStravaDescription(
+      activity,
+      campaign,
+      accessToken,
+      athlete?.firstname || null,
+      charity?.name || 'charity'
+    );
+
+    if (!updateResult.success) {
+      // Log as SKIPPED_UPDATE_FAILED
+      const placementLog = await db.placementLog.create({
+        data: {
+          activityId: activity.id,
+          stravaActivityId: activity.stravaActivityId,
+          athleteId: activity.athleteId,
+          stravaAthleteId: activity.stravaAthleteId,
+          campaignId: campaign.id,
+          result: PlacementResult.SKIPPED_UPDATE_FAILED,
+          decrementCents: 0,
+          notes: `Failed to update Strava description: ${updateResult.error}`,
+        },
+      });
+
+      return {
+        success: false,
+        result: PlacementResult.SKIPPED_UPDATE_FAILED,
+        placementLogId: placementLog.id,
+        campaignId: campaign.id,
+        error: updateResult.error,
+      };
+    }
+
     // Step 6: Everything successful - create records in transaction
-    const selectedCharityId = user.selectedCharityId; // Already verified to be non-null above
+    const selectedCharityId = user.selectedCharityId;
     
     const result = await db.$transaction(async (tx) => {
       // Decrement campaign budget
@@ -263,7 +276,9 @@ async function findActiveCampaign() {
 async function updateStravaDescription(
   activity: ActivityData,
   campaign: any,
-  accessToken: string
+  accessToken: string,
+  athleteName: string | null,
+  charityName: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Fetch current activity details from Strava to get description
@@ -294,7 +309,7 @@ async function updateStravaDescription(
     }
 
     // Build sponsor message
-    const sponsorMessage = buildSponsorMessage(activity, campaign);
+    const sponsorMessage = await buildSponsorMessage(activity, campaign, athleteName, charityName);
 
     // Append to existing description
     const newDescription = currentDescription
@@ -335,18 +350,26 @@ async function updateStravaDescription(
 /**
  * Build the sponsor message to append to activity description
  */
-function buildSponsorMessage(activity: ActivityData, campaign: any): string {
+async function buildSponsorMessage(
+  activity: ActivityData,
+  campaign: any,
+  athleteName: string | null,
+  charityName: string
+): Promise<string> {
+  const firstName = athleteName?.split(' ')[0] || 'An athlete';
   const activityType = activity.type?.toLowerCase() || 'activity';
   const sponsorName = campaign.sponsor.businessName;
-  const sponsorWebsite = campaign.sponsor.website;
+  
+  // Get activity from database to get shortcode
+  const dbActivity = await db.activity.findUnique({
+    where: { id: activity.id },
+    select: { shortcode: true },
+  });
+  
+  const shortcode = dbActivity?.shortcode || 'xxxxx';
+  const activityUrl = `givingthedistance.org/a/${shortcode}`;
 
-  let message = `This ${activityType} inspired a donation by Giving the Distance, sponsored by ${sponsorName}`;
-  
-  if (sponsorWebsite) {
-    message += ` - ${sponsorWebsite}`;
-  }
-  
-  message += ` ${GTD_MARKER}`;
+  const message = `${firstName}'s ${activityType} inspired ${sponsorName} to donate to ${firstName}'s chosen charity, ${charityName} - ${activityUrl} ${GTD_MARKER}`;
   
   return message;
 }
