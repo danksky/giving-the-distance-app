@@ -4,6 +4,7 @@ import { isAdmin } from "@/lib/auth-helpers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SponsorMatchResult } from "@prisma/client";
+import Navbar from "@/components/Navbar";
 
 // Force dynamic rendering - don't cache this page
 export const dynamic = "force-dynamic";
@@ -127,20 +128,21 @@ export default async function CampaignsPage() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 ">
-        <div className="flex-1 max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-2xl font-bold">Campaign Management</h1>
-        </div>
-        <div className="flex-none gap-2 px-4">
-          <span className="text-sm opacity-70">
-            Admin: {session.user.email}
-          </span>
-          <Link href="/admin/webhooks" className="btn btn-ghost btn-sm">
-            Webhooks
-          </Link>
-          <Link href="/dashboard" className="btn btn-ghost btn-sm">
-            Dashboard
-          </Link>
+      <Navbar />
+
+      {/* Breadcrumb */}
+      <div className="bg-base-100 border-b border-base-300">
+        <div className="container mx-auto max-w-7xl px-4 py-3">
+          <div className="text-sm breadcrumbs">
+            <ul>
+              <li>
+                <Link href="/admin" className="link link-hover">
+                  Admin Home
+                </Link>
+              </li>
+              <li className="font-semibold">Campaign Management</li>
+            </ul>
+          </div>
         </div>
       </div>
 

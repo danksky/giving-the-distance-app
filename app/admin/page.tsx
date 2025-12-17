@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { isAdmin } from "@/lib/auth-helpers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 export default async function AdminPage() {
   // Check authentication
@@ -40,21 +41,10 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100">
-        <div className="flex-1 max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        </div>
-        <div className="flex-none gap-2 px-4">
-          <span className="text-sm opacity-70">
-            Admin: {session.user.email}
-          </span>
-          <Link href="/dashboard" className="btn btn-ghost btn-sm">
-            User Dashboard
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       <main className="container mx-auto max-w-7xl px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Campaigns Card */}
           <Link

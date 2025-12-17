@@ -1,10 +1,10 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import CharitySelector from "@/components/CharitySelector";
 import CharityLogo from "@/components/CharityLogo";
+import Navbar from "@/components/Navbar";
 
 export default async function CharitySettingsPage() {
   const session = await auth();
@@ -31,50 +31,7 @@ export default async function CharitySettingsPage() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100">
-        <div className="flex-1">
-          <Link href="/" className="btn btn-ghost text-xl">
-            Giving the Distance
-          </Link>
-        </div>
-        <div className="flex-none gap-2">
-          <Link href="/dashboard" className="btn btn-ghost btn-sm">
-            Dashboard
-          </Link>
-          <Link href="/settings" className="btn btn-ghost btn-sm">
-            Settings
-          </Link>
-          <div className="dropdown dropdown-end">
-            <button tabIndex={0} className="btn btn-ghost btn-circle">
-              {session.user.image ? (
-                <Image
-                  src={session.user.image}
-                  alt={session.user.name || "User"}
-                  width={40}
-                  height={40}
-                  className="rounded-full w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-lg">
-                  {session.user.name?.charAt(0) || "U"}
-                </span>
-              )}
-            </button>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
-            >
-              <li className="menu-title">{session.user.email}</li>
-              <li>
-                <Link href="/settings">Settings</Link>
-              </li>
-              <li>
-                <Link href="/api/auth/signout">Sign Out</Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-4xl">

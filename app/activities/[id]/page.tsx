@@ -4,6 +4,7 @@ import Image from "next/image";
 import { db } from "@/lib/db";
 import { getCharityAtTime } from "@/lib/charity-helpers";
 import CharityLogo from "@/components/CharityLogo";
+import Navbar from "@/components/Navbar";
 import type { Metadata } from "next";
 
 // Helper function to format duration in seconds to HH:MM:SS
@@ -184,18 +185,7 @@ export default async function ActivityPage({
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 ">
-        <div className="flex-1">
-          <Link href="/" className="btn btn-ghost text-xl">
-            Giving the Distance
-          </Link>
-        </div>
-        <div className="flex-none gap-2">
-          <Link href="/dashboard" className="btn btn-ghost btn-sm">
-            Dashboard
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-4xl">

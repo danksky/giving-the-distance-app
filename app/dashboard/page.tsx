@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { isAdmin } from "@/lib/auth-helpers";
+import Navbar from "@/components/Navbar";
 
 // Helper function to format duration in seconds to HH:MM:SS
 function formatDuration(seconds: number): string {
@@ -17,12 +17,6 @@ function formatDuration(seconds: number): string {
       .padStart(2, "0")}`;
   }
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
-}
-
-// Helper function to format activity type for display
-function formatActivityType(type: string): string {
-  // Convert camelCase to Title Case with spaces
-  return type.replace(/([A-Z])/g, " $1").trim();
 }
 
 export default async function DashboardPage({
@@ -59,62 +53,11 @@ export default async function DashboardPage({
 
   const hasStrava = (user?.accounts.length ?? 0) > 0;
   const activities = user?.activities ?? [];
-  const userIsAdmin = isAdmin(session.user.email!);
 
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100">
-        <div className="flex-1">
-          <Link href="/" className="btn btn-ghost text-xl">
-            Giving the Distance
-          </Link>
-        </div>
-        <div className="flex-none gap-2">
-          {userIsAdmin && (
-            <Link href="/admin" className="btn btn-ghost btn-sm">
-              Admin
-            </Link>
-          )}
-          <Link href="/settings" className="btn btn-ghost btn-sm">
-            Settings
-          </Link>
-          <div className="dropdown dropdown-end">
-            <button tabIndex={0} className="btn btn-ghost btn-circle">
-              {session.user.image ? (
-                <Image
-                  src={session.user.image}
-                  alt={session.user.name || "User"}
-                  width={40}
-                  height={40}
-                  className="rounded-full w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-lg">
-                  {session.user.name?.charAt(0) || "U"}
-                </span>
-              )}
-            </button>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
-            >
-              <li className="menu-title">{session.user.email}</li>
-              {userIsAdmin && (
-                <li>
-                  <Link href="/admin">Admin Dashboard</Link>
-                </li>
-              )}
-              <li>
-                <Link href="/settings">Settings</Link>
-              </li>
-              <li>
-                <Link href="/api/auth/signout">Sign Out</Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-7xl">
@@ -347,15 +290,15 @@ export default async function DashboardPage({
             <div className="stats stats-vertical lg:stats-horizontal">
               <div className="stat">
                 <div className="stat-title">Email</div>
-                <div className="stat-value text-sm">{session.user.email}</div>
+                <div className="font-medium">{session.user.email}</div>
               </div>
               <div className="stat">
                 <div className="stat-title">Name</div>
-                <div className="stat-value text-sm">{session.user.name}</div>
+                <div className="font-medium">{session.user.name}</div>
               </div>
               <div className="stat">
                 <div className="stat-title">Google</div>
-                <div className="stat-value text-sm flex items-center gap-2">
+                <div className="font-medium flex items-center gap-2">
                   <Image
                     src="/logos/services/google.png"
                     alt="Google"
@@ -369,7 +312,7 @@ export default async function DashboardPage({
               <div className="stat">
                 <div className="stat-title">Strava</div>
                 <div
-                  className={`stat-value text-sm flex items-center gap-2 ${
+                  className={`font-medium flex items-center gap-2 ${
                     hasStrava ? "text-success" : "text-base-content opacity-40"
                   }`}
                 >
@@ -386,7 +329,7 @@ export default async function DashboardPage({
               {hasStrava && (
                 <div className="stat">
                   <div className="stat-title">Total Activities</div>
-                  <div className="stat-value text-sm">{activities.length}</div>
+                  <div className="font-medium">{activities.length}</div>
                 </div>
               )}
             </div>

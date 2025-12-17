@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Metadata } from "next";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Terms of Service - Giving the Distance",
@@ -11,13 +12,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 ">
-        <div className="flex-1 max-w-4xl mx-auto px-4">
-          <Link href="/" className="btn btn-ghost">
-            ← Back to Home
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Content */}
       <main className="container mx-auto max-w-4xl px-4 py-8">

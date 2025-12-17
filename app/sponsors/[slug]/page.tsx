@@ -3,6 +3,7 @@ import Link from "next/link";
 import fs from "fs";
 import path from "path";
 import LightboxImage from "@/components/LightboxImage";
+import Navbar from "@/components/Navbar";
 import type { Metadata } from "next";
 
 interface SponsorProfile {
@@ -152,13 +153,7 @@ export default async function SponsorProfilePage({
   return (
     <div className="min-h-screen bg-[#fff]">
       {/* Header */}
-      <div className="navbar bg-base-100 ">
-        <div className="flex-1">
-          <Link href="/" className="btn btn-ghost text-xl">
-            Giving the Distance
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-7xl">
