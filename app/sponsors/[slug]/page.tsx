@@ -158,7 +158,7 @@ export default async function SponsorProfilePage({
   return (
     <div className="min-h-screen bg-[#fff]">
       {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
+      <div className="navbar bg-base-100 ">
         <div className="flex-1">
           <Link href="/" className="btn btn-ghost text-xl">
             Giving the Distance
@@ -286,12 +286,12 @@ export default async function SponsorProfilePage({
         </div>
 
         {/* Impact Summary */}
-        <div className="relative rounded-lg shadow-lg p-6 mb-6 overflow-hidden">
+        <div className="relative rounded-lg  p-6 mb-6 overflow-hidden">
           {/* Gradient Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#af2878] via-[#d68bb5] to-[#f3dce8] opacity-90"></div>
 
           {/* Content overlay */}
-          <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg p-6 shadow-md">
+          <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg p-6 ">
             <h2 className="text-2xl font-bold mb-4">Impact Summary</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="stat bg-gradient-to-br from-[#af2878]/10 to-[#f3dce8]/30 rounded-lg p-4 border border-[#af2878]/20">
@@ -349,12 +349,12 @@ export default async function SponsorProfilePage({
         </div>
 
         {/* Recent Sponsored Activities */}
-        <div className="relative rounded-lg shadow-lg p-6 mb-6 overflow-hidden">
+        <div className="relative rounded-lg  p-6 mb-6 overflow-hidden">
           {/* Gradient Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#af2878] via-[#d68bb5] to-[#f3dce8] opacity-90"></div>
 
           {/* Content overlay */}
-          <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg p-6 shadow-md">
+          <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg p-6 ">
             <h2 className="text-2xl font-bold mb-4">
               Recent Sponsored Activities
             </h2>

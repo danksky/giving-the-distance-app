@@ -16,7 +16,7 @@ export default async function AdminPage() {
     return (
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content">
-          <div className="card bg-base-100 shadow-xl max-w-md">
+          <div className="card bg-base-100 max-w-md">
             <div className="card-body text-center">
               <div className="text-6xl mb-4">🔒</div>
               <h1 className="card-title text-2xl justify-center">
@@ -41,7 +41,7 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
+      <div className="navbar bg-base-100">
         <div className="flex-1 max-w-7xl mx-auto px-4 w-full">
           <h1 className="text-2xl font-bold">⚙️ Admin Dashboard</h1>
         </div>
@@ -60,7 +60,7 @@ export default async function AdminPage() {
           {/* Campaigns Card */}
           <Link
             href="/admin/campaigns"
-            className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
           >
             <div className="card-body">
               <div className="flex items-start justify-between">
@@ -80,7 +80,7 @@ export default async function AdminPage() {
           {/* Webhooks Card */}
           <Link
             href="/admin/webhooks"
-            className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
           >
             <div className="card-body">
               <div className="flex items-start justify-between">
@@ -102,7 +102,7 @@ export default async function AdminPage() {
             href="http://localhost:5555"
             target="_blank"
             rel="noopener noreferrer"
-            className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
           >
             <div className="card-body">
               <div className="flex items-start justify-between">
@@ -120,7 +120,7 @@ export default async function AdminPage() {
           </a>
 
           {/* System Info Card */}
-          <div className="card bg-base-100 shadow-xl">
+          <div className="card bg-base-100">
             <div className="card-body">
               <div className="flex items-start justify-between">
                 <div className="text-6xl">📊</div>
@@ -146,7 +146,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="card bg-base-100 shadow-xl mt-8">
+        <div className="card bg-base-100  mt-8">
           <div className="card-body">
             <h2 className="card-title text-2xl">⚡ Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
@@ -176,7 +176,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Documentation Links */}
-        <div className="card bg-base-100 shadow-xl mt-8">
+        <div className="card bg-base-100  mt-8">
           <div className="card-body">
             <h2 className="card-title text-2xl">📚 Documentation</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

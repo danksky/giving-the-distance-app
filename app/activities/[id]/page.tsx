@@ -183,7 +183,7 @@ export default async function ActivityPage({
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
+      <div className="navbar bg-base-100 ">
         <div className="flex-1">
           <Link href="/" className="btn btn-ghost text-xl">
             Giving the Distance
@@ -199,7 +199,7 @@ export default async function ActivityPage({
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Activity Header Card with Stats */}
-        <div className="card bg-base-100 shadow-xl mb-6">
+        <div className="card bg-base-100  mb-6">
           <div className="card-body">
             {/* Activity Header */}
             <div className="flex items-start gap-4 mb-6">
@@ -275,12 +275,12 @@ export default async function ActivityPage({
 
         {/* Donation Impact Card - Only show if sponsored */}
         {hasSponsorship ? (
-          <div className="relative rounded-lg shadow-xl mb-6 overflow-hidden">
+          <div className="relative rounded-lg  mb-6 overflow-hidden">
             {/* Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#af2878] via-[#d68bb5] to-[#f3dce8] opacity-90"></div>
 
             {/* Content overlay */}
-            <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg m-1 p-6 shadow-md">
+            <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg m-1 p-6 ">
               <h3 className="text-2xl font-bold mb-4">💝 Impact</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -347,7 +347,7 @@ export default async function ActivityPage({
           </div>
         ) : (
           /* No Sponsorship Card */
-          <div className="card bg-base-100 shadow-xl mb-6">
+          <div className="card bg-base-100  mb-6">
             <div className="card-body">
               <h3 className="text-xl font-bold mb-2">💝 Impact</h3>
               <p className="text-base-content/70">
@@ -379,7 +379,7 @@ export default async function ActivityPage({
 
         {/* Additional Activity Info */}
         {(activity.timezone || activity.isManual || activity.isPrivate) && (
-          <div className="card bg-base-100 shadow-xl mb-6">
+          <div className="card bg-base-100  mb-6">
             <div className="card-body">
               <h3 className="card-title mb-2">Additional Information</h3>
               <div className="space-y-2 text-sm">

@@ -38,7 +38,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/ui": "^4.0.16",
-    "daisyui": "^5.5.11",
     "eslint": "^9",
     "eslint-config-next": "16.0.8",
     "happy-dom": "^20.0.11",

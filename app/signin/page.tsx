@@ -13,7 +13,7 @@ export default async function SignInPage() {
   return (
     <div className="hero min-h-screen bg-base-200">
       <div className="hero-content flex-col">
-        <div className="card bg-base-100 shadow-xl w-full max-w-md">
+        <div className="card bg-base-100  w-full max-w-md">
           <div className="card-body">
             <h1 className="card-title text-3xl justify-center mb-2">
               Welcome to Giving the Distance

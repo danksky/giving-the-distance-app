@@ -25,14 +25,12 @@ export default async function CharitySettingsPage() {
 
   // Current charity - use user's selection or default to UNICEF
   const currentCharity =
-    user?.selectedCharity ||
-    charities.find((c) => c.isDefault) ||
-    charities[0];
+    user?.selectedCharity || charities.find((c) => c.isDefault) || charities[0];
 
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
+      <div className="navbar bg-base-100">
         <div className="flex-1">
           <Link href="/" className="btn btn-ghost text-xl">
             Giving the Distance
@@ -46,27 +44,21 @@ export default async function CharitySettingsPage() {
             ⚙️ Settings
           </Link>
           <div className="dropdown dropdown-end">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-circle avatar placeholder"
-            >
+            <button tabIndex={0} className="btn btn-ghost btn-circle">
               {session.user.image ? (
                 <Image
                   src={session.user.image}
                   alt={session.user.name || "User"}
                   width={40}
                   height={40}
-                  className="rounded-full"
+                  className="rounded-full w-full h-full object-cover"
                 />
               ) : (
-                <div className="bg-neutral text-neutral-content w-10 rounded-full">
-                  <span className="text-xl">
-                    {session.user.name?.charAt(0) || "U"}
-                  </span>
-                </div>
+                <span className="text-lg">
+                  {session.user.name?.charAt(0) || "U"}
+                </span>
               )}
-            </div>
+            </button>
             <ul
               tabIndex={0}
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
@@ -117,7 +109,7 @@ export default async function CharitySettingsPage() {
         </div>
 
         {/* Current Charity Card */}
-        <div className="card bg-base-100 shadow-xl mb-6">
+        <div className="card bg-base-100 mb-6">
           <div className="card-body">
             <div className="flex items-center justify-between mb-4">
               <h2 className="card-title text-2xl">Your Selected Charity</h2>
@@ -157,7 +149,7 @@ export default async function CharitySettingsPage() {
         </div>
 
         {/* Impact Summary */}
-        <div className="card bg-base-100 shadow-xl mb-6">
+        <div className="card bg-base-100 mb-6">
           <div className="card-body">
             <h3 className="card-title">
               Your Impact with {currentCharity.name}
@@ -166,7 +158,7 @@ export default async function CharitySettingsPage() {
               Every activity you complete generates donations that support{" "}
               {currentCharity.name}&apos;s mission.
             </p>
-            <div className="stats stats-vertical lg:stats-horizontal shadow">
+            <div className="stats stats-vertical lg:stats-horizontal">
               <div className="stat">
                 <div className="stat-title">Total Donated</div>
                 <div className="stat-value text-2xl text-[#af2878]">$0.00</div>
@@ -182,7 +174,7 @@ export default async function CharitySettingsPage() {
         </div>
 
         {/* Available Charities */}
-        <div className="card bg-base-100 shadow-xl">
+        <div className="card bg-base-100">
           <div className="card-body">
             <h3 className="card-title mb-4">Available Charities</h3>
             <p className="text-sm text-base-content/60 mb-6">

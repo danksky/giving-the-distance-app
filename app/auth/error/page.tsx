@@ -25,7 +25,7 @@ export default async function AuthErrorPage({
   return (
     <div className="hero min-h-screen bg-base-200">
       <div className="hero-content flex-col max-w-2xl">
-        <div className="card bg-base-100 shadow-xl w-full">
+        <div className="card bg-base-100  w-full">
           <div className="card-body">
             <div className="text-center mb-6">
               <div className="text-6xl mb-4">🔒</div>

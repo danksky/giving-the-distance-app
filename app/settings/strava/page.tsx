@@ -36,7 +36,7 @@ export default async function StravaSettingsPage({
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
+      <div className="navbar bg-base-100">
         <div className="flex-1">
           <Link href="/" className="btn btn-ghost text-xl">
             Giving the Distance
@@ -50,27 +50,21 @@ export default async function StravaSettingsPage({
             ⚙️ Settings
           </Link>
           <div className="dropdown dropdown-end">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-circle avatar placeholder"
-            >
+            <button tabIndex={0} className="btn btn-ghost btn-circle">
               {session.user.image ? (
                 <Image
                   src={session.user.image}
                   alt={session.user.name || "User"}
                   width={40}
                   height={40}
-                  className="rounded-full"
+                  className="rounded-full w-full h-full object-cover"
                 />
               ) : (
-                <div className="bg-neutral text-neutral-content w-10 rounded-full">
-                  <span className="text-xl">
-                    {session.user.name?.charAt(0) || "U"}
-                  </span>
-                </div>
+                <span className="text-lg">
+                  {session.user.name?.charAt(0) || "U"}
+                </span>
               )}
-            </div>
+            </button>
             <ul
               tabIndex={0}
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
@@ -150,7 +144,7 @@ export default async function StravaSettingsPage({
 
         {/* Strava Connection Card */}
         {!hasStrava ? (
-          <div className="card bg-base-100 shadow-xl mb-8">
+          <div className="card bg-base-100 mb-8">
             <div className="card-body">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="card-title text-2xl">
@@ -197,7 +191,7 @@ export default async function StravaSettingsPage({
             </div>
           </div>
         ) : (
-          <div className="card bg-base-100 shadow-xl mb-8">
+          <div className="card bg-base-100 mb-8">
             <div className="card-body">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="card-title text-2xl">
@@ -281,7 +275,7 @@ export default async function StravaSettingsPage({
         )}
 
         {/* Information Card */}
-        <div className="card bg-base-100 shadow-xl">
+        <div className="card bg-base-100">
           <div className="card-body">
             <h3 className="card-title">About Strava Integration</h3>
             <div className="space-y-3 text-sm">

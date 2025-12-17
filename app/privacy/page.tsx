@@ -11,7 +11,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
+      <div className="navbar bg-base-100 ">
         <div className="flex-1 max-w-4xl mx-auto px-4">
           <Link href="/" className="btn btn-ghost">
             ← Back to Home
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
       {/* Content */}
       <main className="container mx-auto max-w-4xl px-4 py-8">
-        <div className="card bg-base-100 shadow-xl">
+        <div className="card bg-base-100 ">
           <div className="card-body prose max-w-none">
             <h1 className="card-title text-3xl">Privacy Policy</h1>
             <div className="space-y-8">

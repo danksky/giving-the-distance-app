@@ -37,7 +37,7 @@ export default async function SettingsPage() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
+      <div className="navbar bg-base-100">
         <div className="flex-1">
           <Link href="/" className="btn btn-ghost text-xl">
             Giving the Distance
@@ -48,27 +48,21 @@ export default async function SettingsPage() {
             Dashboard
           </Link>
           <div className="dropdown dropdown-end">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-circle avatar placeholder"
-            >
+            <button tabIndex={0} className="btn btn-ghost btn-circle">
               {session.user.image ? (
                 <Image
                   src={session.user.image}
                   alt={session.user.name || "User"}
                   width={40}
                   height={40}
-                  className="rounded-full"
+                  className="rounded-full w-full h-full object-cover"
                 />
               ) : (
-                <div className="bg-neutral text-neutral-content w-10 rounded-full">
-                  <span className="text-xl">
-                    {session.user.name?.charAt(0) || "U"}
-                  </span>
-                </div>
+                <span className="text-lg">
+                  {session.user.name?.charAt(0) || "U"}
+                </span>
               )}
-            </div>
+            </button>
             <ul
               tabIndex={0}
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
@@ -90,7 +84,7 @@ export default async function SettingsPage() {
         <div className="space-y-0">
           {/* Strava Settings */}
           <Link href="/settings/strava">
-            <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer">
+            <div className="card bg-base-100 hover:border-gray-300 transition-colors cursor-pointer">
               <div className="card-body">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
@@ -157,7 +151,7 @@ export default async function SettingsPage() {
 
           {/* Charity Settings */}
           <Link href="/settings/charity">
-            <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer">
+            <div className="card bg-base-100 hover:border-gray-300 transition-colors cursor-pointer">
               <div className="card-body">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
@@ -206,7 +200,7 @@ export default async function SettingsPage() {
         </div>
 
         {/* Account Information */}
-        <div className="card bg-base-100 shadow-xl mt-8">
+        <div className="card bg-base-100 mt-8">
           <div className="card-body">
             <h3 className="card-title mb-4">Account Information</h3>
             <div className="space-y-3">

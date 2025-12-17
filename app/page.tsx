@@ -15,7 +15,7 @@ export default async function Home() {
 
           {session?.user ? (
             <div className="space-y-4">
-              <div className="bg-[#badcff] rounded-lg py-3 px-6 text-base-content">
+              <div className="bg-base-100 border border-gray-300 rounded py-3 px-6 text-base-content">
                 <span>
                   Welcome back, <strong>{session.user.name}</strong>!
                 </span>

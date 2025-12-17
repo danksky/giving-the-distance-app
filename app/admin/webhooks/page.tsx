@@ -21,7 +21,7 @@ export default async function WebhooksPage() {
     return (
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content">
-          <div className="card bg-base-100 shadow-xl max-w-md">
+          <div className="card bg-base-100  max-w-md">
             <div className="card-body text-center">
               <div className="text-6xl mb-4">🔒</div>
               <h1 className="card-title text-2xl justify-center">
@@ -70,7 +70,7 @@ export default async function WebhooksPage() {
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
+      <div className="navbar bg-base-100 ">
         <div className="flex-1 max-w-7xl mx-auto px-4 w-full">
           <h1 className="text-2xl font-bold">Strava Webhook Events</h1>
         </div>
@@ -119,7 +119,7 @@ export default async function WebhooksPage() {
         </div>
 
         {/* Event Type Breakdown */}
-        <div className="card bg-base-100 shadow-xl mb-8">
+        <div className="card bg-base-100  mb-8">
           <div className="card-body">
             <h2 className="card-title">Event Breakdown</h2>
             <div className="stats stats-vertical lg:stats-horizontal shadow">
@@ -146,7 +146,7 @@ export default async function WebhooksPage() {
         </div>
 
         {/* Events Table */}
-        <div className="card bg-base-100 shadow-xl">
+        <div className="card bg-base-100 ">
           <div className="card-body">
             <h2 className="card-title">Recent Events</h2>
             <div className="overflow-x-auto">
