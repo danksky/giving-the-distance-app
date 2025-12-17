@@ -82,7 +82,6 @@ export default async function DashboardPage({
   });
 
   const hasStrava = (user?.accounts.length ?? 0) > 0;
-  const stravaAthlete = user?.stravaAthlete;
   const activities = user?.activities ?? [];
 
   return (
@@ -95,6 +94,9 @@ export default async function DashboardPage({
           </Link>
         </div>
         <div className="flex-none gap-2">
+          <Link href="/settings" className="btn btn-ghost btn-sm">
+            ⚙️ Settings
+          </Link>
           <div className="dropdown dropdown-end">
             <div
               tabIndex={0}
@@ -122,6 +124,9 @@ export default async function DashboardPage({
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
               <li className="menu-title">{session.user.email}</li>
+              <li>
+                <Link href="/settings">Settings</Link>
+              </li>
               <li>
                 <Link href="/api/auth/signout">Sign Out</Link>
               </li>
@@ -184,100 +189,28 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Welcome Section */}
-        <div className="card bg-base-100 shadow-xl mb-8">
-          <div className="card-body">
-            <div className="flex items-center gap-4">
-              {session.user.image && (
-                <div className="avatar">
-                  <div className="w-16 rounded-full">
-                    <Image
-                      src={session.user.image}
-                      alt={session.user.name || "User"}
-                      width={64}
-                      height={64}
-                    />
-                  </div>
-                </div>
-              )}
-              <div>
-                <h2 className="card-title text-2xl">
-                  Welcome, {session.user.name}! 👋
-                </h2>
-                <p>
-                  Your Google account is connected. Let&apos;s set up Strava
-                  next.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Strava Connection Card */}
-        {!hasStrava ? (
-          <div className="card bg-warning text-warning-content shadow-xl mb-8">
+        {/* Setup Prompt - Only show if Strava not connected */}
+        {!hasStrava && (
+          <div className="card bg-base-100 shadow-xl mb-8">
             <div className="card-body">
               <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="card-title text-xl mb-2">
-                    Connect Your Strava Account
-                  </h3>
-                  <p className="mb-2">
-                    Link your Strava to start tracking your activities and
-                    creating sponsorships. We&apos;ll automatically add donation
-                    messages to your activities.
-                  </p>
-                  <div className="text-sm opacity-80 mb-4">
-                    <strong>Required permissions:</strong> Activity Read,
-                    Profile Read, Activity Write
-                  </div>
-                  <a href="/api/strava/connect" className="btn btn-primary">
-                    🔗 Connect Strava
-                  </a>
-                </div>
-                <div className="text-6xl">🏃‍♂️</div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="card bg-success text-success-content shadow-xl mb-8">
-            <div className="card-body">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 flex-1">
-                  {stravaAthlete?.profile && (
-                    <div className="avatar">
-                      <div className="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                        <Image
-                          src={stravaAthlete.profile}
-                          alt="Strava Profile"
-                          width={64}
-                          height={64}
-                        />
-                      </div>
-                    </div>
-                  )}
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">🏃‍♂️</div>
                   <div>
-                    <h3 className="card-title text-xl">✓ Strava Connected</h3>
-                    <p className="font-semibold">
-                      {stravaAthlete?.firstname} {stravaAthlete?.lastname}
+                    <h2 className="card-title text-xl">
+                      Connect Strava to Get Started
+                    </h2>
+                    <p className="text-base-content/70 text-sm">
+                      Link your account to start tracking activities
                     </p>
-                    {stravaAthlete?.city && stravaAthlete?.state && (
-                      <p className="text-sm opacity-80">
-                        {stravaAthlete.city}, {stravaAthlete.state}
-                      </p>
-                    )}
-                    <form
-                      action="/api/strava/disconnect"
-                      method="POST"
-                      className="mt-3"
-                    >
-                      <button type="submit" className="btn btn-ghost btn-xs">
-                        Disconnect Strava
-                      </button>
-                    </form>
                   </div>
                 </div>
-                <div className="text-6xl">✅</div>
+                <Link
+                  href="/settings/strava"
+                  className="btn btn-primary btn-sm"
+                >
+                  🔗 Connect Strava
+                </Link>
               </div>
             </div>
           </div>
@@ -357,7 +290,9 @@ export default async function DashboardPage({
                         return (
                           <tr
                             key={activity.id}
-                            className={isDeleted ? "opacity-50" : ""}
+                            className={
+                              isDeleted ? "opacity-50" : "hover:bg-base-200"
+                            }
                           >
                             <td>{date}</td>
                             <td>
@@ -366,7 +301,12 @@ export default async function DashboardPage({
                                   [Deleted Activity]
                                 </span>
                               ) : (
-                                <span>{activity.name || "Untitled"}</span>
+                                <Link
+                                  href={`/activities/${activity.id}`}
+                                  className="link link-hover font-medium"
+                                >
+                                  {activity.name || "Untitled"}
+                                </Link>
                               )}
                             </td>
                             <td>

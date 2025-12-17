@@ -1,0 +1,201 @@
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { db } from "@/lib/db";
+import CharitySelector from "@/components/CharitySelector";
+
+export default async function CharitySettingsPage() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/signin");
+  }
+
+  // Get user with selected charity
+  const user = await db.user.findUnique({
+    where: { email: session.user.email! },
+    include: { selectedCharity: true },
+  });
+
+  // Get all charities from database
+  const charities = await db.charity.findMany({
+    orderBy: [{ isDefault: "desc" }, { name: "asc" }],
+  });
+
+  // Current charity - use user's selection or default to UNICEF
+  const currentCharity =
+    user?.selectedCharity ||
+    charities.find((c) => c.isDefault) ||
+    charities[0];
+
+  return (
+    <div className="min-h-screen bg-base-200">
+      {/* Header */}
+      <div className="navbar bg-base-100 shadow-lg">
+        <div className="flex-1">
+          <Link href="/" className="btn btn-ghost text-xl">
+            Giving the Distance
+          </Link>
+        </div>
+        <div className="flex-none gap-2">
+          <Link href="/dashboard" className="btn btn-ghost btn-sm">
+            Dashboard
+          </Link>
+          <Link href="/settings" className="btn btn-ghost btn-sm">
+            ⚙️ Settings
+          </Link>
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle avatar placeholder"
+            >
+              {session.user.image ? (
+                <Image
+                  src={session.user.image}
+                  alt={session.user.name || "User"}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="bg-neutral text-neutral-content w-10 rounded-full">
+                  <span className="text-xl">
+                    {session.user.name?.charAt(0) || "U"}
+                  </span>
+                </div>
+              )}
+            </div>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+            >
+              <li className="menu-title">{session.user.email}</li>
+              <li>
+                <Link href="/settings">Settings</Link>
+              </li>
+              <li>
+                <Link href="/api/auth/signout">Sign Out</Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-6">
+          <Link href="/settings" className="btn btn-ghost btn-sm mb-2">
+            ← Back to Settings
+          </Link>
+          <h1 className="text-3xl font-bold">Charity Selection</h1>
+        </div>
+
+        {/* Info Alert */}
+        <div className="alert alert-info mb-6">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            className="stroke-current shrink-0 w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          <div>
+            <div className="font-semibold">Select Your Charity</div>
+            <div className="text-sm">
+              Choose which charity your activities will support. UNICEF is the
+              default selection.
+            </div>
+          </div>
+        </div>
+
+        {/* Current Charity Card */}
+        <div className="card bg-base-100 shadow-xl mb-6">
+          <div className="card-body">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="card-title text-2xl">Your Selected Charity</h2>
+              <div className="badge badge-success badge-lg">Active</div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#af2878]/10 to-[#f3dce8]/30 rounded-lg p-6 border border-[#af2878]/20">
+              <div className="flex items-start gap-4">
+                <div className="text-6xl">{currentCharity.emoji}</div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-[#af2878] mb-2">
+                    {currentCharity.name}
+                  </h3>
+                  <div className="text-lg font-semibold mb-3">
+                    {currentCharity.fullName}
+                  </div>
+                  <p className="text-base-content/70 mb-4">
+                    {currentCharity.description}
+                  </p>
+                  <div className="flex gap-2">
+                    <Link
+                      href={currentCharity.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm btn-outline"
+                    >
+                      🌐 Visit Website
+                    </Link>
+                    {currentCharity.isDefault && (
+                      <div className="badge badge-outline">Default Charity</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Impact Summary */}
+        <div className="card bg-base-100 shadow-xl mb-6">
+          <div className="card-body">
+            <h3 className="card-title">
+              Your Impact with {currentCharity.name}
+            </h3>
+            <p className="text-sm text-base-content/60 mb-4">
+              Every activity you complete generates donations that support{" "}
+              {currentCharity.name}&apos;s mission.
+            </p>
+            <div className="stats stats-vertical lg:stats-horizontal shadow">
+              <div className="stat">
+                <div className="stat-title">Total Donated</div>
+                <div className="stat-value text-2xl text-[#af2878]">$0.00</div>
+                <div className="stat-desc">Coming soon</div>
+              </div>
+              <div className="stat">
+                <div className="stat-title">Activities</div>
+                <div className="stat-value text-2xl text-[#af2878]">0</div>
+                <div className="stat-desc">Contributing to charity</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Available Charities */}
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h3 className="card-title mb-4">Available Charities</h3>
+            <p className="text-sm text-base-content/60 mb-6">
+              Choose from our curated list of highly-rated charities. All
+              organizations have been verified by Charity Navigator.
+            </p>
+            <CharitySelector
+              charities={charities}
+              currentCharityId={currentCharity.id}
+            />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
