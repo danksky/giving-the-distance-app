@@ -181,114 +181,107 @@ export default async function SponsorProfilePage({
 
         {/* Business Header */}
         <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-6">
+          {/* Logo + Title Row */}
+          <div className="flex items-start gap-6 mb-6">
             {/* Logo */}
             {profile.images.logo && (
-              <div className="flex-shrink-0">
-                <LightboxImage
-                  src={profile.images.logo}
-                  alt={`${profile.businessName} logo`}
-                  containerClassName="w-32 h-32 relative bg-base-200 rounded-lg overflow-hidden cursor-pointer"
-                  imageClassName="object-contain p-2"
-                  sizes="128px"
-                />
-              </div>
+              <LightboxImage
+                src={profile.images.logo}
+                alt={`${profile.businessName} logo`}
+                containerClassName="flex-shrink-0 w-24 h-24 md:w-32 md:h-32 relative bg-base-200 rounded-lg overflow-hidden cursor-pointer"
+                imageClassName="object-contain p-2"
+                sizes="128px"
+              />
             )}
 
-            {/* Business Info */}
-            <div className="flex-1">
+            {/* Title + Badge + Address */}
+            <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold mb-2">
                 {profile.businessName}
               </h1>
-              <div className="mb-4">
+              <div className="mb-2">
                 <span className="badge badge-lg bg-[#af2878]/10 text-[#af2878] border border-[#af2878]/20 font-semibold">
                   SPONSOR
                 </span>
               </div>
-
-              {/* Address with Map */}
-              <div className="mb-4">
-                <p className="font-medium mb-2">
-                  📍 {profile.address.fullAddress}
-                </p>
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Map */}
-                  <div className="w-full h-64 md:h-72 rounded overflow-hidden bg-base-200">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      allowFullScreen
-                      referrerPolicy="no-referrer-when-downgrade"
-                      src={mapUrl}
-                    ></iframe>
-                  </div>
-
-                  {/* Photos (in same box as map) */}
-                  {(profile.images.staff ||
-                    (profile.images.products &&
-                      profile.images.products.length > 0)) && (
-                    <div className="grid grid-cols-2 grid-rows-3 gap-2 h-64 md:h-72">
-                      {profile.images.staff && (
-                        <LightboxImage
-                          src={profile.images.staff}
-                          alt={`${profile.businessName} staff`}
-                          containerClassName="relative col-span-2 row-span-2 bg-base-200 rounded-lg overflow-hidden cursor-pointer"
-                          imageClassName="object-cover"
-                          sizes="(max-width: 768px) 100vw, 600px"
-                        />
-                      )}
-
-                      {profile.images.products &&
-                        profile.images.products
-                          .slice(0, 4)
-                          .map((product, index) => (
-                            <LightboxImage
-                              key={product}
-                              src={product}
-                              alt={`${profile.businessName} product ${
-                                index + 1
-                              }`}
-                              containerClassName="relative bg-base-200 rounded-lg overflow-hidden cursor-pointer"
-                              imageClassName="object-cover"
-                              sizes="(max-width: 768px) 50vw, 300px"
-                            />
-                          ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Blurb */}
-              <p className="text-lg mb-4 italic text-base-content/80">
-                {profile.blurb}
-              </p>
-
-              {/* Links */}
-              <div className="flex gap-4">
-                {profile.links.website && (
-                  <Link
-                    href={profile.links.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-outline btn-sm"
-                  >
-                    🌐 Website
-                  </Link>
-                )}
-                {profile.links.instagram && (
-                  <Link
-                    href={profile.links.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-outline btn-sm"
-                  >
-                    📷 Instagram
-                  </Link>
-                )}
-              </div>
+              <p className="font-medium">📍 {profile.address.fullAddress}</p>
             </div>
+          </div>
+
+          {/* Map + Photos Grid */}
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Map */}
+            <div className="w-full h-64 md:h-72 rounded overflow-hidden bg-base-200">
+              <iframe
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                src={mapUrl}
+              ></iframe>
+            </div>
+
+            {/* Photos */}
+            {(profile.images.staff ||
+              (profile.images.products &&
+                profile.images.products.length > 0)) && (
+              <div className="grid grid-cols-2 grid-rows-3 gap-2 h-64 md:h-72">
+                {profile.images.staff && (
+                  <LightboxImage
+                    src={profile.images.staff}
+                    alt={`${profile.businessName} staff`}
+                    containerClassName="relative col-span-2 row-span-2 bg-base-200 rounded-lg overflow-hidden cursor-pointer"
+                    imageClassName="object-cover"
+                    sizes="(max-width: 768px) 100vw, 600px"
+                  />
+                )}
+
+                {profile.images.products &&
+                  profile.images.products
+                    .slice(0, 4)
+                    .map((product, index) => (
+                      <LightboxImage
+                        key={product}
+                        src={product}
+                        alt={`${profile.businessName} product ${index + 1}`}
+                        containerClassName="relative bg-base-200 rounded-lg overflow-hidden cursor-pointer"
+                        imageClassName="object-cover"
+                        sizes="(max-width: 768px) 50vw, 300px"
+                      />
+                    ))}
+              </div>
+            )}
+          </div>
+
+          {/* Blurb */}
+          <p className="text-lg mb-4 italic text-base-content/80">
+            {profile.blurb}
+          </p>
+
+          {/* Links */}
+          <div className="flex gap-4">
+            {profile.links.website && (
+              <Link
+                href={profile.links.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-outline btn-sm"
+              >
+                🌐 Website
+              </Link>
+            )}
+            {profile.links.instagram && (
+              <Link
+                href={profile.links.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-outline btn-sm"
+              >
+                📷 Instagram
+              </Link>
+            )}
           </div>
         </div>
 
