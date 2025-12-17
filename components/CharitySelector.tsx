@@ -149,20 +149,69 @@ export default function CharitySelector({
                 }`}
               >
                 <div className="card-body">
-                  <div className="flex items-start gap-4">
-                    {/* Charity Logo */}
-                    <CharityLogo
-                      name={charity.name}
-                      logoUrl={charity.logoUrl}
-                      size="lg"
-                      className="flex-shrink-0"
-                    />
+                  {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
+                    {/* Header row on mobile: Logo + Title + Button */}
+                    <div className="flex items-start gap-4 w-full sm:w-auto">
+                      {/* Charity Logo */}
+                      <CharityLogo
+                        name={charity.name}
+                        logoUrl={charity.logoUrl}
+                        size="lg"
+                        className="flex-shrink-0"
+                      />
+
+                      {/* Title and button on mobile */}
+                      <div className="flex-1 min-w-0 sm:hidden">
+                        <h3 className="text-lg font-bold flex items-center gap-2">
+                          {charity.name}
+                          {isSelected && (
+                            <span className="text-[#8B4ACC]">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 inline-block"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </span>
+                          )}
+                        </h3>
+                      </div>
+
+                      {/* Select Button - mobile top right */}
+                      <div className="flex-shrink-0 sm:hidden">
+                        {isSelected ? (
+                          <button className="btn btn-success btn-sm" disabled>
+                            Selected
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-outline btn-primary btn-sm"
+                            onClick={() => handleSelectCharity(charity.id)}
+                            disabled={isUpdating}
+                          >
+                            {isUpdating ? (
+                              <span className="loading loading-spinner loading-xs"></span>
+                            ) : (
+                              "Select"
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
                     {/* Charity Info */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div>
-                          <h3 className="text-xl font-bold">
+                          {/* Desktop title */}
+                          <h3 className="hidden sm:block text-xl font-bold">
                             {charity.name}
                             {isSelected && (
                               <span className="ml-2 text-[#8B4ACC]">
@@ -196,11 +245,11 @@ export default function CharitySelector({
                         {charity.description}
                       </p>
 
-                      <div className="flex items-center gap-4 flex-wrap">
+                      <div className="flex items-center gap-2 sm:gap-4 flex-wrap text-xs sm:text-sm">
                         <div className="badge badge-outline badge-sm">
                           {charity.category}
                         </div>
-                        <div className="flex items-center gap-1 text-xs">
+                        <div className="flex items-center gap-1">
                           <span className="font-semibold">
                             Charity Navigator:
                           </span>
@@ -212,15 +261,15 @@ export default function CharitySelector({
                           href={charity.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="link link-primary text-xs"
+                          className="link link-primary"
                         >
                           Visit Website →
                         </Link>
                       </div>
                     </div>
 
-                    {/* Select Button */}
-                    <div className="flex-shrink-0">
+                    {/* Select Button - desktop only */}
+                    <div className="hidden sm:block flex-shrink-0">
                       {isSelected ? (
                         <button className="btn btn-success btn-sm" disabled>
                           Selected

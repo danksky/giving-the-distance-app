@@ -74,24 +74,25 @@ export default async function CharitySettingsPage() {
               <div className="badge badge-success badge-lg">Active</div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#B56DFF]/10 to-[#E5D4FF]/30 rounded-lg p-6 border border-[#B56DFF]/20">
-              <div className="flex items-start gap-4">
+            <div className="bg-gradient-to-br from-[#B56DFF]/10 to-[#E5D4FF]/30 rounded-lg p-4 sm:p-6 border border-[#B56DFF]/20">
+              <div className="flex flex-col sm:flex-row items-start gap-4">
                 <CharityLogo
                   name={currentCharity.name}
                   logoUrl={currentCharity.logoUrl}
                   size="xl"
+                  className="mx-auto sm:mx-0"
                 />
-                <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-[#8B4ACC] mb-2">
+                <div className="flex-1 w-full">
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#8B4ACC] mb-2">
                     {currentCharity.name}
                   </h3>
-                  <div className="text-lg font-semibold mb-3">
+                  <div className="text-base sm:text-lg font-semibold mb-3">
                     {currentCharity.fullName}
                   </div>
-                  <p className="text-base-content/70 mb-4">
+                  <p className="text-sm sm:text-base text-base-content/70 mb-4">
                     {currentCharity.description}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Link
                       href={currentCharity.website}
                       target="_blank"
