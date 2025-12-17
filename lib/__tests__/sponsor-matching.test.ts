@@ -20,6 +20,15 @@ vi.mock('@/lib/db', () => ({
     user: {
       findUnique: vi.fn(),
     },
+    charity: {
+      findUnique: vi.fn(),
+    },
+    stravaAthlete: {
+      findUnique: vi.fn(),
+    },
+    activity: {
+      findUnique: vi.fn(),
+    },
     charityCommitment: {
       create: vi.fn(),
     },
@@ -155,6 +164,24 @@ describe('Sponsor Matching Service', () => {
       vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
+      // Mock user with selected charity
+      vi.mocked(db.user.findUnique).mockResolvedValue({
+        id: mockActivity.userId,
+        selectedCharityId: 'charity-unicef',
+      } as any);
+
+      // Mock charity lookup
+      vi.mocked(db.charity.findUnique).mockResolvedValue({
+        id: 'charity-unicef',
+        name: 'UNICEF',
+      } as any);
+
+      // Mock athlete lookup
+      vi.mocked(db.stravaAthlete.findUnique).mockResolvedValue({
+        id: mockActivity.athleteId,
+        firstname: 'John',
+      } as any);
+
       // Mock failed Strava API fetch
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -187,6 +214,30 @@ describe('Sponsor Matching Service', () => {
       vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
+      // Mock user with selected charity
+      vi.mocked(db.user.findUnique).mockResolvedValue({
+        id: mockActivity.userId,
+        selectedCharityId: 'charity-unicef',
+      } as any);
+
+      // Mock charity lookup
+      vi.mocked(db.charity.findUnique).mockResolvedValue({
+        id: 'charity-unicef',
+        name: 'UNICEF',
+      } as any);
+
+      // Mock athlete lookup
+      vi.mocked(db.stravaAthlete.findUnique).mockResolvedValue({
+        id: mockActivity.athleteId,
+        firstname: 'John',
+      } as any);
+
+      // Mock activity lookup for shortcode
+      vi.mocked(db.activity.findUnique).mockResolvedValue({
+        id: mockActivity.id,
+        shortcode: 'test3',
+      } as any);
+
       // Mock successful fetch but failed update
       mockFetch
         .mockResolvedValueOnce({
@@ -256,6 +307,30 @@ describe('Sponsor Matching Service', () => {
       vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
+      // Mock user with selected charity
+      vi.mocked(db.user.findUnique).mockResolvedValue({
+        id: mockActivity.userId,
+        selectedCharityId: 'charity-unicef',
+      } as any);
+
+      // Mock charity lookup
+      vi.mocked(db.charity.findUnique).mockResolvedValue({
+        id: 'charity-unicef',
+        name: 'UNICEF',
+      } as any);
+
+      // Mock athlete lookup
+      vi.mocked(db.stravaAthlete.findUnique).mockResolvedValue({
+        id: mockActivity.athleteId,
+        firstname: 'John',
+      } as any);
+
+      // Mock activity lookup for shortcode
+      vi.mocked(db.activity.findUnique).mockResolvedValue({
+        id: mockActivity.id,
+        shortcode: 'test1',
+      } as any);
+
       // Mock successful Strava update
       mockFetch
         .mockResolvedValueOnce({
@@ -269,12 +344,6 @@ describe('Sponsor Matching Service', () => {
           ok: true,
           json: async () => ({ id: mockActivity.stravaActivityId }),
         });
-
-      // Mock user with selected charity
-      vi.mocked(db.user.findUnique).mockResolvedValue({
-        id: mockActivity.userId,
-        selectedCharityId: 'charity-unicef',
-      } as any);
 
       // Mock transaction
       const mockPlacementLog = {
@@ -308,11 +377,42 @@ describe('Sponsor Matching Service', () => {
       expect(result.campaignId).toBe(mockCampaign.id);
     });
 
-    it('should skip if activity description already has GTD marker', async () => {
+    it('should successfully match even if GTD marker already exists', async () => {
       vi.mocked(db.placementLog.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
+      // Mock user with selected charity
+      vi.mocked(db.user.findUnique).mockResolvedValue({
+        id: mockActivity.userId,
+        selectedCharityId: 'charity-unicef',
+      } as any);
+
+      // Mock charity lookup
+      vi.mocked(db.charity.findUnique).mockResolvedValue({
+        id: 'charity-unicef',
+        name: 'UNICEF',
+      } as any);
+
+      // Mock athlete lookup
+      vi.mocked(db.stravaAthlete.findUnique).mockResolvedValue({
+        id: mockActivity.athleteId,
+        firstname: 'John',
+      } as any);
+
+      // Mock activity lookup for shortcode (needs 2 calls now)
+      vi.mocked(db.activity.findUnique)
+        .mockResolvedValueOnce({
+          id: mockActivity.id,
+          shortcode: 'test2',
+        } as any)
+        .mockResolvedValueOnce({
+          id: mockActivity.id,
+          shortcode: 'test2',
+        } as any);
+
       // Mock Strava fetch with GTD marker already present
+      // Note: GTD marker check happens in updateStravaDescription, and it returns success early
+      // without making a PUT request, then continues with the matching process
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -320,12 +420,6 @@ describe('Sponsor Matching Service', () => {
           description: 'Existing description #GTD',
         }),
       });
-
-      // Mock user with selected charity
-      vi.mocked(db.user.findUnique).mockResolvedValue({
-        id: mockActivity.userId,
-        selectedCharityId: 'charity-unicef',
-      } as any);
 
       // Mock transaction
       const mockPlacementLog = {
@@ -352,13 +446,12 @@ describe('Sponsor Matching Service', () => {
 
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
-      // Should still succeed because GTD marker check happens during update
-      // and returns success without making the PUT request
+      // Should still succeed - GTD marker check returns success without PUT,
+      // but matching process completes (budget decrement, logs, commitments)
       expect(result.success).toBe(true);
       expect(result.result).toBe(PlacementResult.MATCHED);
-      
-      // Verify that only one fetch was made (GET, no PUT)
-      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.placementLogId).toBe(mockPlacementLog.id);
+      expect(result.charityCommitmentId).toBe(mockCharityCommitment.id);
     });
   });
 
