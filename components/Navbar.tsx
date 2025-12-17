@@ -12,7 +12,17 @@ export default async function Navbar() {
   return (
     <div className="navbar bg-base-100">
       <div className="flex-1">
-        <Link href="/" className="btn btn-ghost text-xl">
+        <Link
+          href="/"
+          className="btn btn-ghost text-xl font-[family-name:var(--font-outfit)] gap-2"
+        >
+          <Image
+            src="/icon.png"
+            alt="Giving the Distance Logo"
+            width={32}
+            height={32}
+            className="w-8 h-8"
+          />
           Giving the Distance
         </Link>
       </div>
