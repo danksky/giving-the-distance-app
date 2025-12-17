@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getValidStravaToken } from "@/lib/strava-token-refresh";
+import { matchActivityWithSponsor } from "@/lib/sponsor-matching";
 
 /**
  * Strava Webhook Endpoint
@@ -160,7 +161,7 @@ export async function POST(request: NextRequest) {
         console.log('📊 Activity data:', JSON.stringify(activity, null, 2));
 
         // Store or update activity in database (use upsert to handle duplicates)
-        await db.activity.upsert({
+        const savedActivity = await db.activity.upsert({
           where: {
             stravaActivityId: BigInt(activity.id),
           },
@@ -206,50 +207,44 @@ export async function POST(request: NextRequest) {
 
         console.log(`✅ Activity ${object_id} saved successfully`);
         
-        // Update activity description on Strava
+        // Process sponsor matching and description update
         let descriptionUpdated = false;
         let descriptionUpdateError: string | null = null;
         
-        // Check if description already contains our message (to avoid duplicate updates)
-        const expectedMessage = 'inspired a donation by Giving the Distance to UNICEF';
-        const alreadyHasMessage = activity.description?.includes(expectedMessage);
-        
-        if (alreadyHasMessage) {
-          console.log(`✅ Activity description already contains our message, skipping update`);
-          descriptionUpdated = true;
-        } else {
-          try {
-            const firstName = stravaAthlete.firstname || 'An athlete';
-            const activityType = activity.type?.toLowerCase() || 'activity';
-            const description = `${firstName}'s ${activityType} inspired a donation by Giving the Distance to UNICEF - givingthedistance.org`;
-            
-            console.log(`📝 Updating activity description: "${description}"`);
-            
-            const updateResponse = await fetch(
-              `https://www.strava.com/api/v3/activities/${object_id}`,
-              {
-                method: 'PUT',
-                headers: {
-                  'Authorization': `Bearer ${accessToken}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ description }),
-              }
-            );
+        try {
+          console.log('🎯 Starting sponsor matching process...');
+          
+          const matchingResult = await matchActivityWithSponsor(
+            {
+              id: savedActivity.id,
+              stravaActivityId: savedActivity.stravaActivityId,
+              userId: savedActivity.userId,
+              athleteId: stravaAthlete.id,
+              stravaAthleteId: stravaAthlete.stravaAthleteId,
+              name: savedActivity.name,
+              type: savedActivity.type,
+              description: activity.description,
+            },
+            accessToken
+          );
 
-            if (updateResponse.ok) {
-              console.log(`✅ Activity description updated successfully`);
-              descriptionUpdated = true;
-            } else {
-              const errorText = await updateResponse.text();
-              descriptionUpdateError = `HTTP ${updateResponse.status}: ${errorText}`;
-              console.error(`❌ Failed to update activity description: ${descriptionUpdateError}`);
+          console.log(`📊 Matching result: ${matchingResult.result}`);
+          
+          if (matchingResult.success) {
+            descriptionUpdated = true;
+            console.log(`✅ Successfully matched activity with campaign ${matchingResult.campaignId}`);
+          } else {
+            // Log the reason for not matching
+            console.log(`ℹ️  Activity not matched: ${matchingResult.result} - ${matchingResult.message || matchingResult.error}`);
+            
+            // Only set error if it was an actual failure (not just a skip condition)
+            if (matchingResult.error) {
+              descriptionUpdateError = matchingResult.error;
             }
-          } catch (error) {
-            descriptionUpdateError = error instanceof Error ? error.message : String(error);
-            console.error('❌ Error updating activity description:', error);
-            // Don't fail the webhook - continue processing
           }
+        } catch (error) {
+          descriptionUpdateError = error instanceof Error ? error.message : String(error);
+          console.error('❌ Error in sponsor matching:', error);
         }
         
         // Mark webhook event as processed with description update status

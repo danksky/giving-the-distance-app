@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL") // Optional: for migrations with connection pooling
 }
 
 // ============================================
@@ -21,15 +21,17 @@ model User {
   name              String?
   image             String?
   emailVerified     DateTime?
-  selectedCharityId String?   // User's selected charity
+  selectedCharityId String?   // User's current selected charity (for quick access)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
-  stravaAthlete  StravaAthlete?
-  activities     Activity[]
-  selectedCharity Charity? @relation(fields: [selectedCharityId], references: [id])
+  accounts           Account[]
+  sessions           Session[]
+  stravaAthlete      StravaAthlete?
+  activities         Activity[]
+  selectedCharity    Charity? @relation(fields: [selectedCharityId], references: [id])
+  charitySelections  CharitySelection[] // Full history of charity selections
+  charityCommitments CharityCommitment[]
 
   @@map("users")
 }
@@ -90,7 +92,8 @@ model StravaAthlete {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placementLogs PlacementLog[]
 
   @@map("strava_athletes")
 }
@@ -114,7 +117,9 @@ model Activity {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placementLogs      PlacementLog[]
+  charityCommitments CharityCommitment[]
 
   @@index([userId])
   @@index([startDate(sort: Desc)])
@@ -170,8 +175,131 @@ model Charity {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
-  users User[]
+  users              User[]
+  charitySelections  CharitySelection[]
+  charityCommitments CharityCommitment[]
 
   @@map("charities")
+}
+
+model CharitySelection {
+  id         String   @id @default(cuid())
+  userId     String
+  charityId  String
+  selectedAt DateTime @default(now())
+  isActive   Boolean  @default(true) // Current selection vs historical
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  charity Charity @relation(fields: [charityId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([charityId])
+  @@index([selectedAt(sort: Desc)])
+  @@index([userId, isActive]) // Query active selections efficiently
+  @@map("charity_selections")
+}
+
+// ============================================
+// Sponsor & Campaign Models
+// ============================================
+
+model Sponsor {
+  id           String   @id
+  name         String
+  businessName String
+  slug         String   @unique
+  website      String?
+  address      Json?    // Store address as JSON
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaigns Campaign[]
+
+  @@map("sponsors")
+}
+
+model Campaign {
+  id                   String   @id @default(cuid())
+  sponsorId            String
+  name                 String
+  budgetRemainingCents Int      // Current remaining budget
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  sponsor            Sponsor             @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+  topUps             CampaignTopUp[]
+  placementLogs      PlacementLog[]
+  charityCommitments CharityCommitment[]
+
+  @@index([sponsorId])
+  @@index([isActive])
+  @@map("campaigns")
+}
+
+model CampaignTopUp {
+  id          String   @id @default(cuid())
+  campaignId  String
+  amountCents Int      // Amount added to campaign budget
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("campaign_top_ups")
+}
+
+model PlacementLog {
+  id               String          @id @default(cuid())
+  activityId       String          // Foreign key to Activity
+  stravaActivityId BigInt          // Also store Strava ID for reference
+  athleteId        String          // Foreign key to StravaAthlete
+  stravaAthleteId  BigInt          // Also store Strava athlete ID
+  campaignId       String?         // Nullable if no match
+  matchedAt        DateTime        @default(now())
+  result           PlacementResult // Enum for match status
+  decrementCents   Int             @default(0)
+  notes            String?         @db.Text
+  createdAt        DateTime        @default(now())
+
+  activity Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  athlete  StravaAthlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  campaign Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@unique([activityId]) // Idempotency: one placement per activity
+  @@index([athleteId])
+  @@index([campaignId])
+  @@index([result])
+  @@map("placement_logs")
+}
+
+model CharityCommitment {
+  id          String   @id @default(cuid())
+  userId      String
+  charityId   String
+  campaignId  String
+  activityId  String   // Foreign key to Activity
+  amountCents Int      // Commitment amount (typically 10 cents)
+  createdAt   DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  charity  Charity  @relation(fields: [charityId], references: [id], onDelete: Cascade)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([charityId])
+  @@index([campaignId])
+  @@index([activityId])
+  @@map("charity_commitments")
+}
+
+enum PlacementResult {
+  MATCHED
+  SKIPPED_NO_BUDGET
+  SKIPPED_NO_ACTIVE_CAMPAIGN
+  SKIPPED_ALREADY_SPONSORED
+  SKIPPED_UPDATE_FAILED
 }
 

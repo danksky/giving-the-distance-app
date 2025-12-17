@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
+import { getCharityAtTime } from "@/lib/charity-helpers";
 import type { Metadata } from "next";
 
 // Helper function to format duration in seconds to HH:MM:SS
@@ -169,8 +170,13 @@ export default async function ActivityPage({
       })
     : "—";
 
-  // Hard-coded values
-  const charity = "UNICEF";
+  // Get the charity that was selected at the time of this activity
+  const activityCharity = await getCharityAtTime(
+    activity.userId,
+    activity.startDateLocal || activity.createdAt
+  );
+
+  // Hard-coded values for sponsor (for now)
   const sponsorName = "Balkan Grind";
   const sponsorSlug = "balkan-grind-brooklyn-nyc";
   const donationAmount = 25.0; // Hard-coded donation amount
@@ -307,13 +313,16 @@ export default async function ActivityPage({
                   BENEFITING CHARITY
                 </div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="text-4xl">🌍</div>
+                  <div className="text-4xl">
+                    {activityCharity?.emoji || "🌍"}
+                  </div>
                   <div>
                     <div className="text-2xl font-bold text-[#af2878]">
-                      {charity}
+                      {activityCharity?.name || "UNICEF"}
                     </div>
                     <div className="text-sm text-base-content/60">
-                      Supporting children worldwide
+                      {activityCharity?.fullName ||
+                        "United Nations Children's Fund"}
                     </div>
                   </div>
                 </div>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { isAdmin } from "@/lib/auth-helpers";
 
 // Helper function to format duration in seconds to HH:MM:SS
 function formatDuration(seconds: number): string {
@@ -83,6 +84,7 @@ export default async function DashboardPage({
 
   const hasStrava = (user?.accounts.length ?? 0) > 0;
   const activities = user?.activities ?? [];
+  const userIsAdmin = isAdmin(session.user.email!);
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -94,6 +96,11 @@ export default async function DashboardPage({
           </Link>
         </div>
         <div className="flex-none gap-2">
+          {userIsAdmin && (
+            <Link href="/admin" className="btn btn-ghost btn-sm">
+              ⚙️ Admin
+            </Link>
+          )}
           <Link href="/settings" className="btn btn-ghost btn-sm">
             ⚙️ Settings
           </Link>
@@ -124,6 +131,11 @@ export default async function DashboardPage({
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
               <li className="menu-title">{session.user.email}</li>
+              {userIsAdmin && (
+                <li>
+                  <Link href="/admin">⚙️ Admin Dashboard</Link>
+                </li>
+              )}
               <li>
                 <Link href="/settings">Settings</Link>
               </li>

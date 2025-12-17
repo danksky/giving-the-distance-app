@@ -31,16 +31,53 @@ export async function POST(request: Request) {
       );
     }
 
-    // Update user's selected charity
-    const user = await db.user.update({
+    // Get user
+    const user = await db.user.findUnique({
       where: { email: session.user.email },
-      data: { selectedCharityId: charityId },
-      include: { selectedCharity: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Use a transaction to ensure data consistency
+    const result = await db.$transaction(async (tx) => {
+      // Deactivate any existing active selections for this user
+      await tx.charitySelection.updateMany({
+        where: {
+          userId: user.id,
+          isActive: true,
+        },
+        data: {
+          isActive: false,
+        },
+      });
+
+      // Create new charity selection record
+      const selection = await tx.charitySelection.create({
+        data: {
+          userId: user.id,
+          charityId: charityId,
+          isActive: true,
+        },
+        include: {
+          charity: true,
+        },
+      });
+
+      // Update user's current selectedCharityId for quick access
+      await tx.user.update({
+        where: { id: user.id },
+        data: { selectedCharityId: charityId },
+      });
+
+      return selection;
     });
 
     return NextResponse.json({
       success: true,
-      charity: user.selectedCharity,
+      charity: result.charity,
+      selectionId: result.id,
     });
   } catch (error) {
     console.error("Error updating charity selection:", error);
