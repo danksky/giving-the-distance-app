@@ -170,7 +170,7 @@ model Charity {
   fullName               String
   description            String   @db.Text
   category               String
-  emoji                  String
+  logoUrl                String?
   website                String
   charityNavigatorScore  Int
   isDefault              Boolean  @default(false)

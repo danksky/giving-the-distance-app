@@ -47,7 +47,7 @@ export default async function StravaSettingsPage({
             Dashboard
           </Link>
           <Link href="/settings" className="btn btn-ghost btn-sm">
-            ⚙️ Settings
+            Settings
           </Link>
           <div className="dropdown dropdown-end">
             <button tabIndex={0} className="btn btn-ghost btn-circle">
@@ -150,7 +150,14 @@ export default async function StravaSettingsPage({
                 <h2 className="card-title text-2xl">
                   Connect Your Strava Account
                 </h2>
-                <div className="text-5xl">🏃‍♂️</div>
+                <div className="w-16 h-16 relative flex-shrink-0">
+                  <Image
+                    src="/logos/services/strava.svg"
+                    alt="Strava"
+                    width={64}
+                    height={64}
+                  />
+                </div>
               </div>
               <p className="mb-4">
                 Link your Strava to start tracking your activities and creating
@@ -186,7 +193,7 @@ export default async function StravaSettingsPage({
                 </div>
               </div>
               <a href="/api/strava/connect" className="btn btn-primary btn-lg">
-                🔗 Connect to Strava
+                Connect to Strava
               </a>
             </div>
           </div>
@@ -197,7 +204,14 @@ export default async function StravaSettingsPage({
                 <h2 className="card-title text-2xl">
                   Strava Account Connected
                 </h2>
-                <div className="text-5xl">✅</div>
+                <div className="w-16 h-16 relative flex-shrink-0">
+                  <Image
+                    src="/logos/services/strava.svg"
+                    alt="Strava"
+                    width={64}
+                    height={64}
+                  />
+                </div>
               </div>
 
               {/* Connected Account Info */}
@@ -226,7 +240,7 @@ export default async function StravaSettingsPage({
                     )}
                     {stravaAthlete?.city && stravaAthlete?.state && (
                       <div className="text-sm text-base-content/60">
-                        📍 {stravaAthlete.city}, {stravaAthlete.state}
+                        {stravaAthlete.city}, {stravaAthlete.state}
                       </div>
                     )}
                   </div>
@@ -280,21 +294,21 @@ export default async function StravaSettingsPage({
             <h3 className="card-title">About Strava Integration</h3>
             <div className="space-y-3 text-sm">
               <div>
-                <div className="font-semibold mb-1">🔄 Automatic Syncing</div>
+                <div className="font-semibold mb-1">Automatic Syncing</div>
                 <p className="text-base-content/60">
                   New activities are automatically imported from Strava when you
                   complete them.
                 </p>
               </div>
               <div>
-                <div className="font-semibold mb-1">💝 Donation Messages</div>
+                <div className="font-semibold mb-1">Donation Messages</div>
                 <p className="text-base-content/60">
                   We automatically add donation information to your activity
                   descriptions on Strava.
                 </p>
               </div>
               <div>
-                <div className="font-semibold mb-1">🔒 Privacy & Security</div>
+                <div className="font-semibold mb-1">Privacy & Security</div>
                 <p className="text-base-content/60">
                   Your Strava data is securely stored and only used to track
                   your charitable contributions.

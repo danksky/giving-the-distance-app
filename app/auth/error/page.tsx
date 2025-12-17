@@ -28,7 +28,6 @@ export default async function AuthErrorPage({
         <div className="card bg-base-100  w-full">
           <div className="card-body">
             <div className="text-center mb-6">
-              <div className="text-6xl mb-4">🔒</div>
               <h1 className="card-title text-3xl justify-center mb-2">
                 {isStravaError
                   ? "Strava Permissions Required"
@@ -45,7 +44,6 @@ export default async function AuthErrorPage({
               <div className="alert alert-warning">
                 <div className="flex-col items-start w-full">
                   <h3 className="font-semibold flex items-center gap-2 mb-3">
-                    <span className="text-xl">⚠️</span>
                     Missing Permissions
                   </h3>
 
@@ -95,9 +93,7 @@ export default async function AuthErrorPage({
                   )}
 
                   <div className="mt-4 p-4 bg-base-100 rounded-lg w-full">
-                    <p className="text-sm font-medium mb-2">
-                      💡 How to fix this:
-                    </p>
+                    <p className="text-sm font-medium mb-2">How to fix this:</p>
                     <ol className="text-sm space-y-1 ml-4 list-decimal">
                       <li>Click &quot;Try Again&quot; below</li>
                       <li>

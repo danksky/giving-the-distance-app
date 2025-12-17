@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
 import { getCharityAtTime } from "@/lib/charity-helpers";
+import CharityLogo from "@/components/CharityLogo";
 import type { Metadata } from "next";
 
 // Helper function to format duration in seconds to HH:MM:SS
@@ -275,13 +276,9 @@ export default async function ActivityPage({
 
         {/* Donation Impact Card - Only show if sponsored */}
         {hasSponsorship ? (
-          <div className="relative rounded-lg  mb-6 overflow-hidden">
-            {/* Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#af2878] via-[#d68bb5] to-[#f3dce8] opacity-90"></div>
-
-            {/* Content overlay */}
-            <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg m-1 p-6 ">
-              <h3 className="text-2xl font-bold mb-4">💝 Impact</h3>
+          <div className="card bg-base-100 mb-6">
+            <div className="card-body">
+              <h3 className="text-2xl font-bold mb-4">Impact</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Charity Section */}
@@ -290,11 +287,13 @@ export default async function ActivityPage({
                     BENEFITING CHARITY
                   </div>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="text-4xl">
-                      {activityCharity?.emoji || "🌍"}
-                    </div>
+                    <CharityLogo
+                      name={activityCharity?.name || "Charity"}
+                      logoUrl={activityCharity?.logoUrl}
+                      size="lg"
+                    />
                     <div>
-                      <div className="text-2xl font-bold text-[#af2878]">
+                      <div className="text-2xl font-bold text-[#8B4ACC]">
                         {activityCharity?.name || "Charity"}
                       </div>
                       <div className="text-sm text-base-content/60">
@@ -309,7 +308,7 @@ export default async function ActivityPage({
                   <div className="text-sm font-semibold text-base-content/60 mb-2">
                     COMMITMENT AMOUNT
                   </div>
-                  <div className="text-5xl font-bold text-[#af2878] mb-2">
+                  <div className="text-5xl font-bold text-[#8B4ACC] mb-2">
                     ${donationAmount.toFixed(2)}
                   </div>
                   <div className="text-sm text-base-content/60">
@@ -326,7 +325,14 @@ export default async function ActivityPage({
                   </div>
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="text-3xl">🏪</div>
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center font-bold text-lg text-primary">
+                        {sponsorName
+                          .split(" ")
+                          .slice(0, 2)
+                          .map((word) => word[0])
+                          .join("")
+                          .toUpperCase()}
+                      </div>
                       <div>
                         <div className="text-xl font-bold">{sponsorName}</div>
                         <div className="text-sm text-base-content/60">
@@ -349,7 +355,7 @@ export default async function ActivityPage({
           /* No Sponsorship Card */
           <div className="card bg-base-100  mb-6">
             <div className="card-body">
-              <h3 className="text-xl font-bold mb-2">💝 Impact</h3>
+              <h3 className="text-xl font-bold mb-2">Impact</h3>
               <p className="text-base-content/70">
                 This activity has not been matched with a sponsor yet. New
                 activities are automatically matched when sponsors have
@@ -361,7 +367,11 @@ export default async function ActivityPage({
                     YOUR SELECTED CHARITY
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="text-3xl">{activityCharity.emoji}</div>
+                    <CharityLogo
+                      name={activityCharity.name}
+                      logoUrl={activityCharity.logoUrl}
+                      size="md"
+                    />
                     <div>
                       <div className="text-lg font-bold">
                         {activityCharity.name}

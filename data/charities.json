@@ -5,7 +5,7 @@
     "fullName": "United Nations Children's Fund",
     "description": "Supporting children's rights, survival, development, and protection worldwide.",
     "category": "International Peace, Security, and Affairs",
-    "emoji": "🌍",
+    "logoUrl": "/logos/charities/unicef.png",
     "website": "https://www.unicef.org/",
     "charityNavigatorScore": 93,
     "isDefault": true
@@ -16,7 +16,7 @@
     "fullName": "Doctors Without Borders, USA (Médecins Sans Frontières)",
     "description": "Providing emergency medical aid to people affected by conflict, epidemics, disasters, or exclusion from healthcare.",
     "category": "Development and Relief Services",
-    "emoji": "🏥",
+    "logoUrl": null,
     "website": "https://www.doctorswithoutborders.org/",
     "charityNavigatorScore": 96,
     "isDefault": false
@@ -27,7 +27,7 @@
     "fullName": "American Red Cross",
     "description": "Preventing and alleviating human suffering in the face of emergencies through volunteers and donor generosity.",
     "category": "Multipurpose Human Service Organizations",
-    "emoji": "❤️",
+    "logoUrl": null,
     "website": "https://www.redcross.org/",
     "charityNavigatorScore": 100,
     "isDefault": false
@@ -38,7 +38,7 @@
     "fullName": "ALSAC - St. Jude Children's Research Hospital",
     "description": "Finding cures and saving children with cancer and other catastrophic diseases through research and treatment.",
     "category": "Treatment and Prevention Services",
-    "emoji": "🏥",
+    "logoUrl": null,
     "website": "https://www.stjude.org/",
     "charityNavigatorScore": 99,
     "isDefault": false
@@ -49,7 +49,7 @@
     "fullName": "The Nature Conservancy",
     "description": "Conserving lands and waters to protect nature and preserve life on Earth.",
     "category": "Environmental Protection and Conservation",
-    "emoji": "🌲",
+    "logoUrl": null,
     "website": "https://www.nature.org/",
     "charityNavigatorScore": 96,
     "isDefault": false
@@ -60,7 +60,7 @@
     "fullName": "Natural Resources Defense Council (NRDC)",
     "description": "Working to safeguard the earth—its people, plants, animals, and natural systems on which all life depends.",
     "category": "Environmental Protection and Conservation",
-    "emoji": "🌎",
+    "logoUrl": null,
     "website": "https://www.nrdc.org/",
     "charityNavigatorScore": 99,
     "isDefault": false
@@ -71,7 +71,7 @@
     "fullName": "World Wildlife Fund (WWF)",
     "description": "Conserving nature and reducing the most pressing threats to the diversity of life on Earth.",
     "category": "Wildlife Conservation",
-    "emoji": "🐼",
+    "logoUrl": null,
     "website": "https://www.worldwildlife.org/",
     "charityNavigatorScore": 99,
     "isDefault": false
@@ -82,7 +82,7 @@
     "fullName": "Save the Children",
     "description": "Ensuring every child survives, learns and is protected through programs in the U.S. and around the world.",
     "category": "Development and Relief Services",
-    "emoji": "👶",
+    "logoUrl": null,
     "website": "https://www.savethechildren.org/",
     "charityNavigatorScore": 96,
     "isDefault": false
@@ -93,7 +93,7 @@
     "fullName": "DAV (Disabled American Veterans)",
     "description": "Empowering veterans to lead high-quality lives with respect and dignity through various assistance programs.",
     "category": "Social Services",
-    "emoji": "🇺🇸",
+    "logoUrl": null,
     "website": "https://www.dav.org/",
     "charityNavigatorScore": 100,
     "isDefault": false
@@ -104,7 +104,7 @@
     "fullName": "American Society for the Prevention of Cruelty to Animals",
     "description": "Providing effective means for the prevention of cruelty to animals throughout the United States.",
     "category": "Animal Rights, Welfare, and Services",
-    "emoji": "🐕",
+    "logoUrl": "/logos/charities/aspca.jpeg",
     "website": "https://www.aspca.org/",
     "charityNavigatorScore": 99,
     "isDefault": false

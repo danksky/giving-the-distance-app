@@ -24,7 +24,6 @@ export default async function CampaignsPage() {
         <div className="hero-content">
           <div className="card bg-base-100  max-w-md">
             <div className="card-body text-center">
-              <div className="text-6xl mb-4">🔒</div>
               <h1 className="card-title text-2xl justify-center">
                 Access Denied
               </h1>
@@ -130,7 +129,7 @@ export default async function CampaignsPage() {
       {/* Header */}
       <div className="navbar bg-base-100 ">
         <div className="flex-1 max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-2xl font-bold">💰 Campaign Management</h1>
+          <h1 className="text-2xl font-bold">Campaign Management</h1>
         </div>
         <div className="flex-none gap-2 px-4">
           <span className="text-sm opacity-70">
@@ -149,21 +148,18 @@ export default async function CampaignsPage() {
         {/* Overall Stats */}
         <div className="stats stats-vertical lg:stats-horizontal shadow w-full mb-8">
           <div className="stat">
-            <div className="stat-figure text-primary text-3xl">💵</div>
             <div className="stat-title">Total Budget Allocated</div>
             <div className="stat-value text-primary">
               ${(totalBudgetAllocated / 100).toFixed(2)}
             </div>
           </div>
           <div className="stat">
-            <div className="stat-figure text-success text-3xl">💰</div>
             <div className="stat-title">Remaining Budget</div>
             <div className="stat-value text-success">
               ${(totalBudgetRemaining / 100).toFixed(2)}
             </div>
           </div>
           <div className="stat">
-            <div className="stat-figure text-info text-3xl">📊</div>
             <div className="stat-title">Budget Spent</div>
             <div className="stat-value text-info">
               ${(totalBudgetSpent / 100).toFixed(2)}
@@ -176,7 +172,6 @@ export default async function CampaignsPage() {
             </div>
           </div>
           <div className="stat">
-            <div className="stat-figure text-secondary text-3xl">✅</div>
             <div className="stat-title">Activities Matched</div>
             <div className="stat-value text-secondary">{totalCommitments}</div>
           </div>
@@ -185,37 +180,34 @@ export default async function CampaignsPage() {
         {/* Sponsor Match Results Breakdown */}
         <div className="card bg-base-100  mb-8">
           <div className="card-body">
-            <h2 className="card-title">
-              <span className="text-2xl mr-2">📈</span>
-              Sponsor Match Results (Last 20)
-            </h2>
+            <h2 className="card-title">Sponsor Match Results (Last 20)</h2>
             <div className="stats stats-vertical lg:stats-horizontal shadow">
               <div className="stat">
-                <div className="stat-title">✅ Matched</div>
+                <div className="stat-title">Matched</div>
                 <div className="stat-value text-success text-2xl">
                   {matchStats.matched}
                 </div>
               </div>
               <div className="stat">
-                <div className="stat-title">💸 No Budget</div>
+                <div className="stat-title">No Budget</div>
                 <div className="stat-value text-warning text-2xl">
                   {matchStats.noBudget}
                 </div>
               </div>
               <div className="stat">
-                <div className="stat-title">🚫 No Campaign</div>
+                <div className="stat-title">No Campaign</div>
                 <div className="stat-value text-error text-2xl">
                   {matchStats.noCampaign}
                 </div>
               </div>
               <div className="stat">
-                <div className="stat-title">🔁 Already Sponsored</div>
+                <div className="stat-title">Already Sponsored</div>
                 <div className="stat-value text-info text-2xl">
                   {matchStats.alreadySponsored}
                 </div>
               </div>
               <div className="stat">
-                <div className="stat-title">⚠️ Update Failed</div>
+                <div className="stat-title">Update Failed</div>
                 <div className="stat-value text-error text-2xl">
                   {matchStats.updateFailed}
                 </div>
@@ -226,10 +218,7 @@ export default async function CampaignsPage() {
 
         {/* Campaigns List */}
         <div className="space-y-6 mb-8">
-          <h2 className="text-3xl font-bold">
-            <span className="mr-2">🎯</span>
-            Active Campaigns
-          </h2>
+          <h2 className="text-3xl font-bold">Active Campaigns</h2>
           {campaigns.map((campaign) => {
             const totalTopUps = campaign.topUps.reduce(
               (sum, t) => sum + t.amountCents,
@@ -266,7 +255,15 @@ export default async function CampaignsPage() {
                           campaign.isActive ? "badge-success" : "badge-error"
                         } badge-lg`}
                       >
-                        {campaign.isActive ? "✅ Active" : "❌ Inactive"}
+                        {campaign.isActive ? (
+                          <span className="badge badge-success badge-sm">
+                            Active
+                          </span>
+                        ) : (
+                          <span className="badge badge-ghost badge-sm">
+                            Inactive
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -324,7 +321,7 @@ export default async function CampaignsPage() {
                   {/* Top-ups History */}
                   {campaign.topUps.length > 0 && (
                     <div className="mt-4">
-                      <h4 className="font-semibold mb-2">💰 Budget Top-ups</h4>
+                      <h4 className="font-semibold mb-2">Budget Top-ups</h4>
                       <div className="overflow-x-auto">
                         <table className="table table-xs">
                           <thead>
@@ -360,7 +357,7 @@ export default async function CampaignsPage() {
                   {campaign.sponsorMatches.length > 0 && (
                     <div className="mt-4">
                       <h4 className="font-semibold mb-2">
-                        📊 Recent Sponsor Matches
+                        Recent Sponsor Matches
                       </h4>
                       <div className="space-y-2">
                         {campaign.sponsorMatches.map((match) => (
@@ -504,7 +501,6 @@ export default async function CampaignsPage() {
 
         {campaigns.length === 0 && (
           <div className="text-center py-12 opacity-60">
-            <div className="text-6xl mb-4">🎯</div>
             <p className="text-xl mb-2">No campaigns yet</p>
             <p className="text-sm">
               Run the seed script to create default campaigns

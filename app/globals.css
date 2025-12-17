@@ -5,8 +5,8 @@
   --foreground: #171717;
   --border: #e5e7eb;
   --border-hover: #d1d5db;
-  --primary: #ff6b35;
-  --primary-hover: #e55a28;
+  --primary: #B56DFF;
+  --primary-hover: #9F4FE8;
   --secondary: #004e89;
   --success: #10b981;
   --error: #ef4444;
@@ -196,9 +196,9 @@ body {
 }
 
 .badge-primary {
-  background: rgb(255 107 53 / 0.1);
+  background: rgb(181 109 255 / 0.1);
   border-color: var(--primary);
-  color: #c2410c;
+  color: #7c3aed;
 }
 
 .badge-outline {

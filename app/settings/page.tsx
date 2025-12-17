@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import CharityLogo from "@/components/CharityLogo";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -88,7 +89,14 @@ export default async function SettingsPage() {
               <div className="card-body">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="text-4xl">🏃‍♂️</div>
+                    <div className="w-12 h-12 relative flex-shrink-0">
+                      <Image
+                        src="/logos/services/strava.svg"
+                        alt="Strava"
+                        width={48}
+                        height={48}
+                      />
+                    </div>
                     <div className="flex-1">
                       <h2 className="card-title">Strava Connection</h2>
                       <p className="text-base-content/60">
@@ -111,7 +119,7 @@ export default async function SettingsPage() {
                             </div>
                           )}
                           <span className="text-sm font-semibold text-success">
-                            ✓ Connected as {stravaAthlete.firstname}{" "}
+                            Connected as {stravaAthlete.firstname}{" "}
                             {stravaAthlete.lastname}
                           </span>
                         </div>
@@ -155,9 +163,11 @@ export default async function SettingsPage() {
               <div className="card-body">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="text-4xl">
-                      {currentCharity?.emoji || "🌍"}
-                    </div>
+                    <CharityLogo
+                      name={currentCharity?.name || "Charity"}
+                      logoUrl={currentCharity?.logoUrl}
+                      size="md"
+                    />
                     <div className="flex-1">
                       <h2 className="card-title">Charity Selection</h2>
                       <p className="text-base-content/60">
@@ -165,9 +175,11 @@ export default async function SettingsPage() {
                       </p>
                       {currentCharity && (
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-2xl">
-                            {currentCharity.emoji}
-                          </span>
+                          <CharityLogo
+                            name={currentCharity.name}
+                            logoUrl={currentCharity.logoUrl}
+                            size="sm"
+                          />
                           <span className="text-sm font-semibold text-primary">
                             {currentCharity.name}
                             {currentCharity.isDefault &&

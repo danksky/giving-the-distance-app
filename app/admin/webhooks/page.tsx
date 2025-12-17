@@ -23,7 +23,6 @@ export default async function WebhooksPage() {
         <div className="hero-content">
           <div className="card bg-base-100  max-w-md">
             <div className="card-body text-center">
-              <div className="text-6xl mb-4">🔒</div>
               <h1 className="card-title text-2xl justify-center">
                 Access Denied
               </h1>
@@ -205,16 +204,14 @@ export default async function WebhooksPage() {
                               className="badge badge-error cursor-help"
                               title={event.processingError}
                             >
-                              ❌ Error
+                              Error
                             </span>
                           ) : event.processed ? (
                             <span className="badge badge-success">
-                              ✅ Processed
+                              Processed
                             </span>
                           ) : (
-                            <span className="badge badge-ghost">
-                              ⏳ Pending
-                            </span>
+                            <span className="badge badge-ghost">Pending</span>
                           )}
                         </td>
                         <td>
@@ -226,7 +223,7 @@ export default async function WebhooksPage() {
                                   className="badge badge-error cursor-help"
                                   title={event.descriptionUpdateError}
                                 >
-                                  ❌ Failed
+                                  Failed
                                 </span>
                                 <span className="text-xs opacity-60 line-clamp-2">
                                   {event.descriptionUpdateError.substring(
@@ -238,13 +235,9 @@ export default async function WebhooksPage() {
                                 </span>
                               </div>
                             ) : event.descriptionUpdated ? (
-                              <span className="badge badge-info">
-                                ✅ Updated
-                              </span>
+                              <span className="badge badge-info">Updated</span>
                             ) : (
-                              <span className="badge badge-ghost">
-                                ⏳ Pending
-                              </span>
+                              <span className="badge badge-ghost">Pending</span>
                             )
                           ) : (
                             <span className="text-xs opacity-40">N/A</span>

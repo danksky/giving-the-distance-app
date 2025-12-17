@@ -50,15 +50,9 @@ interface SponsorProfile {
   }>;
 }
 
-function getActivityEmoji(type: string): string {
-  const emojiMap: Record<string, string> = {
-    Run: "🏃",
-    Ride: "🚴",
-    Walk: "🚶",
-    Swim: "🏊",
-    Hike: "🥾",
-  };
-  return emojiMap[type] || "🏃";
+function formatActivityType(type: string): string {
+  // Convert camelCase to Title Case with spaces
+  return type.replace(/([A-Z])/g, " $1").trim();
 }
 
 async function getSponsorProfile(slug: string): Promise<SponsorProfile | null> {
@@ -200,7 +194,7 @@ export default async function SponsorProfilePage({
                 {profile.businessName}
               </h1>
               <div className="mb-2">
-                <span className="badge badge-lg bg-[#af2878]/10 text-[#af2878] border border-[#af2878]/20 font-semibold">
+                <span className="badge badge-lg bg-[#B56DFF]/10 text-[#8B4ACC] border border-[#B56DFF]/20 font-semibold">
                   SPONSOR
                 </span>
               </div>
@@ -269,7 +263,7 @@ export default async function SponsorProfilePage({
                 rel="noopener noreferrer"
                 className="btn btn-outline btn-sm"
               >
-                🌐 Website
+                Website
               </Link>
             )}
             {profile.links.instagram && (
@@ -279,24 +273,20 @@ export default async function SponsorProfilePage({
                 rel="noopener noreferrer"
                 className="btn btn-outline btn-sm"
               >
-                📷 Instagram
+                Instagram
               </Link>
             )}
           </div>
         </div>
 
         {/* Impact Summary */}
-        <div className="relative rounded-lg  p-6 mb-6 overflow-hidden">
-          {/* Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#af2878] via-[#d68bb5] to-[#f3dce8] opacity-90"></div>
-
-          {/* Content overlay */}
-          <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg p-6 ">
+        <div className="card bg-base-100 mb-6">
+          <div className="card-body">
             <h2 className="text-2xl font-bold mb-4">Impact Summary</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="stat bg-gradient-to-br from-[#af2878]/10 to-[#f3dce8]/30 rounded-lg p-4 border border-[#af2878]/20">
+              <div className="stat bg-base-200 rounded-lg p-4">
                 <div className="stat-title">Total Donated</div>
-                <div className="stat-value text-2xl text-[#af2878]">
+                <div className="stat-value text-2xl text-[#8B4ACC]">
                   $
                   {profile.impact.totalDonated.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
@@ -304,15 +294,15 @@ export default async function SponsorProfilePage({
                   })}
                 </div>
               </div>
-              <div className="stat bg-gradient-to-br from-[#af2878]/10 to-[#f3dce8]/30 rounded-lg p-4 border border-[#af2878]/20">
+              <div className="stat bg-base-200 rounded-lg p-4">
                 <div className="stat-title">Activities Sponsored</div>
-                <div className="stat-value text-2xl text-[#af2878]">
+                <div className="stat-value text-2xl text-[#8B4ACC]">
                   {profile.impact.activitiesSponsored}
                 </div>
               </div>
-              <div className="stat bg-gradient-to-br from-[#af2878]/10 to-[#f3dce8]/30 rounded-lg p-4 border border-[#af2878]/20">
+              <div className="stat bg-base-200 rounded-lg p-4">
                 <div className="stat-title">Athletes Supported</div>
-                <div className="stat-value text-2xl text-[#af2878]">
+                <div className="stat-value text-2xl text-[#8B4ACC]">
                   {profile.impact.athletesSupported}
                 </div>
               </div>
@@ -349,12 +339,8 @@ export default async function SponsorProfilePage({
         </div>
 
         {/* Recent Sponsored Activities */}
-        <div className="relative rounded-lg  p-6 mb-6 overflow-hidden">
-          {/* Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#af2878] via-[#d68bb5] to-[#f3dce8] opacity-90"></div>
-
-          {/* Content overlay */}
-          <div className="relative z-10 bg-base-100/95 backdrop-blur-sm rounded-lg p-6 ">
+        <div className="card bg-base-100 mb-6">
+          <div className="card-body">
             <h2 className="text-2xl font-bold mb-4">
               Recent Sponsored Activities
             </h2>
@@ -367,9 +353,6 @@ export default async function SponsorProfilePage({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xl">
-                          {getActivityEmoji(activity.activityType)}
-                        </span>
                         <span className="font-semibold">
                           {activity.athleteName}
                         </span>
@@ -394,7 +377,7 @@ export default async function SponsorProfilePage({
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-lg text-[#af2878]">
+                      <div className="font-bold text-lg text-[#8B4ACC]">
                         ${activity.donationAmount.toFixed(2)}
                       </div>
                       <div className="text-xs text-base-content/60">

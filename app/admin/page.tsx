@@ -18,7 +18,6 @@ export default async function AdminPage() {
         <div className="hero-content">
           <div className="card bg-base-100 max-w-md">
             <div className="card-body text-center">
-              <div className="text-6xl mb-4">🔒</div>
               <h1 className="card-title text-2xl justify-center">
                 Access Denied
               </h1>
@@ -43,7 +42,7 @@ export default async function AdminPage() {
       {/* Header */}
       <div className="navbar bg-base-100">
         <div className="flex-1 max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-2xl font-bold">⚙️ Admin Dashboard</h1>
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         </div>
         <div className="flex-none gap-2 px-4">
           <span className="text-sm opacity-70">
@@ -64,7 +63,6 @@ export default async function AdminPage() {
           >
             <div className="card-body">
               <div className="flex items-start justify-between">
-                <div className="text-6xl">💰</div>
                 <div className="badge badge-primary">Primary</div>
               </div>
               <h2 className="card-title text-2xl mt-4">Campaign Management</h2>
@@ -84,7 +82,6 @@ export default async function AdminPage() {
           >
             <div className="card-body">
               <div className="flex items-start justify-between">
-                <div className="text-6xl">📡</div>
                 <div className="badge badge-secondary">Monitoring</div>
               </div>
               <h2 className="card-title text-2xl mt-4">Webhook Events</h2>
@@ -106,7 +103,6 @@ export default async function AdminPage() {
           >
             <div className="card-body">
               <div className="flex items-start justify-between">
-                <div className="text-6xl">🗄️</div>
                 <div className="badge badge-info">External</div>
               </div>
               <h2 className="card-title text-2xl mt-4">Prisma Studio</h2>
@@ -123,7 +119,6 @@ export default async function AdminPage() {
           <div className="card bg-base-100">
             <div className="card-body">
               <div className="flex items-start justify-between">
-                <div className="text-6xl">📊</div>
                 <div className="badge badge-success">Info</div>
               </div>
               <h2 className="card-title text-2xl mt-4">System Information</h2>
@@ -148,7 +143,7 @@ export default async function AdminPage() {
         {/* Quick Actions */}
         <div className="card bg-base-100  mt-8">
           <div className="card-body">
-            <h2 className="card-title text-2xl">⚡ Quick Actions</h2>
+            <h2 className="card-title text-2xl">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div className="stat bg-base-200 rounded-lg">
                 <div className="stat-title">Run Seed Script</div>
@@ -178,7 +173,7 @@ export default async function AdminPage() {
         {/* Documentation Links */}
         <div className="card bg-base-100  mt-8">
           <div className="card-body">
-            <h2 className="card-title text-2xl">📚 Documentation</h2>
+            <h2 className="card-title text-2xl">Documentation</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <a
                 href="/SPONSOR-MATCHING.md"

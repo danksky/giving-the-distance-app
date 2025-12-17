@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import CharitySelector from "@/components/CharitySelector";
+import CharityLogo from "@/components/CharityLogo";
 
 export default async function CharitySettingsPage() {
   const session = await auth();
@@ -41,7 +42,7 @@ export default async function CharitySettingsPage() {
             Dashboard
           </Link>
           <Link href="/settings" className="btn btn-ghost btn-sm">
-            ⚙️ Settings
+            Settings
           </Link>
           <div className="dropdown dropdown-end">
             <button tabIndex={0} className="btn btn-ghost btn-circle">
@@ -116,11 +117,15 @@ export default async function CharitySettingsPage() {
               <div className="badge badge-success badge-lg">Active</div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#af2878]/10 to-[#f3dce8]/30 rounded-lg p-6 border border-[#af2878]/20">
+            <div className="bg-gradient-to-br from-[#B56DFF]/10 to-[#E5D4FF]/30 rounded-lg p-6 border border-[#B56DFF]/20">
               <div className="flex items-start gap-4">
-                <div className="text-6xl">{currentCharity.emoji}</div>
+                <CharityLogo
+                  name={currentCharity.name}
+                  logoUrl={currentCharity.logoUrl}
+                  size="xl"
+                />
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-[#af2878] mb-2">
+                  <h3 className="text-2xl font-bold text-[#8B4ACC] mb-2">
                     {currentCharity.name}
                   </h3>
                   <div className="text-lg font-semibold mb-3">
@@ -136,7 +141,7 @@ export default async function CharitySettingsPage() {
                       rel="noopener noreferrer"
                       className="btn btn-sm btn-outline"
                     >
-                      🌐 Visit Website
+                      Visit Website
                     </Link>
                     {currentCharity.isDefault && (
                       <div className="badge badge-outline">Default Charity</div>
@@ -161,12 +166,12 @@ export default async function CharitySettingsPage() {
             <div className="stats stats-vertical lg:stats-horizontal">
               <div className="stat">
                 <div className="stat-title">Total Donated</div>
-                <div className="stat-value text-2xl text-[#af2878]">$0.00</div>
+                <div className="stat-value text-2xl text-[#8B4ACC]">$0.00</div>
                 <div className="stat-desc">Coming soon</div>
               </div>
               <div className="stat">
                 <div className="stat-title">Activities</div>
-                <div className="stat-value text-2xl text-[#af2878]">0</div>
+                <div className="stat-value text-2xl text-[#8B4ACC]">0</div>
                 <div className="stat-desc">Contributing to charity</div>
               </div>
             </div>

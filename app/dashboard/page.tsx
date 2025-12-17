@@ -19,35 +19,10 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
 
-// Helper function to get emoji for activity type
-function getActivityEmoji(type: string): string {
-  const emojiMap: Record<string, string> = {
-    Run: "🏃",
-    Ride: "🚴",
-    Swim: "🏊",
-    Walk: "🚶",
-    Hike: "🥾",
-    AlpineSki: "⛷️",
-    BackcountrySki: "⛷️",
-    NordicSki: "⛷️",
-    Snowboard: "🏂",
-    IceSkate: "⛸️",
-    InlineSkate: "⛸️",
-    Kayaking: "🛶",
-    Canoeing: "🛶",
-    Rowing: "🚣",
-    StandUpPaddling: "🏄",
-    Surfing: "🏄",
-    Windsurf: "🏄",
-    Kitesurf: "🪂",
-    WeightTraining: "🏋️",
-    Workout: "💪",
-    Yoga: "🧘",
-    RockClimbing: "🧗",
-    VirtualRide: "🚴",
-    VirtualRun: "🏃",
-  };
-  return emojiMap[type] || "🏃";
+// Helper function to format activity type for display
+function formatActivityType(type: string): string {
+  // Convert camelCase to Title Case with spaces
+  return type.replace(/([A-Z])/g, " $1").trim();
 }
 
 export default async function DashboardPage({
@@ -98,11 +73,11 @@ export default async function DashboardPage({
         <div className="flex-none gap-2">
           {userIsAdmin && (
             <Link href="/admin" className="btn btn-ghost btn-sm">
-              ⚙️ Admin
+              Admin
             </Link>
           )}
           <Link href="/settings" className="btn btn-ghost btn-sm">
-            ⚙️ Settings
+            Settings
           </Link>
           <div className="dropdown dropdown-end">
             <button tabIndex={0} className="btn btn-ghost btn-circle">
@@ -127,7 +102,7 @@ export default async function DashboardPage({
               <li className="menu-title">{session.user.email}</li>
               {userIsAdmin && (
                 <li>
-                  <Link href="/admin">⚙️ Admin Dashboard</Link>
+                  <Link href="/admin">Admin Dashboard</Link>
                 </li>
               )}
               <li>
@@ -201,7 +176,14 @@ export default async function DashboardPage({
             <div className="card-body">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl">🏃‍♂️</div>
+                  <div className="w-12 h-12 relative flex-shrink-0">
+                    <Image
+                      src="/logos/services/strava.svg"
+                      alt="Strava"
+                      width={48}
+                      height={48}
+                    />
+                  </div>
                   <div>
                     <h2 className="card-title text-xl">
                       Connect Strava to Get Started
@@ -215,7 +197,7 @@ export default async function DashboardPage({
                   href="/settings/strava"
                   className="btn btn-primary btn-sm"
                 >
-                  🔗 Connect Strava
+                  Connect Strava
                 </Link>
               </div>
             </div>
@@ -373,18 +355,32 @@ export default async function DashboardPage({
               </div>
               <div className="stat">
                 <div className="stat-title">Google</div>
-                <div className="stat-value text-sm text-success">
-                  ✓ Connected
+                <div className="stat-value text-sm flex items-center gap-2">
+                  <Image
+                    src="/logos/services/google.png"
+                    alt="Google"
+                    width={20}
+                    height={20}
+                    className="inline-block"
+                  />
+                  <span className="text-success">Connected</span>
                 </div>
               </div>
               <div className="stat">
                 <div className="stat-title">Strava</div>
                 <div
-                  className={`stat-value text-sm ${
+                  className={`stat-value text-sm flex items-center gap-2 ${
                     hasStrava ? "text-success" : "text-base-content opacity-40"
                   }`}
                 >
-                  {hasStrava ? "✓ Connected" : "✗ Not yet"}
+                  <Image
+                    src="/logos/services/strava.svg"
+                    alt="Strava"
+                    width={20}
+                    height={20}
+                    className="inline-block"
+                  />
+                  <span>{hasStrava ? "Connected" : "Not Connected"}</span>
                 </div>
               </div>
               {hasStrava && (
@@ -402,7 +398,7 @@ export default async function DashboardPage({
           <div className="collapse collapse-arrow bg-base-100 mt-8">
             <input type="checkbox" />
             <div className="collapse-title font-medium">
-              🔧 Debug Info (Dev Only)
+              Debug Info (Dev Only)
             </div>
             <div className="collapse-content">
               <div className="mockup-code text-xs">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import CharityLogo from "@/components/CharityLogo";
 
 interface Charity {
   id: string;
@@ -10,7 +11,7 @@ interface Charity {
   fullName: string;
   description: string;
   category: string;
-  emoji: string;
+  logoUrl: string | null;
   website: string;
   charityNavigatorScore: number;
   isDefault: boolean;
@@ -129,7 +130,6 @@ export default function CharitySelector({
       <div className="space-y-4">
         {filteredCharities.length === 0 ? (
           <div className="text-center py-12 bg-base-200 rounded-lg">
-            <div className="text-4xl mb-2">🔍</div>
             <div className="font-semibold mb-1">No charities found</div>
             <div className="text-sm text-base-content/60">
               Try adjusting your search query
@@ -144,16 +144,19 @@ export default function CharitySelector({
                 key={charity.id}
                 className={`card border-2 transition-all ${
                   isSelected
-                    ? "border-[#af2878] bg-gradient-to-br from-[#af2878]/10 to-[#f3dce8]/30"
+                    ? "border-[#B56DFF] bg-gradient-to-br from-[#B56DFF]/10 to-[#E5D4FF]/30"
                     : "border-base-300 bg-base-100 hover:border-base-content/20"
                 }`}
               >
                 <div className="card-body">
                   <div className="flex items-start gap-4">
-                    {/* Emoji Icon */}
-                    <div className="text-5xl flex-shrink-0">
-                      {charity.emoji}
-                    </div>
+                    {/* Charity Logo */}
+                    <CharityLogo
+                      name={charity.name}
+                      logoUrl={charity.logoUrl}
+                      size="lg"
+                      className="flex-shrink-0"
+                    />
 
                     {/* Charity Info */}
                     <div className="flex-1 min-w-0">
@@ -162,7 +165,20 @@ export default function CharitySelector({
                           <h3 className="text-xl font-bold">
                             {charity.name}
                             {isSelected && (
-                              <span className="ml-2 text-[#af2878]">✓</span>
+                              <span className="ml-2 text-[#8B4ACC]">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5 inline-block"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </span>
                             )}
                           </h3>
                           <div className="text-sm font-semibold text-base-content/70">
@@ -206,10 +222,7 @@ export default function CharitySelector({
                     {/* Select Button */}
                     <div className="flex-shrink-0">
                       {isSelected ? (
-                        <button
-                          className="btn btn-success btn-sm"
-                          disabled
-                        >
+                        <button className="btn btn-success btn-sm" disabled>
                           Selected
                         </button>
                       ) : (
