@@ -11,7 +11,7 @@ export async function getCharityAtTime(
   id: string;
   name: string;
   fullName: string;
-  emoji: string;
+  logoUrl: string | null;
   isDefault: boolean;
 } | null> {
   // Find the most recent charity selection before or at the given timestamp
