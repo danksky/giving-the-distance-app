@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { db } from "@/lib/db";
+import { isAdmin } from "@/lib/auth-helpers";
 import { backfillGPXFiles, getGPXStatistics } from "@/lib/gpx-backfill";
 
 /**
@@ -10,25 +10,12 @@ import { backfillGPXFiles, getGPXStatistics } from "@/lib/gpx-backfill";
  * POST - Trigger GPX backfill for activities without GPX files
  */
 
-// Check if user is admin (you'll need to implement this based on your auth setup)
-async function isAdmin(session: Awaited<ReturnType<typeof auth>>) {
-  if (!session?.user?.email) return false;
-  
-  // TODO: Implement proper admin check
-  // For now, just check if user exists
-  const user = await db.user.findUnique({
-    where: { email: session.user.email },
-  });
-  
-  return !!user;
-}
-
 // GET - Get statistics
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     
-    if (!session || !(await isAdmin(session))) {
+    if (!session || !isAdmin(session.user?.email)) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -61,7 +48,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     
-    if (!session || !(await isAdmin(session))) {
+    if (!session || !isAdmin(session.user?.email)) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
