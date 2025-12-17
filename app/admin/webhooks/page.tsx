@@ -164,85 +164,108 @@ export default async function WebhooksPage() {
                 </thead>
                 <tbody>
                   {events.map((event) => (
-                    <tr key={event.id}>
-                      <td className="text-sm">
-                        {new Date(event.eventTime).toLocaleString()}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            event.objectType === "activity"
-                              ? "badge-info"
-                              : "badge-secondary"
-                          }`}
-                        >
-                          {event.objectType}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            event.aspectType === "create"
-                              ? "badge-success"
-                              : event.aspectType === "delete"
-                              ? "badge-error"
-                              : "badge-warning"
-                          }`}
-                        >
-                          {event.aspectType}
-                        </span>
-                      </td>
-                      <td className="font-mono text-sm opacity-70">
-                        {event.objectId.toString()}
-                      </td>
-                      <td className="font-mono text-sm opacity-70">
-                        {event.ownerId.toString()}
-                      </td>
-                      <td>
-                        {event.processingError ? (
+                    <>
+                      <tr key={event.id}>
+                        <td className="text-sm">
+                          {new Date(event.eventTime).toLocaleString()}
+                        </td>
+                        <td>
                           <span
-                            className="badge badge-error cursor-help"
-                            title={event.processingError}
+                            className={`badge ${
+                              event.objectType === "activity"
+                                ? "badge-info"
+                                : "badge-secondary"
+                            }`}
                           >
-                            ❌ Error
+                            {event.objectType}
                           </span>
-                        ) : event.processed ? (
-                          <span className="badge badge-success">
-                            ✅ Processed
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              event.aspectType === "create"
+                                ? "badge-success"
+                                : event.aspectType === "delete"
+                                ? "badge-error"
+                                : "badge-warning"
+                            }`}
+                          >
+                            {event.aspectType}
                           </span>
-                        ) : (
-                          <span className="badge badge-ghost">⏳ Pending</span>
-                        )}
-                      </td>
-                      <td>
-                        {event.objectType === "activity" &&
-                        event.aspectType === "create" ? (
-                          event.descriptionUpdateError ? (
-                            <div className="flex items-start gap-2">
-                              <span
-                                className="badge badge-error cursor-help"
-                                title={event.descriptionUpdateError}
-                              >
-                                ❌ Failed
-                              </span>
-                              <span className="text-xs opacity-60 line-clamp-2">
-                                {event.descriptionUpdateError.substring(0, 100)}
-                                {event.descriptionUpdateError.length > 100 &&
-                                  "..."}
-                              </span>
-                            </div>
-                          ) : event.descriptionUpdated ? (
-                            <span className="badge badge-info">✅ Updated</span>
+                        </td>
+                        <td className="font-mono text-sm opacity-70">
+                          {event.objectId.toString()}
+                        </td>
+                        <td className="font-mono text-sm opacity-70">
+                          {event.ownerId.toString()}
+                        </td>
+                        <td>
+                          {event.processingError ? (
+                            <span
+                              className="badge badge-error cursor-help"
+                              title={event.processingError}
+                            >
+                              ❌ Error
+                            </span>
+                          ) : event.processed ? (
+                            <span className="badge badge-success">
+                              ✅ Processed
+                            </span>
                           ) : (
                             <span className="badge badge-ghost">
                               ⏳ Pending
                             </span>
-                          )
-                        ) : (
-                          <span className="text-xs opacity-40">N/A</span>
-                        )}
-                      </td>
-                    </tr>
+                          )}
+                        </td>
+                        <td>
+                          {event.objectType === "activity" &&
+                          event.aspectType === "create" ? (
+                            event.descriptionUpdateError ? (
+                              <div className="flex items-start gap-2">
+                                <span
+                                  className="badge badge-error cursor-help"
+                                  title={event.descriptionUpdateError}
+                                >
+                                  ❌ Failed
+                                </span>
+                                <span className="text-xs opacity-60 line-clamp-2">
+                                  {event.descriptionUpdateError.substring(
+                                    0,
+                                    100
+                                  )}
+                                  {event.descriptionUpdateError.length > 100 &&
+                                    "..."}
+                                </span>
+                              </div>
+                            ) : event.descriptionUpdated ? (
+                              <span className="badge badge-info">
+                                ✅ Updated
+                              </span>
+                            ) : (
+                              <span className="badge badge-ghost">
+                                ⏳ Pending
+                              </span>
+                            )
+                          ) : (
+                            <span className="text-xs opacity-40">N/A</span>
+                          )}
+                        </td>
+                      </tr>
+                      {event.processingError && (
+                        <tr key={`${event.id}-error`} className="bg-error/10">
+                          <td colSpan={7} className="py-2">
+                            <div className="text-sm">
+                              <span className="font-semibold text-error">
+                                Error:{" "}
+                              </span>
+                              <span className="text-error opacity-90">
+                                {event.processingError}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                 </tbody>
               </table>

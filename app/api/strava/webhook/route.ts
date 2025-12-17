@@ -100,7 +100,20 @@ export async function POST(request: NextRequest) {
       });
 
       if (!stravaAthlete) {
-        console.warn(`⚠️ No user found for Strava athlete ${owner_id}`);
+        const errorMessage = `No user found for Strava athlete ${owner_id}`;
+        console.warn(`⚠️ ${errorMessage}`);
+        
+        // Mark webhook event as processed with error
+        if (webhookEventId) {
+          await db.stravaWebhookEvent.update({
+            where: { id: webhookEventId },
+            data: { 
+              processed: true,
+              processingError: errorMessage,
+            },
+          });
+        }
+        
         // Still return 200 to acknowledge receipt
         return NextResponse.json({ success: true });
       }
