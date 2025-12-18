@@ -62,12 +62,12 @@ export default function ActivityPrivacyToggle({
             />
             <div>
               <span className="label-text font-semibold">
-                Make Profile Public
+                De-Anonymize This Activity
               </span>
               <p className="text-xs text-base-content/60 mt-1">
                 {isPublic
-                  ? "Everyone can see your name and photo"
-                  : "Your profile is private on this activity"}
+                  ? "Currently, everyone can see your name and photo"
+                  : "Currently, your profile is anonymized on this activity."}
               </p>
             </div>
           </label>
