@@ -377,7 +377,7 @@ export default async function ActivityPage({
                       <div>
                         <div className="text-xl font-bold">{sponsorName}</div>
                         <div className="text-sm text-base-content/60">
-                          Local Business Sponsor
+                          Donor
                         </div>
                       </div>
                     </div>
@@ -385,7 +385,7 @@ export default async function ActivityPage({
                       href={`/sponsors/${sponsorSlug}`}
                       className="btn btn-primary btn-sm"
                     >
-                      View Sponsor
+                      View Donor
                     </Link>
                   </div>
                 </div>
@@ -398,9 +398,9 @@ export default async function ActivityPage({
             <div className="card-body">
               <h3 className="text-xl font-bold mb-2">Impact</h3>
               <p className="text-base-content/70">
-                This activity has not been matched with a sponsor yet. New
-                activities are automatically matched when sponsors have
-                available budget.
+                This activity has not been matched with a donor yet. New
+                activities are automatically matched when donors have available
+                budget.
               </p>
               {activityCharity && (
                 <div className="mt-4 p-4 bg-base-200 rounded-lg">

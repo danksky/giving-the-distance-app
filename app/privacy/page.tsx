@@ -54,7 +54,7 @@ export default function PrivacyPage() {
                       When you connect your Strava account, we access your
                       athletic activities, profile information, and activity
                       statistics. We only collect data necessary to provide our
-                      sponsorship services.
+                      donation services.
                     </p>
                   </div>
                   <div>
@@ -75,12 +75,12 @@ export default function PrivacyPage() {
                   How We Use Your Information
                 </h2>
                 <ul className="list-disc list-inside space-y-2 leading-relaxed">
-                  <li>To provide and maintain our sponsorship services</li>
+                  <li>To provide and maintain our donation services</li>
                   <li>
-                    To track your athletic activities for sponsorship purposes
+                    To track your athletic activities for donation purposes
                   </li>
                   <li>
-                    To process donations and connect sponsors with your
+                    To process donations and connect donors with your
                     achievements
                   </li>
                   <li>

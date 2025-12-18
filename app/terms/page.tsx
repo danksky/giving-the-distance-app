@@ -51,9 +51,7 @@ export default function TermsPage() {
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Be at least 13 years of age</li>
                     <li>Have a valid Google account</li>
-                    <li>
-                      Have a Strava account to utilize sponsorship features
-                    </li>
+                    <li>Have a Strava account to utilize donation features</li>
                     <li>
                       Provide accurate and complete information during
                       registration
@@ -105,7 +103,7 @@ export default function TermsPage() {
                   <div>
                     <h3 className="font-semibold mb-2">What We Provide</h3>
                     <p>
-                      Giving the Distance connects athletes with sponsors to
+                      Giving the Distance connects athletes with donors to
                       support charitable causes. We provide a platform that:
                     </p>
                     <ul className="list-disc list-inside space-y-2 ml-4 mt-2">
@@ -113,13 +111,13 @@ export default function TermsPage() {
                         Integrates with Strava to track your athletic activities
                       </li>
                       <li>
-                        Enables creation and management of sponsorship campaigns
+                        Enables creation and management of donation campaigns
                       </li>
                       <li>
                         Processes donations based on athletic achievements
                       </li>
                       <li>
-                        Facilitates connections between athletes, sponsors, and
+                        Facilitates connections between athletes, donors, and
                         charitable organizations
                       </li>
                     </ul>
@@ -146,7 +144,7 @@ export default function TermsPage() {
                     <li>
                       Grant us permission to access your Strava activity data,
                       profile information, and to update your activities with
-                      sponsorship details
+                      donation details
                     </li>
                     <li>
                       Acknowledge that we will use Strava&apos;s API in
@@ -154,7 +152,7 @@ export default function TermsPage() {
                     </li>
                     <li>
                       Understand that disconnecting your Strava account will
-                      disable sponsorship tracking features
+                      disable donation tracking features
                     </li>
                     <li>
                       Agree that we may add descriptions or tags to your Strava
@@ -180,18 +178,18 @@ export default function TermsPage() {
                   <div>
                     <h3 className="font-semibold mb-2">Fees</h3>
                     <p>
-                      We may charge platform fees for facilitating sponsorships
-                      and donations. Any applicable fees will be clearly
-                      disclosed before you confirm a transaction.
+                      We may charge platform fees for facilitating donations and
+                      donations. Any applicable fees will be clearly disclosed
+                      before you confirm a transaction.
                     </p>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Refund Policy</h3>
                     <p>
                       All donations are final and non-refundable unless required
-                      by law or in cases of fraud or technical error.
-                      Sponsorship agreements may have specific terms that
-                      override this general policy.
+                      by law or in cases of fraud or technical error. Donation
+                      agreements may have specific terms that override this
+                      general policy.
                     </p>
                   </div>
                 </div>
@@ -203,8 +201,8 @@ export default function TermsPage() {
                   <p>You agree NOT to:</p>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>
-                      Manipulate or falsify activity data to increase
-                      sponsorship payments
+                      Manipulate or falsify activity data to increase donation
+                      payments
                     </li>
                     <li>
                       Use the platform for any illegal or unauthorized purpose
@@ -277,8 +275,8 @@ export default function TermsPage() {
                     <li>GPS or tracking errors in athletic activities</li>
                     <li>Delays or failures in payment processing</li>
                     <li>
-                      Disputes between sponsors and athletes regarding
-                      sponsorship terms
+                      Disputes between donors and athletes regarding donation
+                      terms
                     </li>
                   </ul>
                 </div>

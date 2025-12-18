@@ -22,12 +22,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Giving the Distance - Turn Every Mile Into Meaningful Impact",
   description:
-    "Connect your Strava account and create sponsorships where sponsors pay per mile or kilometer you run. Turn your athletic achievements into charitable donations.",
+    "Connect your Strava account and create donations where donors pay per mile or kilometer you run. Turn your athletic achievements into charitable donations.",
   keywords: [
     "strava",
     "running",
     "charity",
-    "sponsorship",
     "donations",
     "athletics",
     "fundraising",

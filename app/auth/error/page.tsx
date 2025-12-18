@@ -65,7 +65,7 @@ export default async function AuthErrorPage({
                               {permission === "activity:read_all" && (
                                 <span className="block text-xs mt-1 opacity-80">
                                   Required to read your workout data for
-                                  sponsorship tracking
+                                  donation tracking
                                 </span>
                               )}
                               {permission === "profile:read_all" && (

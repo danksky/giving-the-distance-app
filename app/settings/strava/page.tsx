@@ -118,8 +118,8 @@ export default async function StravaSettingsPage({
                 </div>
               </div>
               <p className="mb-4">
-                Link your Strava to start tracking your activities and creating
-                sponsorships. We&apos;ll automatically add donation messages to
+                Link your Strava to start tracking your activities and receiving
+                donations. We&apos;ll automatically add donation messages to
                 your activities.
               </p>
               <div className="alert alert-info mb-4">

@@ -163,11 +163,11 @@ export async function generateMetadata({
 
   if (!businessInfo) {
     return {
-      title: "Sponsor Not Found | Giving the Distance",
+      title: "Donor Not Found | Giving the Distance",
     };
   }
 
-  const title = `${businessInfo.businessName} | Giving the Distance Sponsor`;
+  const title = `${businessInfo.businessName} | Giving the Distance Donor`;
   const description = businessInfo.blurb;
 
   // Get base URL from environment or use Vercel URL
@@ -265,7 +265,7 @@ export default async function SponsorProfilePage({
               </h1>
               <div className="mb-2">
                 <span className="badge badge-lg bg-[#B56DFF]/10 text-[#8B4ACC] border border-[#B56DFF]/20 font-semibold">
-                  SPONSOR
+                  DONOR
                 </span>
               </div>
               <p className="font-medium">
@@ -359,9 +359,9 @@ export default async function SponsorProfilePage({
             <h2 className="text-2xl font-bold mb-4">Impact Summary</h2>
             {impact.activitiesSponsored === 0 ? (
               <div className="text-center py-8 text-base-content/60">
-                <p className="text-lg mb-2">No activities sponsored yet</p>
+                <p className="text-lg mb-2">No activities supported yet</p>
                 <p className="text-sm">
-                  This sponsor will appear here once they start supporting
+                  This donor will appear here once they start supporting
                   athletes.
                 </p>
               </div>
@@ -379,7 +379,7 @@ export default async function SponsorProfilePage({
                     </div>
                   </div>
                   <div className="stat bg-base-200 rounded-lg p-4">
-                    <div className="stat-title">Activities Sponsored</div>
+                    <div className="stat-title">Activities Supported</div>
                     <div className="stat-value text-2xl text-[#8B4ACC]">
                       {impact.activitiesSponsored}
                     </div>
@@ -418,12 +418,12 @@ export default async function SponsorProfilePage({
           </div>
         </div>
 
-        {/* Recent Sponsored Activities */}
+        {/* Recent Supported Activities */}
         {impact.recentActivities.length > 0 && (
           <div className="card bg-base-100 mb-6">
             <div className="card-body">
               <h2 className="text-2xl font-bold mb-4">
-                Recent Sponsored Activities
+                Recent Supported Activities
               </h2>
               <div className="space-y-4">
                 {impact.recentActivities.map((activity) => (
