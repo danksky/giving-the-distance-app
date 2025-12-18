@@ -2,6 +2,7 @@ import NextAuth from "next-auth"
 import { CustomPrismaAdapter } from "@/lib/custom-prisma-adapter"
 import { db } from "@/lib/db"
 import { authConfig } from "./auth.config"
+import { notifyNewUser, notifyStravaAuthSuccess, notifyStravaAuthFailure } from "@/lib/slack-notifications"
 
 const hasDatabaseConfigured = Boolean(
   process.env.DATABASE_URL?.trim() ||
@@ -37,7 +38,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ account }) {
+    async signIn({ account, user }) {
       // For Strava, validate permissions before allowing sign-in
       if (account?.provider === "strava") {
         console.log('🔍 signIn callback - validating Strava permissions')
@@ -55,7 +56,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         
         if (!scope) {
           console.error('❌ No scope found - cannot validate permissions')
-          throw new Error('Authorization failed: No permissions received from Strava')
+          const errorMsg = 'Authorization failed: No permissions received from Strava'
+          
+          // Send Slack notification for failed auth
+          await notifyStravaAuthFailure({
+            userName: user?.name,
+            userEmail: user?.email,
+            error: errorMsg,
+          });
+          
+          throw new Error(errorMsg)
         }
         
         // Validate scopes
@@ -71,10 +81,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         
         if (missingScopes.length > 0) {
           console.error('❌ Missing required permissions:', missingScopes)
-          throw new Error(
-            `Missing required permissions: ${missingScopes.join(', ')}. ` +
-            'Please reconnect and grant ALL requested permissions.'
-          )
+          const errorMsg = `Missing required permissions: ${missingScopes.join(', ')}. Please reconnect and grant ALL requested permissions.`
+          
+          // Send Slack notification for failed auth
+          await notifyStravaAuthFailure({
+            userName: user?.name,
+            userEmail: user?.email,
+            error: errorMsg,
+            missingScopes,
+          });
+          
+          throw new Error(errorMsg)
         }
         
         console.log('✅ All Strava permissions validated:', grantedScopes)
@@ -84,6 +101,26 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
   events: {
+    async createUser({ user }) {
+      if (!hasDatabaseConfigured) {
+        console.warn(
+          "[auth] Database not configured; skipping createUser notification."
+        )
+        return
+      }
+
+      console.log('👋 New user created:', user.email)
+      
+      // Send Slack notification for new user
+      try {
+        await notifyNewUser({
+          name: user.name ?? null,
+          email: user.email ?? null,
+        });
+      } catch (error) {
+        console.error('⚠️  Failed to send new user notification to Slack:', error);
+      }
+    },
     async linkAccount({ user, account }) {
       if (!hasDatabaseConfigured) {
         console.warn(
@@ -164,6 +201,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             })
             
             console.log('✅ Strava athlete data saved successfully')
+            
+            // Send Slack notification for successful Strava authorization
+            try {
+              const scopes = scopeString ? scopeString.split(',').map(s => s.trim()).filter(s => s.length > 0) : []
+              await notifyStravaAuthSuccess({
+                name: user.name ?? null,
+                email: user.email ?? null,
+                stravaAthleteId: BigInt(athlete.id),
+                scopes,
+              });
+            } catch (error) {
+              console.error('⚠️  Failed to send Strava auth success notification to Slack:', error);
+            }
           } catch (error) {
             console.error('❌ Error saving Strava athlete data:', error)
             throw error // Throw to prevent incomplete connection

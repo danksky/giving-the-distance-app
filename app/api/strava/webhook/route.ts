@@ -5,6 +5,7 @@ import { matchActivityWithSponsor } from "@/lib/sponsor-matching";
 import { generateUniqueShortcode } from "@/lib/shortcode";
 import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
 import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
+import { notifyNewActivity, notifyActivityDeleted } from "@/lib/slack-notifications";
 
 /**
  * Strava Webhook Endpoint
@@ -167,6 +168,22 @@ export async function POST(request: NextRequest) {
       if (aspect_type === 'delete') {
         console.log(`🗑️ Activity ${object_id} was deleted`);
         
+        // First, get the activity details for notification
+        const activity = await db.activity.findFirst({
+          where: {
+            stravaActivityId: BigInt(object_id),
+            deletedAt: null,
+          },
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        });
+        
         // Soft delete - mark as deleted but keep the data
         const result = await db.activity.updateMany({
           where: {
@@ -180,6 +197,17 @@ export async function POST(request: NextRequest) {
 
         if (result.count > 0) {
           console.log(`✅ Activity ${object_id} marked as deleted (soft delete)`);
+          
+          // Send Slack notification
+          if (activity) {
+            await notifyActivityDeleted({
+              stravaActivityId: activity.stravaActivityId,
+              name: activity.name,
+              type: activity.type,
+              userName: activity.user.name,
+              userEmail: activity.user.email,
+            });
+          }
         } else {
           console.log(`⚠️ Activity ${object_id} not found or already deleted`);
         }
@@ -331,6 +359,21 @@ export async function POST(request: NextRequest) {
         });
 
         console.log(`✅ Activity ${object_id} saved successfully`);
+        
+        // Send Slack notification for new activity
+        try {
+          await notifyNewActivity({
+            id: savedActivity.id,
+            stravaActivityId: savedActivity.stravaActivityId,
+            name: savedActivity.name,
+            type: savedActivity.type,
+            distanceMeters: savedActivity.distanceMeters,
+            userName: stravaAthlete.user.name,
+            userEmail: stravaAthlete.user.email,
+          });
+        } catch (error) {
+          console.error(`⚠️  Slack notification failed (non-critical):`, error);
+        }
         
         // Process GPX download and storage (non-blocking - errors won't fail the webhook)
         let gpxBlobUrl: string | null = null;
