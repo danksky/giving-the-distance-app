@@ -30,9 +30,9 @@ export default function RotatingText() {
   }, [currentIndex]);
 
   return (
-    <div className="h-32 flex items-center justify-center px-4">
+    <div className="h-32 flex items-center justify-center px-6 sm:px-8">
       <p
-        className={`text-xl transition-opacity duration-1000 absolute ${
+        className={`text-xl transition-opacity duration-1000 absolute px-2 ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       >

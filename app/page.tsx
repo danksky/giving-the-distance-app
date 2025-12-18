@@ -8,7 +8,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center">
-      <div className="text-center px-4 w-full max-w-2xl">
+      <div className="text-center px-6 sm:px-8 w-full max-w-2xl">
         <div className="flex items-center justify-center gap-4 mb-6">
           <Image
             src="/icon.png"
