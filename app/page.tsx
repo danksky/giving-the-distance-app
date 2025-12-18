@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 import Link from "next/link";
 import Image from "next/image";
 import RotatingText from "@/components/RotatingText";
@@ -35,9 +35,16 @@ export default async function Home() {
               <Link href="/dashboard" className="btn btn-primary">
                 Go to Dashboard
               </Link>
-              <Link href="/api/auth/signout" className="btn btn-ghost">
-                Sign Out
-              </Link>
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut({ redirectTo: "/" });
+                }}
+              >
+                <button type="submit" className="btn btn-ghost">
+                  Sign Out
+                </button>
+              </form>
             </div>
           </div>
         ) : (
