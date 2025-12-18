@@ -31,14 +31,26 @@ export async function getValidStravaToken(userId: string): Promise<string | null
 
   // Refresh the token
   try {
+    const clientId = process.env.STRAVA_CLIENT_ID;
+    const clientSecret = process.env.STRAVA_CLIENT_SECRET;
+    
+    // Debug logging (will mask the secret for security)
+    console.log('🔧 Using Strava credentials:', {
+      clientId,
+      clientSecretPresent: !!clientSecret,
+      clientSecretLength: clientSecret?.length,
+      refreshTokenPresent: !!account.refresh_token,
+      refreshTokenLength: account.refresh_token?.length,
+    });
+
     const response = await fetch('https://www.strava.com/oauth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        client_id: process.env.STRAVA_CLIENT_ID,
-        client_secret: process.env.STRAVA_CLIENT_SECRET,
+        client_id: clientId,
+        client_secret: clientSecret,
         grant_type: 'refresh_token',
         refresh_token: account.refresh_token,
       }),

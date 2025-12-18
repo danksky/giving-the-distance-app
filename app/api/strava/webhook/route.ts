@@ -5,7 +5,7 @@ import { matchActivityWithSponsor } from "@/lib/sponsor-matching";
 import { generateUniqueShortcode } from "@/lib/shortcode";
 import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
 import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
-import { notifyNewActivity, notifyActivityDeleted } from "@/lib/slack-notifications";
+import { notifyNewActivity, notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
 
 /**
  * Strava Webhook Endpoint
@@ -204,8 +204,8 @@ export async function POST(request: NextRequest) {
               stravaActivityId: activity.stravaActivityId,
               name: activity.name,
               type: activity.type,
-              userName: activity.user.name,
-              userEmail: activity.user.email,
+              userName: activity.user.name ?? undefined,
+              userEmail: activity.user.email ?? undefined,
             });
           }
         } else {
@@ -367,9 +367,9 @@ export async function POST(request: NextRequest) {
             stravaActivityId: savedActivity.stravaActivityId,
             name: savedActivity.name,
             type: savedActivity.type,
-            distanceMeters: savedActivity.distanceMeters,
-            userName: stravaAthlete.user.name,
-            userEmail: stravaAthlete.user.email,
+            distanceMeters: savedActivity.distanceMeters?.toNumber() ?? null,
+            userName: stravaAthlete.user.name ?? undefined,
+            userEmail: stravaAthlete.user.email ?? undefined,
           });
         } catch (error) {
           console.error(`⚠️  Slack notification failed (non-critical):`, error);
@@ -585,11 +585,37 @@ export async function POST(request: NextRequest) {
         // User deauthorized the app
         console.log(`❌ Athlete ${owner_id} deauthorized the app`);
         
+        // Get athlete details for notification before updating
+        const athlete = await db.stravaAthlete.findUnique({
+          where: { stravaAthleteId: BigInt(owner_id) },
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        });
+        
         // Update the athlete record
         await db.stravaAthlete.updateMany({
           where: { stravaAthleteId: BigInt(owner_id) },
           data: { stravaAuthorized: false },
         });
+        
+        // Send Slack notification
+        if (athlete) {
+          try {
+            await notifyStravaDeauthorization({
+              stravaAthleteId: athlete.stravaAthleteId,
+              userName: athlete.user.name,
+              userEmail: athlete.user.email,
+            });
+          } catch (error) {
+            console.error(`⚠️  Slack notification failed (non-critical):`, error);
+          }
+        }
       }
       
       // Mark athlete webhook event as processed

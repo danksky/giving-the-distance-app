@@ -146,6 +146,37 @@ Deleted: [Timestamp]
 
 ---
 
+### 6. Test Strava De-authorization
+
+**Steps:**
+
+1. Ensure Strava is connected to your account
+2. Go to [Strava Settings > My Apps](https://www.strava.com/settings/apps)
+3. Find "Giving The Distance" in the list
+4. Click "Revoke Access"
+5. Confirm the revocation
+6. Wait for the webhook to fire
+
+**Expected Slack Notification:**
+
+```
+🔓 Strava De-authorization
+User: [User Name]
+Email: [User Email]
+Strava Athlete ID: [Athlete ID]
+De-authorized: [Timestamp]
+```
+
+**Code Location:** `app/api/strava/webhook/route.ts` - `athlete update` event handler
+
+**Troubleshooting:**
+
+- Check console logs for webhook receipt: `👤 Athlete event: update for athlete [id]`
+- Look for: `❌ Athlete [id] deauthorized the app`
+- Verify the athlete record was updated: `stravaAuthorized: false`
+
+---
+
 ## Checking Slack Channel
 
 After each test:
@@ -205,6 +236,7 @@ All Slack notifications are wrapped in try-catch blocks:
 - [ ] New user registration notification works
 - [ ] Strava authorization success notification works
 - [ ] Strava authorization failure notification works
+- [ ] Strava de-authorization notification works
 - [ ] New activity created notification works
 - [ ] Activity deleted notification works
 - [ ] Notifications have correct formatting

@@ -142,6 +142,28 @@ Missing Scopes: activity:write
 Failed: Dec 18, 2025 at 9:18 AM
 ```
 
+### 6. Strava De-authorization 🔓
+
+**Triggered when:** A user revokes access to the app from their Strava settings.
+
+**Location:** `app/api/strava/webhook/route.ts` (athlete update event handler)
+
+**Information included:**
+
+- User name and email
+- Strava Athlete ID
+- Timestamp
+
+**Example notification:**
+
+```
+🔓 Strava De-authorization
+User: John Doe
+Email: john@example.com
+Strava Athlete ID: 12345678
+De-authorized: Dec 18, 2025 at 4:30 PM
+```
+
 ## Implementation Details
 
 ### Slack Notification Helper
@@ -153,6 +175,7 @@ All Slack notifications are handled by functions in `lib/slack-notifications.ts`
 - `notifyNewUser()` - New user joined
 - `notifyStravaAuthSuccess()` - Strava authorization succeeded
 - `notifyStravaAuthFailure()` - Strava authorization failed
+- `notifyStravaDeauthorization()` - Strava de-authorization
 
 Each function:
 

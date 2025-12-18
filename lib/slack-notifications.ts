@@ -412,3 +412,55 @@ export async function notifyStravaAuthFailure(details: {
 
   await sendSlackMessage(message);
 }
+
+/**
+ * Notify when a user de-authorizes Strava
+ */
+export async function notifyStravaDeauthorization(user: {
+  stravaAthleteId: bigint;
+  userName?: string | null;
+  userEmail?: string | null;
+}) {
+  const message: SlackMessage = {
+    channel: "",
+    text: "🔓 Strava De-authorization",
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "🔓 Strava De-authorization",
+          emoji: true,
+        },
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*User:*\n${user.userName || "Unknown"}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*Email:*\n${user.userEmail || "N/A"}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*Strava Athlete ID:*\n${user.stravaAthleteId.toString()}`,
+          },
+        ],
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `De-authorized: <!date^${Math.floor(Date.now() / 1000)}^{date_short_pretty} at {time}|${new Date().toISOString()}>`,
+          },
+        ],
+      },
+    ],
+  };
+
+  await sendSlackMessage(message);
+}
