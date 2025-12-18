@@ -12,6 +12,12 @@ export default function Footer() {
           </p>
           <nav className="flex gap-6">
             <Link
+              href="/faq"
+              className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              FAQ
+            </Link>
+            <Link
               href="/privacy"
               className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
