@@ -36,9 +36,17 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
       // Use the scope from callback URL if account.scope is missing
       const scopeToSave = account.scope || callbackScope
       
-      // Ensure scope is included when creating the account
-      await prisma.account.create({
-        data: {
+      // Use upsert to handle both new accounts and re-authorization
+      // This is critical: when a user deauthorizes and re-authorizes,
+      // we need to update the tokens, not fail on duplicate key
+      await prisma.account.upsert({
+        where: {
+          provider_providerAccountId: {
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+          },
+        },
+        create: {
           userId: account.userId,
           type: account.type,
           provider: account.provider,
@@ -47,13 +55,23 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
           refresh_token: typeof account.refresh_token === 'string' ? account.refresh_token : null,
           expires_at: typeof account.expires_at === 'number' ? account.expires_at : null,
           token_type: typeof account.token_type === 'string' ? account.token_type : null,
-          scope: scopeToSave ?? null, // Use scope from callback or account
+          scope: scopeToSave ?? null,
+          id_token: typeof account.id_token === 'string' ? account.id_token : null,
+          session_state: typeof account.session_state === 'string' ? account.session_state : null,
+        },
+        update: {
+          // Update all token-related fields on re-authorization
+          access_token: typeof account.access_token === 'string' ? account.access_token : null,
+          refresh_token: typeof account.refresh_token === 'string' ? account.refresh_token : null,
+          expires_at: typeof account.expires_at === 'number' ? account.expires_at : null,
+          token_type: typeof account.token_type === 'string' ? account.token_type : null,
+          scope: scopeToSave ?? null,
           id_token: typeof account.id_token === 'string' ? account.id_token : null,
           session_state: typeof account.session_state === 'string' ? account.session_state : null,
         },
       })
       
-      console.log('✅ Account created with scope:', scopeToSave)
+      console.log('✅ Account linked/updated with scope:', scopeToSave)
       
       // Clear the temporary scope storage
       callbackScope = null

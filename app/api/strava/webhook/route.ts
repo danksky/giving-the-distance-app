@@ -187,7 +187,39 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true });
       }
 
-      // Get a valid access token (will refresh if expired)
+      // Handle delete events first - they don't need API access
+      if (aspect_type === 'delete') {
+        console.log(`🗑️ Activity ${object_id} was deleted`);
+        
+        // Soft delete - mark as deleted but keep the data
+        const result = await db.activity.updateMany({
+          where: {
+            stravaActivityId: BigInt(object_id),
+            deletedAt: null, // Only update if not already deleted
+          },
+          data: {
+            deletedAt: new Date(),
+          },
+        });
+
+        if (result.count > 0) {
+          console.log(`✅ Activity ${object_id} marked as deleted (soft delete)`);
+        } else {
+          console.log(`⚠️ Activity ${object_id} not found or already deleted`);
+        }
+        
+        // Mark webhook event as processed
+        if (webhookEventId) {
+          await db.stravaWebhookEvent.update({
+            where: { id: webhookEventId },
+            data: { processed: true },
+          });
+        }
+        
+        return NextResponse.json({ success: true });
+      }
+
+      // Get a valid access token for create/update events (will refresh if expired)
       const accessToken = await getValidStravaToken(stravaAthlete.userId);
 
       if (!accessToken) {
@@ -207,7 +239,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true });
       }
 
-      // Handle different event types
+      // Handle create and update event types
       if (aspect_type === 'create') {
         // Fetch full activity details from Strava
         console.log(`📥 Fetching activity ${object_id} from Strava API...`);
@@ -492,33 +524,6 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           console.error(`⚠️  GPX processing failed (non-critical):`, error);
           // Don't fail the webhook - GPX is optional
-        }
-        
-        // Mark webhook event as processed
-        if (webhookEventId) {
-          await db.stravaWebhookEvent.update({
-            where: { id: webhookEventId },
-            data: { processed: true },
-          });
-        }
-      } else if (aspect_type === 'delete') {
-        console.log(`🗑️ Activity ${object_id} was deleted`);
-        
-        // Soft delete - mark as deleted but keep the data
-        const result = await db.activity.updateMany({
-          where: {
-            stravaActivityId: BigInt(object_id),
-            deletedAt: null, // Only update if not already deleted
-          },
-          data: {
-            deletedAt: new Date(),
-          },
-        });
-
-        if (result.count > 0) {
-          console.log(`✅ Activity ${object_id} marked as deleted (soft delete)`);
-        } else {
-          console.log(`⚠️ Activity ${object_id} not found or already deleted`);
         }
         
         // Mark webhook event as processed
