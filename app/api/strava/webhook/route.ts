@@ -162,32 +162,8 @@ export async function POST(request: NextRequest) {
     if (object_type === 'activity') {
       console.log(`🏃 Activity ${aspect_type} event for activity ${object_id} by athlete ${owner_id}`);
 
-      // Find the user by their Strava athlete ID
-      const stravaAthlete = await db.stravaAthlete.findUnique({
-        where: { stravaAthleteId: BigInt(owner_id) },
-        include: { user: true },
-      });
-
-      if (!stravaAthlete) {
-        const errorMessage = `No user found for Strava athlete ${owner_id}`;
-        console.warn(`⚠️ ${errorMessage}`);
-        
-        // Mark webhook event as processed with error
-        if (webhookEventId) {
-          await db.stravaWebhookEvent.update({
-            where: { id: webhookEventId },
-            data: { 
-              processed: true,
-              processingError: errorMessage,
-            },
-          });
-        }
-        
-        // Still return 200 to acknowledge receipt
-        return NextResponse.json({ success: true });
-      }
-
-      // Handle delete events first - they don't need API access
+      // Handle delete events first - they don't need user/athlete lookup or API access
+      // This is important: users who deauthorize can still trigger delete events
       if (aspect_type === 'delete') {
         console.log(`🗑️ Activity ${object_id} was deleted`);
         
@@ -216,6 +192,31 @@ export async function POST(request: NextRequest) {
           });
         }
         
+        return NextResponse.json({ success: true });
+      }
+
+      // For create/update events, we need to find the user by their Strava athlete ID
+      const stravaAthlete = await db.stravaAthlete.findUnique({
+        where: { stravaAthleteId: BigInt(owner_id) },
+        include: { user: true },
+      });
+
+      if (!stravaAthlete) {
+        const errorMessage = `No user found for Strava athlete ${owner_id}`;
+        console.warn(`⚠️ ${errorMessage}`);
+        
+        // Mark webhook event as processed with error
+        if (webhookEventId) {
+          await db.stravaWebhookEvent.update({
+            where: { id: webhookEventId },
+            data: { 
+              processed: true,
+              processingError: errorMessage,
+            },
+          });
+        }
+        
+        // Still return 200 to acknowledge receipt
         return NextResponse.json({ success: true });
       }
 
