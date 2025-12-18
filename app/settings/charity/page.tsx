@@ -10,7 +10,7 @@ export default async function CharitySettingsPage() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/signin");
+    redirect("/");
   }
 
   // Get user with selected charity

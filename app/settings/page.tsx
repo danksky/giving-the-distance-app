@@ -10,7 +10,7 @@ export default async function SettingsPage() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/signin");
+    redirect("/");
   }
 
   // Get user with Strava connection and selected charity

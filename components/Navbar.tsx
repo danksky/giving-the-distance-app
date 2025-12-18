@@ -13,7 +13,7 @@ export default async function Navbar() {
     <div className="navbar bg-base-100">
       <div className="flex-1">
         <Link
-          href="/"
+          href={session?.user ? "/dashboard" : "/"}
           className="btn btn-ghost text-xl font-[family-name:var(--font-outfit)] gap-2"
         >
           <Image
