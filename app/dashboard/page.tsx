@@ -147,194 +147,257 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Recent Activities */}
+        {/* Dashboard Grid Layout */}
         {hasStrava && (
-          <div className="card bg-base-100 mb-8">
-            <div className="card-body">
-              <h3 className="card-title">Recent Activities</h3>
-              {activities.length === 0 ? (
-                <div className="text-center py-8 opacity-60">
-                  <p className="mb-2">No activities yet.</p>
-                  <p className="text-sm">
-                    Activities from Strava will appear here automatically once
-                    you complete them.
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="table table-zebra">
-                    <thead>
-                      <tr>
-                        <th className="whitespace-nowrap">Date</th>
-                        <th className="min-w-[16rem]">Activity</th>
-                        <th>Type</th>
-                        <th>Distance</th>
-                        <th>Time</th>
-                        <th>Elevation</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {activities.map((activity) => {
-                        const isDeleted = !!activity.deletedAt;
-
-                        const distanceKm =
-                          !isDeleted && activity.distanceMeters
-                            ? (Number(activity.distanceMeters) / 1000).toFixed(
-                                2
-                              )
-                            : "—";
-                        const distanceMi =
-                          !isDeleted && activity.distanceMeters
-                            ? (
-                                Number(activity.distanceMeters) / 1609.34
-                              ).toFixed(2)
-                            : "—";
-
-                        const movingTime =
-                          !isDeleted && activity.movingTimeSeconds
-                            ? formatDuration(activity.movingTimeSeconds)
-                            : "—";
-
-                        const elevationM =
-                          !isDeleted && activity.totalElevationGain
-                            ? `${Number(activity.totalElevationGain).toFixed(
-                                0
-                              )}m`
-                            : "—";
-                        const elevationFt =
-                          !isDeleted && activity.totalElevationGain
-                            ? `${(
-                                Number(activity.totalElevationGain) * 3.28084
-                              ).toFixed(0)}ft`
-                            : "—";
-
-                        const date = activity.startDateLocal
-                          ? new Date(
-                              activity.startDateLocal
-                            ).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : "—";
-
-                        return (
-                          <tr
-                            key={activity.id}
-                            className={
-                              isDeleted ? "opacity-50" : "hover:bg-base-200"
-                            }
-                          >
-                            <td className="whitespace-nowrap">{date}</td>
-                            <td className="min-w-[16rem]">
-                              {isDeleted ? (
-                                <span className="italic opacity-60">
-                                  [Deleted Activity]
-                                </span>
-                              ) : (
-                                <Link
-                                  href={`/activities/${activity.id}`}
-                                  className="link link-hover font-bold underline"
-                                >
-                                  {activity.name || "Untitled"}
-                                </Link>
-                              )}
-                            </td>
-                            <td>{!isDeleted && activity.type}</td>
-                            <td>
-                              {!isDeleted ? (
-                                <>
-                                  <div>{distanceKm} km</div>
-                                  <div className="text-xs opacity-60">
-                                    {distanceMi} mi
-                                  </div>
-                                </>
-                              ) : (
-                                <span className="opacity-40">—</span>
-                              )}
-                            </td>
-                            <td>
-                              {!isDeleted ? (
-                                movingTime
-                              ) : (
-                                <span className="opacity-40">—</span>
-                              )}
-                            </td>
-                            <td>
-                              {!isDeleted ? (
-                                <>
-                                  <div>{elevationM}</div>
-                                  <div className="text-xs opacity-60">
-                                    {elevationFt}
-                                  </div>
-                                </>
-                              ) : (
-                                <span className="opacity-40">—</span>
-                              )}
-                            </td>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            {/* Recent Activities - Takes 2/3 width on desktop */}
+            <div className="lg:col-span-2">
+              <div className="card bg-base-100">
+                <div className="card-body">
+                  <h3 className="card-title">Recent Activities</h3>
+                  {activities.length === 0 ? (
+                    <div className="text-center py-8 opacity-60">
+                      <p className="mb-2">No activities yet.</p>
+                      <p className="text-sm">
+                        Activities from Strava will appear here automatically
+                        once you complete them.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="table table-zebra">
+                        <thead>
+                          <tr>
+                            <th className="whitespace-nowrap">Date</th>
+                            <th>Activity</th>
+                            <th>Type</th>
+                            <th>Distance</th>
+                            <th>Time</th>
+                            <th>Elevation</th>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                        </thead>
+                        <tbody>
+                          {activities.map((activity) => {
+                            const isDeleted = !!activity.deletedAt;
+
+                            const distanceKm =
+                              !isDeleted && activity.distanceMeters
+                                ? (
+                                    Number(activity.distanceMeters) / 1000
+                                  ).toFixed(2)
+                                : "—";
+                            const distanceMi =
+                              !isDeleted && activity.distanceMeters
+                                ? (
+                                    Number(activity.distanceMeters) / 1609.34
+                                  ).toFixed(2)
+                                : "—";
+
+                            const movingTime =
+                              !isDeleted && activity.movingTimeSeconds
+                                ? formatDuration(activity.movingTimeSeconds)
+                                : "—";
+
+                            const elevationM =
+                              !isDeleted && activity.totalElevationGain
+                                ? `${Number(
+                                    activity.totalElevationGain
+                                  ).toFixed(0)}m`
+                                : "—";
+                            const elevationFt =
+                              !isDeleted && activity.totalElevationGain
+                                ? `${(
+                                    Number(activity.totalElevationGain) *
+                                    3.28084
+                                  ).toFixed(0)}ft`
+                                : "—";
+
+                            const date = activity.startDateLocal
+                              ? new Date(
+                                  activity.startDateLocal
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })
+                              : "—";
+
+                            return (
+                              <tr
+                                key={activity.id}
+                                className={
+                                  isDeleted ? "opacity-50" : "hover:bg-base-200"
+                                }
+                              >
+                                <td className="whitespace-nowrap">{date}</td>
+                                <td className="max-w-[12rem] truncate">
+                                  {isDeleted ? (
+                                    <span className="italic opacity-60">
+                                      [Deleted Activity]
+                                    </span>
+                                  ) : (
+                                    <Link
+                                      href={`/activities/${activity.id}`}
+                                      className="link link-hover font-bold underline"
+                                    >
+                                      {activity.name || "Untitled"}
+                                    </Link>
+                                  )}
+                                </td>
+                                <td>{!isDeleted && activity.type}</td>
+                                <td>
+                                  {!isDeleted ? (
+                                    <>
+                                      <div>{distanceKm} km</div>
+                                      <div className="text-xs opacity-60">
+                                        {distanceMi} mi
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <span className="opacity-40">—</span>
+                                  )}
+                                </td>
+                                <td>
+                                  {!isDeleted ? (
+                                    movingTime
+                                  ) : (
+                                    <span className="opacity-40">—</span>
+                                  )}
+                                </td>
+                                <td>
+                                  {!isDeleted ? (
+                                    <>
+                                      <div>{elevationM}</div>
+                                      <div className="text-xs opacity-60">
+                                        {elevationFt}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <span className="opacity-40">—</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+            </div>
+
+            {/* Account Details - Takes 1/3 width on desktop */}
+            <div className="lg:col-span-1">
+              <div className="card bg-base-100">
+                <div className="card-body">
+                  <h3 className="card-title">Account Information</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-sm opacity-70">Email</div>
+                      <div className="font-medium">{session.user.email}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm opacity-70">Name</div>
+                      <div className="font-medium">{session.user.name}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm opacity-70">Google</div>
+                      <div className="font-medium flex items-center gap-2">
+                        <Image
+                          src="/logos/services/google.png"
+                          alt="Google"
+                          width={20}
+                          height={20}
+                          className="inline-block"
+                        />
+                        <span className="text-success">Connected</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm opacity-70">Strava</div>
+                      <div
+                        className={`font-medium flex items-center gap-2 ${
+                          hasStrava
+                            ? "text-success"
+                            : "text-base-content opacity-40"
+                        }`}
+                      >
+                        <Image
+                          src="/logos/services/strava.svg"
+                          alt="Strava"
+                          width={20}
+                          height={20}
+                          className="inline-block"
+                        />
+                        <span>{hasStrava ? "Connected" : "Not Connected"}</span>
+                      </div>
+                    </div>
+                    {hasStrava && (
+                      <div>
+                        <div className="text-sm opacity-70">
+                          Total Activities
+                        </div>
+                        <div className="font-medium">{activities.length}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Account Details */}
-        <div className="card bg-base-100">
-          <div className="card-body">
-            <h3 className="card-title">Account Information</h3>
-            <div className="stats stats-vertical lg:stats-horizontal">
-              <div className="stat">
-                <div className="stat-title">Email</div>
-                <div className="font-medium">{session.user.email}</div>
-              </div>
-              <div className="stat">
-                <div className="stat-title">Name</div>
-                <div className="font-medium">{session.user.name}</div>
-              </div>
-              <div className="stat">
-                <div className="stat-title">Google</div>
-                <div className="font-medium flex items-center gap-2">
-                  <Image
-                    src="/logos/services/google.png"
-                    alt="Google"
-                    width={20}
-                    height={20}
-                    className="inline-block"
-                  />
-                  <span className="text-success">Connected</span>
-                </div>
-              </div>
-              <div className="stat">
-                <div className="stat-title">Strava</div>
-                <div
-                  className={`font-medium flex items-center gap-2 ${
-                    hasStrava ? "text-success" : "text-base-content opacity-40"
-                  }`}
-                >
-                  <Image
-                    src="/logos/services/strava.svg"
-                    alt="Strava"
-                    width={20}
-                    height={20}
-                    className="inline-block"
-                  />
-                  <span>{hasStrava ? "Connected" : "Not Connected"}</span>
-                </div>
-              </div>
-              {hasStrava && (
+        {/* Account Details for non-Strava users */}
+        {!hasStrava && (
+          <div className="card bg-base-100">
+            <div className="card-body">
+              <h3 className="card-title">Account Information</h3>
+              <div className="stats stats-vertical lg:stats-horizontal">
                 <div className="stat">
-                  <div className="stat-title">Total Activities</div>
-                  <div className="font-medium">{activities.length}</div>
+                  <div className="stat-title">Email</div>
+                  <div className="font-medium">{session.user.email}</div>
                 </div>
-              )}
+                <div className="stat">
+                  <div className="stat-title">Name</div>
+                  <div className="font-medium">{session.user.name}</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">Google</div>
+                  <div className="font-medium flex items-center gap-2">
+                    <Image
+                      src="/logos/services/google.png"
+                      alt="Google"
+                      width={20}
+                      height={20}
+                      className="inline-block"
+                    />
+                    <span className="text-success">Connected</span>
+                  </div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">Strava</div>
+                  <div
+                    className={`font-medium flex items-center gap-2 ${
+                      hasStrava
+                        ? "text-success"
+                        : "text-base-content opacity-40"
+                    }`}
+                  >
+                    <Image
+                      src="/logos/services/strava.svg"
+                      alt="Strava"
+                      width={20}
+                      height={20}
+                      className="inline-block"
+                    />
+                    <span>{hasStrava ? "Connected" : "Not Connected"}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Debug Info (Development Only) */}
         {process.env.NODE_ENV === "development" && (
