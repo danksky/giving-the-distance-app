@@ -82,7 +82,7 @@ export const authConfig = {
     }),
   ],
   pages: {
-    signIn: '/signin',
+    signIn: '/',
     error: '/auth/error',
   },
   callbacks: {

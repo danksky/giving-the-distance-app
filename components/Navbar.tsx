@@ -1,4 +1,4 @@
-import { auth, signOut } from "@/auth";
+import { auth, signOut, signIn } from "@/auth";
 import { isAdmin } from "@/lib/auth-helpers";
 import Link from "next/link";
 import Image from "next/image";
@@ -13,7 +13,7 @@ export default async function Navbar() {
     <div className="navbar bg-base-100">
       <div className="flex-1">
         <Link
-          href="/"
+          href={session?.user ? "/dashboard" : "/"}
           className="btn btn-ghost text-xl font-[family-name:var(--font-outfit)] gap-2"
         >
           <Image
@@ -26,7 +26,7 @@ export default async function Navbar() {
           Giving the Distance
         </Link>
       </div>
-      {session?.user && (
+      {session?.user ? (
         <div className="flex-none gap-2">
           <div className="dropdown dropdown-end">
             <button tabIndex={0} className="btn btn-ghost btn-circle avatar">
@@ -80,6 +80,19 @@ export default async function Navbar() {
               </li>
             </ul>
           </div>
+        </div>
+      ) : (
+        <div className="flex-none">
+          <form
+            action={async () => {
+              "use server";
+              await signIn("google", { redirectTo: "/dashboard" });
+            }}
+          >
+            <button type="submit" className="btn btn-primary">
+              Sign Up
+            </button>
+          </form>
         </div>
       )}
     </div>

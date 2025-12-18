@@ -13,7 +13,7 @@ export default async function StravaSettingsPage({
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/signin");
+    redirect("/");
   }
 
   const params = await searchParams;

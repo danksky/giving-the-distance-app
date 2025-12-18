@@ -46,7 +46,7 @@ export default function GPXManagementPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          router.push("/signin");
+          router.push("/");
           return;
         }
         throw new Error(`HTTP ${response.status}`);
@@ -83,7 +83,7 @@ export default function GPXManagementPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          router.push("/signin");
+          router.push("/");
           return;
         }
         throw new Error(`HTTP ${response.status}`);

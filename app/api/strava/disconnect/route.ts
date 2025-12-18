@@ -6,7 +6,7 @@ export async function POST() {
   const session = await auth()
   
   if (!session?.user?.email) {
-    return NextResponse.redirect(new URL('/signin', process.env.NEXTAUTH_URL || 'http://localhost:3000'))
+    return NextResponse.redirect(new URL('/', process.env.NEXTAUTH_URL || 'http://localhost:3000'))
   }
 
   try {

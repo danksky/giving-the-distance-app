@@ -15,7 +15,7 @@ export default async function CampaignsPage() {
   const session = await auth();
 
   if (!session?.user?.email) {
-    redirect("/signin");
+    redirect("/");
   }
 
   // Check admin access
