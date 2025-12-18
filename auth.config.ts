@@ -24,7 +24,7 @@ function Strava(options: StravaProviderOptions) {
     authorization: {
       url: "https://www.strava.com/oauth/authorize",
       params: {
-        scope: "activity:read_all,profile:read_all",
+        scope: "activity:read_all,profile:read_all,activity:write",
         response_type: "code",
         approval_prompt: "force", // Always show permission screen
       },

@@ -5,10 +5,10 @@
 Create a `.env.local` file in the project root with these variables:
 
 ```bash
-# Database (Get from Vercel Postgres after setup)
-POSTGRES_URL=
-POSTGRES_PRISMA_URL=
-POSTGRES_URL_NON_POOLING=
+# Database
+# Standard DATABASE_URL - works with any Postgres provider
+# If using Vercel Postgres, their env vars (POSTGRES_*) are auto-detected
+DATABASE_URL=
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000

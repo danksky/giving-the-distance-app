@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    // Prevent Turbopack from inferring a parent directory as the repo root
+    root: __dirname,
+  },
   images: {
     remotePatterns: [
       {

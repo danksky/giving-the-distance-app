@@ -1,0 +1,130 @@
+{
+  "id": "balkan-grind-brooklyn-nyc",
+  "businessName": "Balkan Grind",
+  "address": {
+    "street": "5 Withers St",
+    "city": "Brooklyn",
+    "state": "NYC",
+    "zipCode": "11211",
+    "fullAddress": "5 Withers St, Brooklyn, NYC 11211"
+  },
+  "map": {
+    "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.059630807407!2d-73.95521502397409!3d40.7167037713928!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259996bb8d087%3A0x54d44285f4ababb7!2sBalkan%20Grind!5e0!3m2!1sen!2sus!4v1765931711173!5m2!1sen!2sus"
+  },
+  "blurb": "Proudly supporting local athletes and community causes through Giving The Distance.",
+  "links": {
+    "instagram": "https://www.instagram.com/thebalkangrind/",
+    "website": "https://www.balkangrind.com/"
+  },
+  "images": {
+    "logo": "",
+    "cover": "/sponsors/balkan-grind-brooklyn-nyc/cover.jpeg",
+    "staff": "/sponsors/balkan-grind-brooklyn-nyc/staff.jpg",
+    "products": [
+      "/sponsors/balkan-grind-brooklyn-nyc/product1.jpeg",
+      "/sponsors/balkan-grind-brooklyn-nyc/product2.jpeg",
+      "/sponsors/balkan-grind-brooklyn-nyc/product3.jpg"
+    ]
+  },
+  "impact": {
+    "totalDonated": 47.5,
+    "activitiesSponsored": 127,
+    "athletesSupported": 23,
+    "charities": [
+      {
+        "name": "Brooklyn Community Foundation",
+        "logo": ""
+      },
+      {
+        "name": "NYC Parks Foundation",
+        "logo": ""
+      },
+      {
+        "name": "Food Bank for New York City",
+        "logo": ""
+      }
+    ]
+  },
+  "recentActivities": [
+    {
+      "id": "1",
+      "athleteName": "Runner A",
+      "activityType": "Run",
+      "distance": 8.5,
+      "distanceUnit": "km",
+      "donationAmount": 25.5,
+      "charity": "Brooklyn Community Foundation",
+      "date": "2024-01-15"
+    },
+    {
+      "id": "2",
+      "athleteName": "Cyclist B",
+      "activityType": "Ride",
+      "distance": 45.2,
+      "distanceUnit": "km",
+      "donationAmount": 67.8,
+      "charity": "NYC Parks Foundation",
+      "date": "2024-01-14"
+    },
+    {
+      "id": "3",
+      "athleteName": "Walker C",
+      "activityType": "Walk",
+      "distance": 5.3,
+      "distanceUnit": "km",
+      "donationAmount": 15.9,
+      "charity": "Food Bank for New York City",
+      "date": "2024-01-13"
+    },
+    {
+      "id": "4",
+      "athleteName": "Runner D",
+      "activityType": "Run",
+      "distance": 12.1,
+      "distanceUnit": "km",
+      "donationAmount": 36.3,
+      "charity": "Brooklyn Community Foundation",
+      "date": "2024-01-12"
+    },
+    {
+      "id": "5",
+      "athleteName": "Cyclist E",
+      "activityType": "Ride",
+      "distance": 32.7,
+      "distanceUnit": "km",
+      "donationAmount": 49.05,
+      "charity": "NYC Parks Foundation",
+      "date": "2024-01-11"
+    },
+    {
+      "id": "6",
+      "athleteName": "Runner F",
+      "activityType": "Run",
+      "distance": 10.0,
+      "distanceUnit": "km",
+      "donationAmount": 30.0,
+      "charity": "Food Bank for New York City",
+      "date": "2024-01-10"
+    },
+    {
+      "id": "7",
+      "athleteName": "Walker G",
+      "activityType": "Walk",
+      "distance": 6.8,
+      "distanceUnit": "km",
+      "donationAmount": 20.4,
+      "charity": "Brooklyn Community Foundation",
+      "date": "2024-01-09"
+    },
+    {
+      "id": "8",
+      "athleteName": "Runner H",
+      "activityType": "Run",
+      "distance": 15.5,
+      "distanceUnit": "km",
+      "donationAmount": 46.5,
+      "charity": "NYC Parks Foundation",
+      "date": "2024-01-08"
+    }
+  ]
+}

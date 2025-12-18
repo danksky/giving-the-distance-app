@@ -1,0 +1,92 @@
+{
+  "id": "ride-brooklyn-bike-shop",
+  "businessName": "Ride Brooklyn",
+  "address": {
+    "street": "187 4th Ave",
+    "city": "Brooklyn",
+    "state": "NY",
+    "zipCode": "11217",
+    "fullAddress": "187 4th Ave, Brooklyn, NY 11217"
+  },
+  "map": {
+    "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3025.8121842976057!2d-73.98480152316135!3d40.67810703968858!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25baebf25fda9%3A0x29b581ca5bdd29fb!2sRide%20Brooklyn!5e0!3m2!1sen!2sus!4v1765935881265!5m2!1sen!2sus"
+  },
+  "blurb": "Proudly supporting local athletes and community causes through Giving The Distance.",
+  "links": {
+    "instagram": "https://www.instagram.com/ridebrooklyn/",
+    "website": "https://www.ridebrooklynny.com/"
+  },
+  "images": {
+    "logo": "/sponsors/ride-brooklyn-bike-shop/logo.jpg",
+    "cover": "/sponsors/ride-brooklyn-bike-shop/cover.jpg",
+    "staff": "/sponsors/ride-brooklyn-bike-shop/person.jpg",
+    "products": [
+      "/sponsors/ride-brooklyn-bike-shop/inside.jpg",
+      "/sponsors/ride-brooklyn-bike-shop/product1.jpg",
+      "/sponsors/ride-brooklyn-bike-shop/product2.jpg",
+      "/sponsors/ride-brooklyn-bike-shop/product3.jpg"
+    ]
+  },
+  "impact": {
+    "totalDonated": 132.0,
+    "activitiesSponsored": 18,
+    "athletesSupported": 6,
+    "charities": [
+      { "name": "NYC Parks Foundation", "logo": "" },
+      { "name": "Bike New York", "logo": "" },
+      { "name": "City Harvest", "logo": "" }
+    ]
+  },
+  "recentActivities": [
+    {
+      "id": "rb-1",
+      "athleteName": "Cyclist A",
+      "activityType": "Ride",
+      "distance": 32.4,
+      "distanceUnit": "km",
+      "donationAmount": 24.3,
+      "charity": "Bike New York",
+      "date": "2024-02-02"
+    },
+    {
+      "id": "rb-2",
+      "athleteName": "Runner B",
+      "activityType": "Run",
+      "distance": 6.2,
+      "distanceUnit": "km",
+      "donationAmount": 9.3,
+      "charity": "City Harvest",
+      "date": "2024-02-01"
+    },
+    {
+      "id": "rb-3",
+      "athleteName": "Cyclist C",
+      "activityType": "Ride",
+      "distance": 51.8,
+      "distanceUnit": "km",
+      "donationAmount": 38.85,
+      "charity": "NYC Parks Foundation",
+      "date": "2024-01-30"
+    },
+    {
+      "id": "rb-4",
+      "athleteName": "Walker D",
+      "activityType": "Walk",
+      "distance": 4.7,
+      "distanceUnit": "km",
+      "donationAmount": 7.05,
+      "charity": "City Harvest",
+      "date": "2024-01-29"
+    },
+    {
+      "id": "rb-5",
+      "athleteName": "Cyclist E",
+      "activityType": "Ride",
+      "distance": 27.9,
+      "distanceUnit": "km",
+      "donationAmount": 20.93,
+      "charity": "Bike New York",
+      "date": "2024-01-28"
+    }
+  ]
+}

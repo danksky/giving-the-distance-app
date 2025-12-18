@@ -1,0 +1,112 @@
+[
+  {
+    "id": "unicef",
+    "name": "UNICEF",
+    "fullName": "United Nations Children's Fund",
+    "description": "Supporting children's rights, survival, development, and protection worldwide.",
+    "category": "International Peace, Security, and Affairs",
+    "logoUrl": "/logos/charities/unicef.png",
+    "website": "https://www.unicef.org/",
+    "charityNavigatorScore": 93,
+    "isDefault": true
+  },
+  {
+    "id": "doctors-without-borders",
+    "name": "Doctors Without Borders",
+    "fullName": "Doctors Without Borders, USA (Médecins Sans Frontières)",
+    "description": "Providing emergency medical aid to people affected by conflict, epidemics, disasters, or exclusion from healthcare.",
+    "category": "Development and Relief Services",
+    "logoUrl": null,
+    "website": "https://www.doctorswithoutborders.org/",
+    "charityNavigatorScore": 96,
+    "isDefault": false
+  },
+  {
+    "id": "american-red-cross",
+    "name": "American Red Cross",
+    "fullName": "American Red Cross",
+    "description": "Preventing and alleviating human suffering in the face of emergencies through volunteers and donor generosity.",
+    "category": "Multipurpose Human Service Organizations",
+    "logoUrl": null,
+    "website": "https://www.redcross.org/",
+    "charityNavigatorScore": 100,
+    "isDefault": false
+  },
+  {
+    "id": "st-jude",
+    "name": "St. Jude Children's Research Hospital",
+    "fullName": "ALSAC - St. Jude Children's Research Hospital",
+    "description": "Finding cures and saving children with cancer and other catastrophic diseases through research and treatment.",
+    "category": "Treatment and Prevention Services",
+    "logoUrl": null,
+    "website": "https://www.stjude.org/",
+    "charityNavigatorScore": 99,
+    "isDefault": false
+  },
+  {
+    "id": "nature-conservancy",
+    "name": "Nature Conservancy",
+    "fullName": "The Nature Conservancy",
+    "description": "Conserving lands and waters to protect nature and preserve life on Earth.",
+    "category": "Environmental Protection and Conservation",
+    "logoUrl": null,
+    "website": "https://www.nature.org/",
+    "charityNavigatorScore": 96,
+    "isDefault": false
+  },
+  {
+    "id": "nrdc",
+    "name": "Natural Resources Defense Council",
+    "fullName": "Natural Resources Defense Council (NRDC)",
+    "description": "Working to safeguard the earth—its people, plants, animals, and natural systems on which all life depends.",
+    "category": "Environmental Protection and Conservation",
+    "logoUrl": null,
+    "website": "https://www.nrdc.org/",
+    "charityNavigatorScore": 99,
+    "isDefault": false
+  },
+  {
+    "id": "world-wildlife-fund",
+    "name": "World Wildlife Fund",
+    "fullName": "World Wildlife Fund (WWF)",
+    "description": "Conserving nature and reducing the most pressing threats to the diversity of life on Earth.",
+    "category": "Wildlife Conservation",
+    "logoUrl": null,
+    "website": "https://www.worldwildlife.org/",
+    "charityNavigatorScore": 99,
+    "isDefault": false
+  },
+  {
+    "id": "save-the-children",
+    "name": "Save the Children",
+    "fullName": "Save the Children",
+    "description": "Ensuring every child survives, learns and is protected through programs in the U.S. and around the world.",
+    "category": "Development and Relief Services",
+    "logoUrl": null,
+    "website": "https://www.savethechildren.org/",
+    "charityNavigatorScore": 96,
+    "isDefault": false
+  },
+  {
+    "id": "dav",
+    "name": "DAV",
+    "fullName": "DAV (Disabled American Veterans)",
+    "description": "Empowering veterans to lead high-quality lives with respect and dignity through various assistance programs.",
+    "category": "Social Services",
+    "logoUrl": null,
+    "website": "https://www.dav.org/",
+    "charityNavigatorScore": 100,
+    "isDefault": false
+  },
+  {
+    "id": "aspca",
+    "name": "ASPCA",
+    "fullName": "American Society for the Prevention of Cruelty to Animals",
+    "description": "Providing effective means for the prevention of cruelty to animals throughout the United States.",
+    "category": "Animal Rights, Welfare, and Services",
+    "logoUrl": "/logos/charities/aspca.jpeg",
+    "website": "https://www.aspca.org/",
+    "charityNavigatorScore": 99,
+    "isDefault": false
+  }
+]

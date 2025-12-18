@@ -6,9 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
 }
 
 // ============================================
@@ -16,18 +15,22 @@ datasource db {
 // ============================================
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  image         String?
-  emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String?
+  image             String?
+  emailVerified     DateTime?
+  selectedCharityId String?   // User's current selected charity (for quick access)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
-  stravaAthlete  StravaAthlete?
-  activities     Activity[]
+  accounts           Account[]
+  sessions           Session[]
+  stravaAthlete      StravaAthlete?
+  activities         Activity[]
+  selectedCharity    Charity? @relation(fields: [selectedCharityId], references: [id])
+  charitySelections  CharitySelection[] // Full history of charity selections
+  charityCommitments CharityCommitment[]
 
   @@map("users")
 }
@@ -88,7 +91,8 @@ model StravaAthlete {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sponsorMatches SponsorMatch[]
 
   @@map("strava_athletes")
 }
@@ -97,6 +101,7 @@ model Activity {
   id                   String    @id @default(cuid())
   userId               String
   stravaActivityId     BigInt    @unique
+  shortcode            String?   @unique // 5-character shortcode for public URLs
   name                 String?
   type                 String    // Run, Ride, Swim, Walk, etc.
   distanceMeters       Decimal?  @db.Decimal(10, 2)
@@ -108,14 +113,196 @@ model Activity {
   timezone             String?
   isManual             Boolean   @default(false)
   isPrivate            Boolean   @default(false)
+  isPublicProfile      Boolean   @default(false) // User can make their profile public on this activity
+  gpxBlobUrl           String?   // URL to GPX file in Vercel Blob Storage
+  deletedAt            DateTime? // Soft delete - null means not deleted
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sponsorMatches     SponsorMatch[]
+  charityCommitments CharityCommitment[]
 
   @@index([userId])
   @@index([startDate(sort: Desc)])
   @@index([type])
+  @@index([deletedAt]) // Index for filtering deleted activities
+  @@index([shortcode]) // Index for shortcode lookups
   @@map("activities")
+}
+
+model StravaWebhookSubscription {
+  id                String   @id @default(cuid())
+  subscriptionId    BigInt   @unique
+  callbackUrl       String
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("strava_webhook_subscriptions")
+}
+
+model StravaWebhookEvent {
+  id                      String   @id @default(cuid())
+  objectType              String   // "activity" or "athlete"
+  objectId                BigInt
+  aspectType              String   // "create", "update", "delete"
+  ownerId                 BigInt   // Strava athlete ID
+  subscriptionId          BigInt
+  eventTime               DateTime
+  updates                 Json?    // Any updates data
+  processed               Boolean  @default(false)
+  processingError         String?  @db.Text
+  descriptionUpdated      Boolean  @default(false) // Whether activity description was updated
+  descriptionUpdateError  String?  @db.Text // Error message if description update failed
+  rawPayload              Json     // Full webhook payload for debugging
+  createdAt               DateTime @default(now())
+
+  @@index([objectType])
+  @@index([ownerId])
+  @@index([processed])
+  @@index([eventTime(sort: Desc)])
+  @@map("strava_webhook_events")
+}
+
+model Charity {
+  id                     String   @id
+  name                   String
+  fullName               String
+  description            String   @db.Text
+  category               String
+  logoUrl                String?
+  website                String
+  charityNavigatorScore  Int
+  isDefault              Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  users              User[]
+  charitySelections  CharitySelection[]
+  charityCommitments CharityCommitment[]
+
+  @@map("charities")
+}
+
+model CharitySelection {
+  id         String   @id @default(cuid())
+  userId     String
+  charityId  String
+  selectedAt DateTime @default(now())
+  isActive   Boolean  @default(true) // Current selection vs historical
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  charity Charity @relation(fields: [charityId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([charityId])
+  @@index([selectedAt(sort: Desc)])
+  @@index([userId, isActive]) // Query active selections efficiently
+  @@map("charity_selections")
+}
+
+// ============================================
+// Sponsor & Campaign Models
+// ============================================
+
+model Sponsor {
+  id           String   @id
+  name         String
+  businessName String
+  slug         String   @unique
+  website      String?
+  address      Json?    // Store address as JSON
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaigns Campaign[]
+
+  @@map("sponsors")
+}
+
+model Campaign {
+  id                   String   @id @default(cuid())
+  sponsorId            String
+  name                 String
+  budgetRemainingCents Int      // Current remaining budget
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  sponsor            Sponsor             @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+  topUps             CampaignTopUp[]
+  sponsorMatches     SponsorMatch[]
+  charityCommitments CharityCommitment[]
+
+  @@index([sponsorId])
+  @@index([isActive])
+  @@map("campaigns")
+}
+
+model CampaignTopUp {
+  id          String   @id @default(cuid())
+  campaignId  String
+  amountCents Int      // Amount added to campaign budget
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("campaign_top_ups")
+}
+
+model SponsorMatch {
+  id               String             @id @default(cuid())
+  activityId       String             // Foreign key to Activity
+  stravaActivityId BigInt             // Also store Strava ID for reference
+  athleteId        String             // Foreign key to StravaAthlete
+  stravaAthleteId  BigInt             // Also store Strava athlete ID
+  campaignId       String?            // Nullable if no match
+  matchedAt        DateTime           @default(now())
+  result           SponsorMatchResult // Enum for match status
+  decrementCents   Int                @default(0)
+  notes            String?            @db.Text
+  createdAt        DateTime           @default(now())
+
+  activity Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  athlete  StravaAthlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  campaign Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@unique([activityId]) // Idempotency: one sponsor match per activity
+  @@index([athleteId])
+  @@index([campaignId])
+  @@index([result])
+  @@map("sponsor_matches")
+}
+
+model CharityCommitment {
+  id          String   @id @default(cuid())
+  userId      String
+  charityId   String
+  campaignId  String
+  activityId  String   // Foreign key to Activity
+  amountCents Int      // Commitment amount (typically 10 cents)
+  createdAt   DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  charity  Charity  @relation(fields: [charityId], references: [id], onDelete: Cascade)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([charityId])
+  @@index([campaignId])
+  @@index([activityId])
+  @@map("charity_commitments")
+}
+
+enum SponsorMatchResult {
+  MATCHED
+  SKIPPED_NO_BUDGET
+  SKIPPED_NO_ACTIVE_CAMPAIGN
+  SKIPPED_ALREADY_SPONSORED
+  SKIPPED_UPDATE_FAILED
 }
 

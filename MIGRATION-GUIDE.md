@@ -1,6 +1,7 @@
 # Giving the Distance - Migration Guide
 
 ## Overview
+
 Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 
 ---
@@ -8,6 +9,7 @@ Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 ## Architecture Comparison
 
 ### OLD Stack (React + Express)
+
 - **Frontend**: React (CRA) on AWS S3/CloudFront
 - **Backend**: Express on AWS EC2
 - **Auth**: AWS Cognito
@@ -15,6 +17,7 @@ Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 - **Domain**: beta.api.givingthedistance.org (API) + beta.givingthedistance.org (Frontend)
 
 ### NEW Stack (Next.js Unified)
+
 - **Frontend + Backend**: Next.js on Vercel
 - **Auth**: NextAuth.js (Google OAuth + Strava connection)
 - **Database**: Vercel Postgres
@@ -25,17 +28,20 @@ Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 ## Migration Steps
 
 ### ✅ Step 1: Project Setup
+
 - [x] Create Next.js app with TypeScript + Tailwind
 - [ ] Install core dependencies
 - [ ] Create migration documentation
 
 ### 🔲 Step 2: Database Setup
+
 - [ ] Set up Vercel Postgres
 - [ ] Design schema (migrate from DynamoDB model)
 - [ ] Set up Prisma ORM
 - [ ] Create migrations
 
 ### 🔲 Step 3: Authentication Setup
+
 - [ ] Install NextAuth.js
 - [ ] Configure Google OAuth provider
 - [ ] Configure Strava as connected account
@@ -43,6 +49,7 @@ Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 - [ ] Set up session management
 
 ### 🔲 Step 4: Core API Routes
+
 - [ ] `/api/auth/*` - Authentication endpoints
 - [ ] `/api/user` - User management
 - [ ] `/api/strava/*` - Strava integration
@@ -50,6 +57,7 @@ Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 - [ ] `/api/stripe/*` - Payment processing
 
 ### 🔲 Step 5: Frontend Pages
+
 - [ ] Landing page (/)
 - [ ] Sign in page (/signin)
 - [ ] Dashboard (/dashboard)
@@ -57,39 +65,46 @@ Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 - [ ] Sponsorships page (/sponsorships)
 
 ### 🔲 Step 6: Integrations
+
 - [ ] Strava OAuth + Webhook
 - [ ] Stripe payment processing
 - [ ] Stripe webhooks
 
 ### 🔲 Step 7: Deployment Setup
+
 - [ ] Configure Vercel project
 - [ ] Set up environment variables
 - [ ] Configure custom domains
 - [ ] Set up preview environment
 
 ### 🔲 Step 8: DNS Configuration
+
 - [ ] Point givingthedistance.org to Vercel (production)
 - [ ] Point beta.givingthedistance.org to Vercel (preview)
 - [ ] Remove old Route53 records (if any)
 
 ### 🔲 Step 9: Testing & Migration
+
 - [ ] Test OAuth flows
 - [ ] Test payment processing
 - [ ] Migrate existing user data (if any)
 - [ ] Test webhooks
 
 ### 🔲 Step 10: Legal & Compliance
+
 - [ ] Create Privacy Policy page
 - [ ] Create Terms of Service page
 - [ ] Add support email
 - [ ] Create About page
 
 ### 🔲 Step 11: App Approvals
+
 - [ ] Submit Google OAuth for verification (3-6 weeks)
 - [ ] Submit Strava app for production approval (2-4 weeks)
 - [ ] Wait for approvals before public launch
 
 ### 🔲 Step 12: Go Live
+
 - [ ] Verify Google OAuth approved
 - [ ] Verify Strava production approved
 - [ ] Deploy to production
@@ -101,6 +116,7 @@ Migrating from **React + Express + AWS** to **Next.js + Vercel Postgres**
 ## Domain Setup
 
 ### Production Environment
+
 ```
 Domain: givingthedistance.org
 Branch: main
@@ -111,6 +127,7 @@ API: https://givingthedistance.org/api/*
 ```
 
 ### Preview Environment
+
 ```
 Domain: beta.givingthedistance.org
 Branch: develop (or any non-main branch)
@@ -121,6 +138,7 @@ API: https://beta.givingthedistance.org/api/*
 ```
 
 ### DNS Configuration (at Domain Registrar)
+
 ```
 Type    Name    Value
 A       @       76.76.21.21 (Vercel)
@@ -132,12 +150,14 @@ CNAME   beta    cname.vercel-dns.com
 ## Environment Variables Needed
 
 ### Google OAuth
+
 ```bash
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 ```
 
 ### Strava Integration
+
 ```bash
 STRAVA_CLIENT_ID=
 STRAVA_CLIENT_SECRET=
@@ -145,6 +165,7 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=
 ```
 
 ### Stripe
+
 ```bash
 STRIPE_SECRET_KEY=
 STRIPE_PUBLISHABLE_KEY=
@@ -152,15 +173,16 @@ STRIPE_WEBHOOK_SECRET=
 ```
 
 ### NextAuth
+
 ```bash
 NEXTAUTH_SECRET=  # Generate: openssl rand -base64 32
 NEXTAUTH_URL=https://givingthedistance.org
 ```
 
 ### Database
+
 ```bash
-POSTGRES_URL=  # Auto-configured by Vercel
-POSTGRES_PRISMA_URL=  # Auto-configured by Vercel
+DATABASE_URL=  # Auto-configured by Vercel, or set manually
 ```
 
 ---
@@ -168,18 +190,22 @@ POSTGRES_PRISMA_URL=  # Auto-configured by Vercel
 ## Key Differences from Old App
 
 ### Authentication Flow
+
 **OLD**: AWS Cognito → JWT tokens → Manual verification
 **NEW**: NextAuth.js → Session cookies → Automatic middleware
 
 ### Database Queries
+
 **OLD**: DynamoDB DocumentClient → NoSQL queries
 **NEW**: Prisma → SQL queries with TypeScript types
 
 ### API Structure
+
 **OLD**: Express routes in separate files
 **NEW**: Next.js API routes in `app/api/*/route.ts`
 
 ### OAuth Callbacks
+
 **OLD**: Separate domain (beta.api.givingthedistance.org)
 **NEW**: Same domain (givingthedistance.org/api/auth/callback/strava)
 
@@ -190,6 +216,7 @@ POSTGRES_PRISMA_URL=  # Auto-configured by Vercel
 ### User Table (DynamoDB → Postgres)
 
 **OLD (DynamoDB)**:
+
 ```javascript
 {
   ID: "uuid",
@@ -200,6 +227,7 @@ POSTGRES_PRISMA_URL=  # Auto-configured by Vercel
 ```
 
 **NEW (Postgres)**:
+
 ```sql
 users (
   id UUID PRIMARY KEY,
@@ -246,4 +274,3 @@ accounts (
 - [x] Google OAuth for primary login? → **Yes**
 - [ ] Migrate existing users or start fresh?
 - [ ] Keep Cognito user pool temporarily for data export?
-

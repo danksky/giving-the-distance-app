@@ -8,7 +8,7 @@ This is the **production version** of Giving the Distance, built with Next.js 16
 
 ### What is Giving the Distance?
 
-A platform connecting athletes, businesses, and causes through every mile. Users connect their Strava accounts and create sponsorships where sponsors pay per mile/kilometer run.
+A platform connecting athletes, businesses, and causes through every mile. Users connect their Strava accounts and receive donations where donors pay per mile/kilometer run.
 
 ## 🏗️ Tech Stack
 
@@ -67,7 +67,7 @@ Key variables:
 - `STRAVA_CLIENT_ID` & `STRAVA_CLIENT_SECRET` - Strava integration
 - `STRIPE_SECRET_KEY` - Payment processing
 - `NEXTAUTH_SECRET` - Session encryption
-- `POSTGRES_URL` - Database connection (auto-configured on Vercel)
+- `DATABASE_URL` - Database connection
 
 ## 🌐 Domains
 
