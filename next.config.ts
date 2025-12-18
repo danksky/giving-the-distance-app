@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "dgalywyr863hv.cloudfront.net",
       },
+      {
+        protocol: "https",
+        hostname: "maps.googleapis.com",
+        pathname: "/maps/api/place/photo/**",
+      },
     ],
   },
 };
