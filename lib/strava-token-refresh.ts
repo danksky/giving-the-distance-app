@@ -31,8 +31,8 @@ export async function getValidStravaToken(userId: string): Promise<string | null
 
   // Refresh the token
   try {
-    const clientId = process.env.STRAVA_CLIENT_ID;
-    const clientSecret = process.env.STRAVA_CLIENT_SECRET;
+    const clientId = process.env.STRAVA_CLIENT_ID?.trim();
+    const clientSecret = process.env.STRAVA_CLIENT_SECRET?.trim();
     
     // Debug logging (will mask the secret for security)
     console.log('🔧 Using Strava credentials:', {
