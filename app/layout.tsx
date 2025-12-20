@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Outfit } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Footer from "@/components/Footer";
 
@@ -63,6 +64,11 @@ export default function RootLayout({
       >
         {children}
         <Footer />
+        <Script
+          src="https://cloud.umami.is/script.js"
+          data-website-id="e6d820ea-8ec4-497b-821d-08478c604ac9"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
