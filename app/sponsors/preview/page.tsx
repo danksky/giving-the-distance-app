@@ -460,7 +460,10 @@ async function PreviewContent({
         </div>
 
         {/* Contact Section */}
-        <div className="card bg-white border border-[#e5e7eb]">
+        <div
+          id="contact"
+          className="card bg-white border border-[#e5e7eb] scroll-mt-20"
+        >
           <div className="card-body">
             <div className="text-center mb-8">
               <h2 className="text-4xl font-bold mb-4">Like what you see?</h2>

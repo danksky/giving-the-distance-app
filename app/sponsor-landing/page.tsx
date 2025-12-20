@@ -29,9 +29,15 @@ export default function SponsorLandingPage() {
             <br />
             Your name appears directly on athletes&apos; activities.
           </p>
-          <p className="text-sm text-[#6b7280] max-w-2xl mx-auto">
+          <p className="text-sm text-[#6b7280] max-w-2xl mx-auto mb-6">
             Built for small businesses. Always charity-first.
           </p>
+          <a
+            href="#contact"
+            className="inline-block bg-[#B56DFF] text-white font-semibold px-8 py-3 rounded-lg hover:bg-[#8B4ACC] transition-colors"
+          >
+            I&apos;m in!
+          </a>
         </div>
       </section>
 
@@ -263,7 +269,7 @@ export default function SponsorLandingPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-16 md:py-20 bg-white">
+      <section id="contact" className="py-16 md:py-20 bg-white scroll-mt-20">
         <div className="container mx-auto px-4 max-w-2xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">Want to try this?</h2>
