@@ -177,6 +177,43 @@ De-authorized: [Timestamp]
 
 ---
 
+### 7. Test Google Place Selection
+
+**Steps:**
+
+1. Navigate to the sponsor landing page at `/sponsor-landing`
+2. In the "Search for your business" field, start typing a business name
+3. Select a business from the Google Places autocomplete dropdown
+4. The notification should be sent immediately upon selection
+
+**Expected Slack Notification:**
+
+```
+🏢 Google Place Selected
+Business Name: [Business Name]
+Location: [Full Address]
+Place ID: [Google Place ID]
+Google Maps: View on Maps
+Selected: [Timestamp]
+```
+
+**Code Location:** `components/BusinessSearchPreview.tsx` → API route `app/api/google-place-selection/route.ts`
+
+**Troubleshooting:**
+
+- Check browser console for any API errors
+- Verify Google Maps API key is configured: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+- Look for: "Failed to send place selection notification" in console (non-blocking error)
+- The notification sends immediately when a place is selected, not when "Preview" is clicked
+
+**Notes:**
+
+- The notification is sent as soon as a place is selected from the autocomplete
+- If the notification fails, it won't break the user experience
+- The Google Maps link in the notification is clickable and opens the place in Google Maps
+
+---
+
 ## Checking Slack Channel
 
 After each test:
@@ -239,10 +276,12 @@ All Slack notifications are wrapped in try-catch blocks:
 - [ ] Strava de-authorization notification works
 - [ ] New activity created notification works
 - [ ] Activity deleted notification works
+- [ ] Google place selection notification works
 - [ ] Notifications have correct formatting
 - [ ] Notifications include all required fields
 - [ ] Timestamps are properly formatted
 - [ ] User information is accurate
+- [ ] Google Maps link in place notification is clickable
 - [ ] Error handling works (test with invalid Slack token)
 
 ## Notes

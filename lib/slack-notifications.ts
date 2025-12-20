@@ -464,3 +464,68 @@ export async function notifyStravaDeauthorization(user: {
 
   await sendSlackMessage(message);
 }
+
+/**
+ * Notify when a potential sponsor selects a Google Place
+ */
+export async function notifyGooglePlaceSelection(placeData: {
+  businessName: string;
+  businessLocation: string;
+  placeId: string;
+  googleMapsUrl?: string;
+}) {
+  const googleMapsUrl = placeData.googleMapsUrl || 
+    `https://www.google.com/maps/place/?q=place_id:${placeData.placeId}`;
+
+  const message: SlackMessage = {
+    channel: "",
+    text: "🏢 New Business Interest - Google Place Selected",
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "🏢 Google Place Selected",
+          emoji: true,
+        },
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Business Name:*\n${placeData.businessName}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*Location:*\n${placeData.businessLocation}`,
+          },
+        ],
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Place ID:*\n\`${placeData.placeId}\``,
+          },
+          {
+            type: "mrkdwn",
+            text: `*Google Maps:*\n<${googleMapsUrl}|View on Maps>`,
+          },
+        ],
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `Selected: <!date^${Math.floor(Date.now() / 1000)}^{date_short_pretty} at {time}|${new Date().toISOString()}>`,
+          },
+        ],
+      },
+    ],
+  };
+
+  await sendSlackMessage(message);
+}

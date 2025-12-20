@@ -164,6 +164,31 @@ Strava Athlete ID: 12345678
 De-authorized: Dec 18, 2025 at 4:30 PM
 ```
 
+### 7. Google Place Selection 🏢
+
+**Triggered when:** A potential sponsor selects their business from the Google Places autocomplete on the sponsor landing page.
+
+**Location:** `components/BusinessSearchPreview.tsx` → `app/api/google-place-selection/route.ts`
+
+**Information included:**
+
+- Business name
+- Business location (formatted address)
+- Google Place ID
+- Link to view on Google Maps
+- Timestamp
+
+**Example notification:**
+
+```
+🏢 Google Place Selected
+Business Name: Joe's Coffee Shop
+Location: 123 Main St, Brooklyn, NY 11201, USA
+Place ID: ChIJd8BlQ2BZwokRjMKZFEDZFeo
+Google Maps: View on Maps
+Selected: Dec 18, 2025 at 2:15 PM
+```
+
 ## Implementation Details
 
 ### Slack Notification Helper
@@ -176,6 +201,7 @@ All Slack notifications are handled by functions in `lib/slack-notifications.ts`
 - `notifyStravaAuthSuccess()` - Strava authorization succeeded
 - `notifyStravaAuthFailure()` - Strava authorization failed
 - `notifyStravaDeauthorization()` - Strava de-authorization
+- `notifyGooglePlaceSelection()` - Google place selected by potential sponsor
 
 Each function:
 
@@ -217,6 +243,8 @@ Potential additions:
 
 - Sponsor match notifications (when an activity matches with a sponsor)
 - Campaign creation/update notifications
+- Sponsor contact form submission notifications (when a potential sponsor submits their contact info)
 - Error/warning notifications for system issues
 - Weekly/monthly summary reports
 - Charity selection notifications
+- Additional Google Place details (rating, hours, phone number, website)

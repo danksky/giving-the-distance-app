@@ -90,17 +90,44 @@ export default function BusinessSearchPreview({
         );
         autocomplete.setBounds(nycBounds);
 
-        autocomplete.addListener("place_changed", () => {
+        autocomplete.addListener("place_changed", async () => {
           const place = autocomplete.getPlace();
 
           if (!place.name || !place.formatted_address) {
             return;
           }
 
-          setBusinessName(place.name);
-          setBusinessLocation(place.formatted_address);
-          setPlaceId(place.place_id || "");
+          const businessName = place.name;
+          const businessLocation = place.formatted_address;
+          const placeId = place.place_id || "";
+
+          setBusinessName(businessName);
+          setBusinessLocation(businessLocation);
+          setPlaceId(placeId);
           setIsButtonEnabled(true);
+
+          // Send notification to Slack about the place selection
+          if (placeId) {
+            try {
+              await fetch("/api/google-place-selection", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  businessName,
+                  businessLocation,
+                  placeId,
+                }),
+              });
+            } catch (error) {
+              // Fail silently - don't break user experience if Slack notification fails
+              console.error(
+                "Failed to send place selection notification:",
+                error
+              );
+            }
+          }
         });
       } catch (error) {
         console.error("Error loading Google Maps:", error);
