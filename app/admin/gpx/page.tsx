@@ -380,21 +380,9 @@ export default function GPXManagementPage() {
         <div className="card bg-base-100 mt-6">
           <div className="card-body">
             <h2 className="card-title">Documentation</h2>
-            <div className="space-y-2">
-              <a
-                href="/docs/GPX-STORAGE.md"
-                target="_blank"
-                className="link link-primary block"
-              >
-                → GPX Storage Documentation
-              </a>
-              <a
-                href="/docs/GPX-QUICK-START.md"
-                target="_blank"
-                className="link link-primary block"
-              >
-                → GPX Quick Start Guide
-              </a>
+            <div className="mt-2 text-sm text-base-content/80">
+              Internal docs are stored in the repository under <code>docs/</code>
+              and are not publicly served by the app.
             </div>
           </div>
         </div>

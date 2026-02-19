@@ -179,39 +179,13 @@ export default async function AdminPage() {
           </div>
         </div>
 
-        {/* Documentation Links */}
+        {/* Documentation */}
         <div className="card bg-base-100  mt-8">
           <div className="card-body">
             <h2 className="card-title text-2xl">Documentation</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <a
-                href="/docs/SPONSOR-MATCHING.md"
-                target="_blank"
-                className="link link-primary"
-              >
-                → Sponsor Matching Documentation
-              </a>
-              <a
-                href="/docs/IMPLEMENTATION-SUMMARY.md"
-                target="_blank"
-                className="link link-primary"
-              >
-                → Implementation Summary
-              </a>
-              <a
-                href="/docs/DATABASE-SCHEMA.md"
-                target="_blank"
-                className="link link-primary"
-              >
-                → Database Schema
-              </a>
-              <a
-                href="/docs/STRAVA-WEBHOOK-SETUP.md"
-                target="_blank"
-                className="link link-primary"
-              >
-                → Webhook Setup Guide
-              </a>
+            <div className="mt-4 text-sm text-base-content/80">
+              Internal docs are stored in the repository under <code>docs/</code>
+              and are not publicly served by the app.
             </div>
           </div>
         </div>
