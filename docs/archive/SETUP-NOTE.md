@@ -72,3 +72,4 @@ The feature is fully implemented and ready to use once you:
 3. Deploy
 
 GPX files will then be automatically downloaded and stored for all new activities!
+

@@ -76,7 +76,7 @@ Key variables:
 
 ## 📖 Documentation
 
-- [MIGRATION-GUIDE.md](./MIGRATION-GUIDE.md) - Full migration plan from old architecture
+- [MIGRATION-GUIDE.md](./docs/MIGRATION-GUIDE.md) - Full migration plan from old architecture
 - [Old React App](../giving-the-distance-react) - Reference for UI/UX
 - [Old Express API](../giving-the-distance-express) - Reference for business logic
 
@@ -84,7 +84,7 @@ Key variables:
 
 This app is currently under development, migrating from a React + Express + AWS stack.
 
-See [MIGRATION-GUIDE.md](./MIGRATION-GUIDE.md) for detailed progress and next steps.
+See [MIGRATION-GUIDE.md](./docs/MIGRATION-GUIDE.md) for detailed progress and next steps.
 
 ## 🧪 Development
 

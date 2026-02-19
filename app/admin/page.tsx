@@ -185,28 +185,28 @@ export default async function AdminPage() {
             <h2 className="card-title text-2xl">Documentation</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <a
-                href="/SPONSOR-MATCHING.md"
+                href="/docs/SPONSOR-MATCHING.md"
                 target="_blank"
                 className="link link-primary"
               >
                 → Sponsor Matching Documentation
               </a>
               <a
-                href="/IMPLEMENTATION-SUMMARY.md"
+                href="/docs/IMPLEMENTATION-SUMMARY.md"
                 target="_blank"
                 className="link link-primary"
               >
                 → Implementation Summary
               </a>
               <a
-                href="/DATABASE-SCHEMA.md"
+                href="/docs/DATABASE-SCHEMA.md"
                 target="_blank"
                 className="link link-primary"
               >
                 → Database Schema
               </a>
               <a
-                href="/STRAVA-WEBHOOK-SETUP.md"
+                href="/docs/STRAVA-WEBHOOK-SETUP.md"
                 target="_blank"
                 className="link link-primary"
               >

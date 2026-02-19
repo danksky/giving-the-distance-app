@@ -235,3 +235,4 @@ if (activity.gpxBlobUrl) {
 2. **Bulk Export**: Add admin feature to export all GPX files
 3. **Map Preview**: Render GPX route on a map
 4. **Stats**: Show GPX download statistics in admin dashboard
+

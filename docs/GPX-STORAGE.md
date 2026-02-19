@@ -266,3 +266,4 @@ A typical GPX file is 50-500KB depending on activity length and GPS density.
 - Files are organized by user ID to prevent guessing URLs
 - Only activities with `isPublicProfile=true` should have GPX links shown to public
 - Consider adding signed URLs or access control for private activities
+

@@ -382,14 +382,14 @@ export default function GPXManagementPage() {
             <h2 className="card-title">Documentation</h2>
             <div className="space-y-2">
               <a
-                href="/GPX-STORAGE.md"
+                href="/docs/GPX-STORAGE.md"
                 target="_blank"
                 className="link link-primary block"
               >
                 → GPX Storage Documentation
               </a>
               <a
-                href="/GPX-QUICK-START.md"
+                href="/docs/GPX-QUICK-START.md"
                 target="_blank"
                 className="link link-primary block"
               >
