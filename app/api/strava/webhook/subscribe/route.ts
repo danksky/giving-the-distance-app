@@ -42,10 +42,14 @@ export async function GET() {
     
     // Also get our database records
     const dbSubscriptions = await db.stravaWebhookSubscription.findMany();
+    const serializedDbSubscriptions = dbSubscriptions.map((subscription) => ({
+      ...subscription,
+      subscriptionId: subscription.subscriptionId.toString(),
+    }));
 
     return NextResponse.json({
       strava: subscriptions,
-      database: dbSubscriptions,
+      database: serializedDbSubscriptions,
     });
   } catch (error) {
     console.error('Error fetching subscriptions:', error);
