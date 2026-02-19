@@ -12,6 +12,22 @@ import { SponsorMatchResult } from '@prisma/client';
 export const COMMITMENT_AMOUNT_CENTS = 10; // $0.10
 const GTD_MARKER = '#GTD';
 
+function getActivityBaseUrl(): string {
+  const configured =
+    process.env.NEXTAUTH_URL?.trim() ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
+    (process.env.VERCEL_URL?.trim() ? `https://${process.env.VERCEL_URL.trim()}` : '');
+
+  const withProtocol = configured.startsWith('http')
+    ? configured
+    : configured
+      ? `https://${configured}`
+      : 'https://givingthedistance.org';
+
+  return withProtocol.replace(/\/+$/, '');
+}
+
 export interface MatchingResult {
   success: boolean;
   result: SponsorMatchResult;
@@ -367,7 +383,7 @@ async function buildSponsorMessage(
   });
   
   const shortcode = dbActivity?.shortcode || 'xxxxx';
-  const activityUrl = `beta.givingthedistance.org/a/${shortcode}`;
+  const activityUrl = `${getActivityBaseUrl()}/a/${shortcode}`;
 
   const message = `${firstName}'s ${activityType} inspired ${sponsorName} to donate to ${firstName}'s chosen charity, ${charityName} - ${activityUrl} ${GTD_MARKER}`;
   
