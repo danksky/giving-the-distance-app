@@ -90,15 +90,15 @@ async function main() {
     });
     console.log(`  ✅ ${sponsor.businessName}`);
 
-    // Create default campaign for sponsor
+    // Create one default active campaign per sponsor
     const campaignName = `${sponsor.businessName} - Default Campaign`;
     const initialBudget = 10000; // $100.00 in cents
 
-    // Check if campaign already exists
+    // Check if sponsor already has an active campaign (name can change over time)
     const existingCampaign = await prisma.campaign.findFirst({
       where: {
         sponsorId: sponsor.id,
-        name: campaignName,
+        isActive: true,
       },
     });
 
