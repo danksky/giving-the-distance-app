@@ -327,9 +327,9 @@ async function updateStravaDescription(
     // Build sponsor message
     const sponsorMessage = await buildSponsorMessage(activity, campaign, athleteName, charityName);
 
-    // Append to existing description
+    // Prepend sponsor message so GTD context appears first
     const newDescription = currentDescription
-      ? `${currentDescription}\n\n${sponsorMessage}`
+      ? `${sponsorMessage}\n\n${currentDescription}`
       : sponsorMessage;
 
     // Update Strava activity
