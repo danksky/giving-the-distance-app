@@ -148,6 +148,8 @@ export default async function ActivitiesPage({
   const totalActivities = await db.activity.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalActivities / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
+  const hasPreviousPage = currentPage > 1;
+  const hasNextPage = currentPage < totalPages;
 
   const activities = await db.activity.findMany({
     where,
@@ -433,36 +435,53 @@ export default async function ActivitiesPage({
                       <div className="text-sm opacity-70">
                         Page {currentPage} of {totalPages}
                       </div>
-                      <div className="join">
-                        <Link
-                          href={buildPageHref({
-                            page: Math.max(1, currentPage - 1),
-                            sort: sortField,
-                            dir: sortDirection,
-                            type: typeFilter,
-                          })}
-                          className={`join-item btn btn-sm ${
-                            currentPage === 1 ? "btn-disabled" : ""
-                          }`}
-                          aria-disabled={currentPage === 1}
-                        >
-                          Previous
-                        </Link>
-                        <Link
-                          href={buildPageHref({
-                            page: Math.min(totalPages, currentPage + 1),
-                            sort: sortField,
-                            dir: sortDirection,
-                            type: typeFilter,
-                          })}
-                          className={`join-item btn btn-sm ${
-                            currentPage === totalPages ? "btn-disabled" : ""
-                          }`}
-                          aria-disabled={currentPage === totalPages}
-                        >
-                          Next
-                        </Link>
-                      </div>
+                      {totalPages > 1 && (
+                        <div className="join">
+                          {hasPreviousPage ? (
+                            <Link
+                              href={buildPageHref({
+                                page: currentPage - 1,
+                                sort: sortField,
+                                dir: sortDirection,
+                                type: typeFilter,
+                              })}
+                              className="join-item btn btn-sm"
+                            >
+                              Previous
+                            </Link>
+                          ) : (
+                            <button
+                              type="button"
+                              className="join-item btn btn-sm"
+                              disabled
+                            >
+                              Previous
+                            </button>
+                          )}
+
+                          {hasNextPage ? (
+                            <Link
+                              href={buildPageHref({
+                                page: currentPage + 1,
+                                sort: sortField,
+                                dir: sortDirection,
+                                type: typeFilter,
+                              })}
+                              className="join-item btn btn-sm"
+                            >
+                              Next
+                            </Link>
+                          ) : (
+                            <button
+                              type="button"
+                              className="join-item btn btn-sm"
+                              disabled
+                            >
+                              Next
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
