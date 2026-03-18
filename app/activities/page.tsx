@@ -52,6 +52,18 @@ function buildPageHref(params: {
   return `/activities?${search.toString()}`;
 }
 
+function getNextSortDirection(
+  currentSort: SortField,
+  currentDirection: SortDirection,
+  targetSort: SortField
+): SortDirection {
+  if (currentSort !== targetSort) {
+    return "desc";
+  }
+
+  return currentDirection === "desc" ? "asc" : "desc";
+}
+
 export default async function ActivitiesPage({
   searchParams,
 }: {
@@ -191,37 +203,8 @@ export default async function ActivitiesPage({
                     <div className="mt-2 text-4xl font-bold">{totalActivities}</div>
                   </div>
 
-                  <form className="grid gap-4 sm:grid-cols-3">
-                    <label className="form-control w-full">
-                      <div className="label pb-2">
-                        <span className="label-text">Sort by</span>
-                      </div>
-                      <select
-                        name="sort"
-                        defaultValue={sortField}
-                        className="select select-bordered"
-                      >
-                        <option value="date">Date</option>
-                        <option value="distance">Distance</option>
-                        <option value="time">Time</option>
-                      </select>
-                    </label>
-
-                    <label className="form-control w-full">
-                      <div className="label pb-2">
-                        <span className="label-text">Direction</span>
-                      </div>
-                      <select
-                        name="dir"
-                        defaultValue={sortDirection}
-                        className="select select-bordered"
-                      >
-                        <option value="desc">Descending</option>
-                        <option value="asc">Ascending</option>
-                      </select>
-                    </label>
-
-                    <label className="form-control w-full">
+                  <form className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <label className="form-control w-full sm:w-56">
                       <div className="label pb-2">
                         <span className="label-text">Type</span>
                       </div>
@@ -239,13 +222,12 @@ export default async function ActivitiesPage({
                       </select>
                     </label>
 
+                    <input type="hidden" name="sort" value={sortField} />
+                    <input type="hidden" name="dir" value={sortDirection} />
                     <input type="hidden" name="page" value="1" />
-
-                    <div className="flex justify-end sm:col-span-3">
-                      <button type="submit" className="btn btn-primary btn-sm">
-                        Apply
-                      </button>
-                    </div>
+                    <button type="submit" className="btn btn-outline btn-sm">
+                      Filter
+                    </button>
                   </form>
                 </div>
               </div>
@@ -267,11 +249,80 @@ export default async function ActivitiesPage({
                       <table className="table table-zebra">
                         <thead>
                           <tr>
-                            <th className="whitespace-nowrap">Date</th>
+                            <th className="whitespace-nowrap">
+                              <Link
+                                href={buildPageHref({
+                                  page: 1,
+                                  sort: "date",
+                                  dir: getNextSortDirection(
+                                    sortField,
+                                    sortDirection,
+                                    "date"
+                                  ),
+                                  type: typeFilter,
+                                })}
+                                className="inline-flex items-center gap-1 font-semibold"
+                              >
+                                Date
+                                <span className="text-xs opacity-70">
+                                  {sortField === "date"
+                                    ? sortDirection === "desc"
+                                      ? "↓"
+                                      : "↑"
+                                    : "↕"}
+                                </span>
+                              </Link>
+                            </th>
                             <th>Activity</th>
                             <th>Type</th>
-                            <th>Distance</th>
-                            <th>Time</th>
+                            <th>
+                              <Link
+                                href={buildPageHref({
+                                  page: 1,
+                                  sort: "distance",
+                                  dir: getNextSortDirection(
+                                    sortField,
+                                    sortDirection,
+                                    "distance"
+                                  ),
+                                  type: typeFilter,
+                                })}
+                                className="inline-flex items-center gap-1 font-semibold"
+                              >
+                                Distance
+                                <span className="text-xs opacity-70">
+                                  {sortField === "distance"
+                                    ? sortDirection === "desc"
+                                      ? "↓"
+                                      : "↑"
+                                    : "↕"}
+                                </span>
+                              </Link>
+                            </th>
+                            <th>
+                              <Link
+                                href={buildPageHref({
+                                  page: 1,
+                                  sort: "time",
+                                  dir: getNextSortDirection(
+                                    sortField,
+                                    sortDirection,
+                                    "time"
+                                  ),
+                                  type: typeFilter,
+                                })}
+                                className="inline-flex items-center gap-1 font-semibold"
+                              >
+                                Time
+                                <span className="text-xs opacity-70">
+                                  {sortField === "time"
+                                    ? sortDirection === "desc"
+                                      ? "↓"
+                                      : "↑"
+                                    : "↕"}
+                                </span>
+                              </Link>
+                            </th>
                             <th>Elevation</th>
                           </tr>
                         </thead>
