@@ -5,7 +5,6 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import Navbar from "@/components/Navbar";
 
-// Helper function to format duration in seconds to HH:MM:SS
 function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -16,6 +15,7 @@ function formatDuration(seconds: number): string {
       .toString()
       .padStart(2, "0")}`;
   }
+
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
 
@@ -34,34 +34,35 @@ export default async function DashboardPage({
   const errorMessage = params.error;
   const successMessage = params.success;
 
-  // Get user with Strava connection
   const user = await db.user.findUnique({
     where: { email: session.user.email! },
     include: {
       accounts: {
         where: { provider: "strava" },
       },
-      stravaAthlete: true,
+      _count: {
+        select: {
+          activities: true,
+        },
+      },
       activities: {
         orderBy: {
           startDate: "desc",
         },
-        take: 20, // Show last 20 activities (including deleted)
+        take: 4,
       },
     },
   });
 
   const hasStrava = (user?.accounts.length ?? 0) > 0;
   const activities = user?.activities ?? [];
+  const totalActivities = user?._count.activities ?? 0;
 
   return (
     <div className="min-h-screen bg-base-200">
-      {/* Header */}
       <Navbar />
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Success Message */}
+      <main className="container mx-auto max-w-7xl px-4 py-8">
         {successMessage && (
           <div role="alert" className="alert alert-success mb-6">
             <svg
@@ -86,7 +87,6 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Error Message */}
         {errorMessage && (
           <div role="alert" className="alert alert-error mb-6">
             <svg
@@ -113,13 +113,12 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Setup Prompt - Only show if Strava not connected */}
         {!hasStrava && (
-          <div className="card bg-base-100 mb-8">
+          <div className="card bg-base-100">
             <div className="card-body">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 relative flex-shrink-0">
+                  <div className="relative h-12 w-12 flex-shrink-0">
                     <Image
                       src="/logos/services/strava.svg"
                       alt="Strava"
@@ -127,18 +126,18 @@ export default async function DashboardPage({
                       height={48}
                     />
                   </div>
-                  <div>
-                    <h2 className="card-title text-xl">
-                      Connect Strava to Get Started
+                  <div className="min-w-0">
+                    <h2 className="card-title mb-1 text-xl sm:text-2xl">
+                      Connect Strava
                     </h2>
-                    <p className="text-base-content/70 text-sm">
-                      Link your account to start tracking activities
+                    <p className="text-sm text-base-content/70">
+                      Link your account to sync your activities here.
                     </p>
                   </div>
                 </div>
                 <Link
                   href="/settings/strava"
-                  className="btn btn-primary btn-sm"
+                  className="btn btn-primary w-full sm:w-auto"
                 >
                   Connect Strava
                 </Link>
@@ -147,23 +146,30 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Dashboard Grid Layout */}
         {hasStrava && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            {/* Recent Activities - Takes 2/3 width on desktop */}
-            <div className="lg:col-span-2">
-              <div className="card bg-base-100">
-                <div className="card-body">
-                  <h3 className="card-title">Recent Activities</h3>
-                  {activities.length === 0 ? (
-                    <div className="text-center py-8 opacity-60">
-                      <p className="mb-2">No activities yet.</p>
-                      <p className="text-sm">
-                        Activities from Strava will appear here automatically
-                        once you complete them.
-                      </p>
-                    </div>
-                  ) : (
+          <div className="space-y-8">
+            <div className="card bg-base-100">
+              <div className="card-body">
+                <div className="text-sm uppercase tracking-[0.2em] opacity-60">
+                  Total Activities
+                </div>
+                <div className="mt-2 text-4xl font-bold">{totalActivities}</div>
+              </div>
+            </div>
+
+            <div className="card bg-base-100">
+              <div className="card-body">
+                <h3 className="card-title">Recent Activities</h3>
+                {activities.length === 0 ? (
+                  <div className="py-8 text-center opacity-60">
+                    <p className="mb-2">No activities yet.</p>
+                    <p className="text-sm">
+                      Activities from Strava will appear here automatically once
+                      you complete them.
+                    </p>
+                  </div>
+                ) : (
+                  <>
                     <div className="overflow-x-auto">
                       <table className="table table-zebra">
                         <thead>
@@ -179,7 +185,6 @@ export default async function DashboardPage({
                         <tbody>
                           {activities.map((activity) => {
                             const isDeleted = !!activity.deletedAt;
-
                             const distanceKm =
                               !isDeleted && activity.distanceMeters
                                 ? (
@@ -192,12 +197,10 @@ export default async function DashboardPage({
                                     Number(activity.distanceMeters) / 1609.34
                                   ).toFixed(2)
                                 : "—";
-
                             const movingTime =
                               !isDeleted && activity.movingTimeSeconds
                                 ? formatDuration(activity.movingTimeSeconds)
                                 : "—";
-
                             const elevationM =
                               !isDeleted && activity.totalElevationGain
                                 ? `${Number(
@@ -211,7 +214,6 @@ export default async function DashboardPage({
                                     3.28084
                                   ).toFixed(0)}ft`
                                 : "—";
-
                             const date = activity.startDateLocal
                               ? new Date(
                                   activity.startDateLocal
@@ -244,7 +246,7 @@ export default async function DashboardPage({
                                     </Link>
                                   )}
                                 </td>
-                                <td>{!isDeleted && activity.type}</td>
+                                <td>{!isDeleted ? activity.type : "—"}</td>
                                 <td>
                                   {!isDeleted ? (
                                     <>
@@ -282,124 +284,19 @@ export default async function DashboardPage({
                         </tbody>
                       </table>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
 
-            {/* Account Details - Takes 1/3 width on desktop */}
-            <div className="lg:col-span-1">
-              <div className="card bg-base-100">
-                <div className="card-body">
-                  <h3 className="card-title">Account Information</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-sm opacity-70">Email</div>
-                      <div className="font-medium">{session.user.email}</div>
+                    <div className="flex justify-end border-t border-base-200 pt-4">
+                      <Link href="/activities" className="btn btn-outline btn-sm">
+                        All activities
+                      </Link>
                     </div>
-                    <div>
-                      <div className="text-sm opacity-70">Name</div>
-                      <div className="font-medium">{session.user.name}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm opacity-70">Google</div>
-                      <div className="font-medium flex items-center gap-2">
-                        <Image
-                          src="/logos/services/google.png"
-                          alt="Google"
-                          width={20}
-                          height={20}
-                          className="inline-block"
-                        />
-                        <span className="text-success">Connected</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm opacity-70">Strava</div>
-                      <div
-                        className={`font-medium flex items-center gap-2 ${
-                          hasStrava
-                            ? "text-success"
-                            : "text-base-content opacity-40"
-                        }`}
-                      >
-                        <Image
-                          src="/logos/services/strava.svg"
-                          alt="Strava"
-                          width={20}
-                          height={20}
-                          className="inline-block"
-                        />
-                        <span>{hasStrava ? "Connected" : "Not Connected"}</span>
-                      </div>
-                    </div>
-                    {hasStrava && (
-                      <div>
-                        <div className="text-sm opacity-70">
-                          Total Activities
-                        </div>
-                        <div className="font-medium">{activities.length}</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Account Details for non-Strava users */}
-        {!hasStrava && (
-          <div className="card bg-base-100">
-            <div className="card-body">
-              <h3 className="card-title">Account Information</h3>
-              <div className="stats stats-vertical lg:stats-horizontal">
-                <div className="stat">
-                  <div className="stat-title">Email</div>
-                  <div className="font-medium">{session.user.email}</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-title">Name</div>
-                  <div className="font-medium">{session.user.name}</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-title">Google</div>
-                  <div className="font-medium flex items-center gap-2">
-                    <Image
-                      src="/logos/services/google.png"
-                      alt="Google"
-                      width={20}
-                      height={20}
-                      className="inline-block"
-                    />
-                    <span className="text-success">Connected</span>
-                  </div>
-                </div>
-                <div className="stat">
-                  <div className="stat-title">Strava</div>
-                  <div
-                    className={`font-medium flex items-center gap-2 ${
-                      hasStrava
-                        ? "text-success"
-                        : "text-base-content opacity-40"
-                    }`}
-                  >
-                    <Image
-                      src="/logos/services/strava.svg"
-                      alt="Strava"
-                      width={20}
-                      height={20}
-                      className="inline-block"
-                    />
-                    <span>{hasStrava ? "Connected" : "Not Connected"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Debug Info (Development Only) */}
         {process.env.NODE_ENV === "development" && (
           <div className="collapse collapse-arrow bg-base-100 mt-8">
             <input type="checkbox" />
