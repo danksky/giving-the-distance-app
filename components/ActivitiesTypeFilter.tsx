@@ -14,15 +14,13 @@ export default function ActivitiesTypeFilter({
   sortDirection,
 }: ActivitiesTypeFilterProps) {
   return (
-    <form>
-      <label className="form-control w-full sm:w-56">
-        <div className="label pb-2">
-          <span className="label-text">Type</span>
-        </div>
+    <form className="flex items-center gap-3">
+      <label className="text-sm font-medium">Type</label>
+      <div className="w-full sm:w-56">
         <select
           name="type"
           defaultValue={typeFilter}
-          className="select select-bordered"
+          className="select select-bordered select-sm w-full"
           onChange={(event) => event.currentTarget.form?.requestSubmit()}
         >
           <option value="all">All types</option>
@@ -32,7 +30,7 @@ export default function ActivitiesTypeFilter({
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
       <input type="hidden" name="sort" value={sortField} />
       <input type="hidden" name="dir" value={sortDirection} />
