@@ -40,11 +40,6 @@ export default async function DashboardPage({
       accounts: {
         where: { provider: "strava" },
       },
-      _count: {
-        select: {
-          activities: true,
-        },
-      },
       activities: {
         orderBy: {
           startDate: "desc",
@@ -56,7 +51,17 @@ export default async function DashboardPage({
 
   const hasStrava = (user?.accounts.length ?? 0) > 0;
   const activities = user?.activities ?? [];
-  const totalActivities = user?._count.activities ?? 0;
+  const totalRaisedAggregate = user
+    ? await db.charityCommitment.aggregate({
+        where: {
+          userId: user.id,
+        },
+        _sum: {
+          amountCents: true,
+        },
+      })
+    : null;
+  const totalRaised = (totalRaisedAggregate?._sum.amountCents ?? 0) / 100;
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -150,10 +155,18 @@ export default async function DashboardPage({
           <div className="space-y-8">
             <div className="card bg-base-100">
               <div className="card-body">
-                <div className="text-sm uppercase tracking-[0.2em] opacity-60">
-                  Total Activities
+                <h3 className="text-2xl font-bold mb-4">Impact</h3>
+                <div>
+                  <div className="text-sm font-semibold text-base-content/60 mb-2">
+                    TOTAL RAISED
+                  </div>
+                  <div className="text-5xl font-bold text-[#8B4ACC] mb-2">
+                    ${totalRaised.toFixed(2)}
+                  </div>
+                  <div className="text-sm text-base-content/60">
+                    Generated across your activities
+                  </div>
                 </div>
-                <div className="mt-2 text-4xl font-bold">{totalActivities}</div>
               </div>
             </div>
 
