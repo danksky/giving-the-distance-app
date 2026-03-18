@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const SORT_FIELDS = ["date", "distance", "time"] as const;
 const SORT_DIRECTIONS = ["asc", "desc"] as const;
 
@@ -196,16 +196,18 @@ export default async function ActivitiesPage({
         {hasStrava && (
           <div className="space-y-6">
             <div className="card bg-base-100">
-              <div className="card-body gap-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                  <div>
-                    <div className="text-sm uppercase tracking-[0.2em] opacity-60">
-                      Total Activities
-                    </div>
-                    <div className="mt-2 text-4xl font-bold">{totalActivities}</div>
-                  </div>
+              <div className="card-body">
+                <div className="text-sm uppercase tracking-[0.2em] opacity-60">
+                  Total Activities
+                </div>
+                <div className="mt-2 text-4xl font-bold">{totalActivities}</div>
+              </div>
+            </div>
 
-                  <form className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="card bg-base-100">
+              <div className="card-body">
+                <div className="mb-4 flex justify-end">
+                  <form>
                     <label className="form-control w-full sm:w-56">
                       <div className="label pb-2">
                         <span className="label-text">Type</span>
@@ -214,6 +216,7 @@ export default async function ActivitiesPage({
                         name="type"
                         defaultValue={typeFilter}
                         className="select select-bordered"
+                        onChange={(event) => event.currentTarget.form?.requestSubmit()}
                       >
                         <option value="all">All types</option>
                         {typeOptions.map((type) => (
@@ -227,16 +230,9 @@ export default async function ActivitiesPage({
                     <input type="hidden" name="sort" value={sortField} />
                     <input type="hidden" name="dir" value={sortDirection} />
                     <input type="hidden" name="page" value="1" />
-                    <button type="submit" className="btn btn-outline btn-sm">
-                      Filter
-                    </button>
                   </form>
                 </div>
-              </div>
-            </div>
 
-            <div className="card bg-base-100">
-              <div className="card-body">
                 {activities.length === 0 ? (
                   <div className="py-8 text-center opacity-60">
                     <p className="mb-2">No activities found.</p>

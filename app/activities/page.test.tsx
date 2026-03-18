@@ -96,8 +96,10 @@ describe("ActivitiesPage", () => {
   it("hides pagination controls when there is only one page", async () => {
     mockActivityFindMany
       .mockResolvedValueOnce([{ type: "Run" }])
-      .mockResolvedValueOnce(Array.from({ length: 15 }, (_, index) => createActivity(index)));
-    mockActivityCount.mockResolvedValue(15);
+      .mockResolvedValueOnce(
+        Array.from({ length: 10 }, (_, index) => createActivity(index))
+      );
+    mockActivityCount.mockResolvedValue(10);
 
     render(
       await ActivitiesPage({
@@ -115,8 +117,10 @@ describe("ActivitiesPage", () => {
   it("renders next and previous links when multiple pages exist", async () => {
     mockActivityFindMany
       .mockResolvedValueOnce([{ type: "Run" }])
-      .mockResolvedValueOnce(Array.from({ length: 20 }, (_, index) => createActivity(index)));
-    mockActivityCount.mockResolvedValue(45);
+      .mockResolvedValueOnce(
+        Array.from({ length: 10 }, (_, index) => createActivity(index))
+      );
+    mockActivityCount.mockResolvedValue(25);
 
     render(
       await ActivitiesPage({
