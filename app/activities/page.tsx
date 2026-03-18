@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import Navbar from "@/components/Navbar";
+import ActivitiesTypeFilter from "@/components/ActivitiesTypeFilter";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
@@ -207,30 +208,12 @@ export default async function ActivitiesPage({
             <div className="card bg-base-100">
               <div className="card-body">
                 <div className="mb-4 flex justify-end">
-                  <form>
-                    <label className="form-control w-full sm:w-56">
-                      <div className="label pb-2">
-                        <span className="label-text">Type</span>
-                      </div>
-                      <select
-                        name="type"
-                        defaultValue={typeFilter}
-                        className="select select-bordered"
-                        onChange={(event) => event.currentTarget.form?.requestSubmit()}
-                      >
-                        <option value="all">All types</option>
-                        {typeOptions.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <input type="hidden" name="sort" value={sortField} />
-                    <input type="hidden" name="dir" value={sortDirection} />
-                    <input type="hidden" name="page" value="1" />
-                  </form>
+                  <ActivitiesTypeFilter
+                    typeFilter={typeFilter}
+                    typeOptions={typeOptions}
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                  />
                 </div>
 
                 {activities.length === 0 ? (
