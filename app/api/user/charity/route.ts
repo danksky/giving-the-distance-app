@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -99,11 +100,15 @@ export async function GET() {
     // Get user's selected charity
     const user = await db.user.findUnique({
       where: { email: session.user.email },
-      include: { selectedCharity: true },
+      select: { id: true },
     });
 
+    const charity = user
+      ? await ensureUserHasSelectedCharity(user.id)
+      : null;
+
     return NextResponse.json({
-      charity: user?.selectedCharity || null,
+      charity,
     });
   } catch (error) {
     console.error("Error fetching charity selection:", error);

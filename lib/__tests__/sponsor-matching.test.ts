@@ -6,6 +6,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { matchActivityWithSponsor, COMMITMENT_AMOUNT_CENTS, hasExistingSponsorMatch } from '../sponsor-matching';
 import { SponsorMatchResult } from '@prisma/client';
 
+vi.mock('@/lib/charity-helpers', () => ({
+  ensureUserHasSelectedCharity: vi.fn(),
+}));
+
 // Mock the db module
 vi.mock('@/lib/db', () => ({
   db: {
@@ -18,9 +22,6 @@ vi.mock('@/lib/db', () => ({
       update: vi.fn(),
     },
     user: {
-      findUnique: vi.fn(),
-    },
-    charity: {
       findUnique: vi.fn(),
     },
     stravaAthlete: {
@@ -38,6 +39,7 @@ vi.mock('@/lib/db', () => ({
 
 // Import mocked db after mocking
 import { db } from '@/lib/db';
+import { ensureUserHasSelectedCharity } from '@/lib/charity-helpers';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -170,15 +172,8 @@ describe('Sponsor Matching Service', () => {
       vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
-      // Mock user with selected charity
-      vi.mocked(db.user.findUnique).mockResolvedValue({
+      vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue({
         id: mockActivity.userId,
-        selectedCharityId: 'charity-unicef',
-      } as any);
-
-      // Mock charity lookup
-      vi.mocked(db.charity.findUnique).mockResolvedValue({
-        id: 'charity-unicef',
         name: 'UNICEF',
       } as any);
 
@@ -220,15 +215,8 @@ describe('Sponsor Matching Service', () => {
       vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
-      // Mock user with selected charity
-      vi.mocked(db.user.findUnique).mockResolvedValue({
+      vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue({
         id: mockActivity.userId,
-        selectedCharityId: 'charity-unicef',
-      } as any);
-
-      // Mock charity lookup
-      vi.mocked(db.charity.findUnique).mockResolvedValue({
-        id: 'charity-unicef',
         name: 'UNICEF',
       } as any);
 
@@ -290,22 +278,18 @@ describe('Sponsor Matching Service', () => {
           json: async () => ({ id: mockActivity.stravaActivityId }),
         });
 
-      // Mock user with no selected charity
-      vi.mocked(db.user.findUnique).mockResolvedValue({
-        id: mockActivity.userId,
-        selectedCharityId: null,
-      } as any);
+      vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue(null);
 
       const createdMatch = {
         id: 'match-no-charity',
-        result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
+        result: SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY,
       };
       vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
 
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(false);
-      expect(result.result).toBe(SponsorMatchResult.SKIPPED_UPDATE_FAILED);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY);
       expect(result.error).toContain('no selected charity');
     });
 
@@ -313,14 +297,7 @@ describe('Sponsor Matching Service', () => {
       vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
-      // Mock user with selected charity
-      vi.mocked(db.user.findUnique).mockResolvedValue({
-        id: mockActivity.userId,
-        selectedCharityId: 'charity-unicef',
-      } as any);
-
-      // Mock charity lookup
-      vi.mocked(db.charity.findUnique).mockResolvedValue({
+      vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue({
         id: 'charity-unicef',
         name: 'UNICEF',
       } as any);
@@ -387,14 +364,7 @@ describe('Sponsor Matching Service', () => {
       vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
       
-      // Mock user with selected charity
-      vi.mocked(db.user.findUnique).mockResolvedValue({
-        id: mockActivity.userId,
-        selectedCharityId: 'charity-unicef',
-      } as any);
-
-      // Mock charity lookup
-      vi.mocked(db.charity.findUnique).mockResolvedValue({
+      vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue({
         id: 'charity-unicef',
         name: 'UNICEF',
       } as any);

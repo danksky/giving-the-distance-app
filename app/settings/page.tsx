@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
 
@@ -28,13 +29,10 @@ export default async function SettingsPage() {
   const hasStrava = (user?.accounts.length ?? 0) > 0;
   const stravaAthlete = user?.stravaAthlete;
 
-  // Get current charity (user's selection or default)
-  let currentCharity = user?.selectedCharity;
-  if (!currentCharity) {
-    currentCharity = await db.charity.findFirst({
-      where: { isDefault: true },
-    });
-  }
+  // Ensure the default charity is persisted for users missing a selection
+  const currentCharity = user
+    ? await ensureUserHasSelectedCharity(user.id)
+    : null;
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -142,8 +140,8 @@ export default async function SettingsPage() {
                         <h2 className="card-title text-lg sm:text-xl">
                           Charity Selection
                         </h2>
-                        <div className="badge badge-sm sm:badge-lg badge-outline flex-shrink-0">
-                          Optional
+                        <div className="badge badge-sm sm:badge-lg badge-success flex-shrink-0">
+                          Active
                         </div>
                       </div>
                       <p className="text-sm sm:text-base text-base-content/60">
@@ -158,9 +156,7 @@ export default async function SettingsPage() {
                           />
                           <span className="text-xs sm:text-sm font-semibold text-primary">
                             {currentCharity.name}
-                            {currentCharity.isDefault &&
-                              !user?.selectedCharityId &&
-                              " (Default)"}
+                            {currentCharity.isDefault && " (Default)"}
                           </span>
                         </div>
                       )}

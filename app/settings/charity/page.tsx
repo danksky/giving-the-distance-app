@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers";
 import CharitySelector from "@/components/CharitySelector";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
@@ -24,9 +25,11 @@ export default async function CharitySettingsPage() {
     orderBy: [{ isDefault: "desc" }, { name: "asc" }],
   });
 
-  // Current charity - use user's selection or default to UNICEF
+  // Current charity - ensure the persisted selection exists for this user
   const currentCharity =
-    user?.selectedCharity || charities.find((c) => c.isDefault) || charities[0];
+    (user ? await ensureUserHasSelectedCharity(user.id) : null) ||
+    charities.find((c) => c.isDefault) ||
+    charities[0];
 
   return (
     <div className="min-h-screen bg-base-200">

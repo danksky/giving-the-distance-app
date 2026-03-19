@@ -7,6 +7,7 @@
 
 import { db } from '@/lib/db';
 import { SponsorMatchResult } from '@prisma/client';
+import { ensureUserHasSelectedCharity } from '@/lib/charity-helpers';
 
 // Constants
 export const COMMITMENT_AMOUNT_CENTS = 10; // $0.10
@@ -47,6 +48,14 @@ export interface ActivityData {
   name?: string | null;
   type: string;
   description?: string | null;
+}
+
+interface CampaignWithSponsor {
+  id: string;
+  sponsor: {
+    businessName: string;
+    website: string | null;
+  };
 }
 
 /**
@@ -125,13 +134,10 @@ export async function matchActivityWithSponsor(
     }
 
     // Step 4: Get user's selected charity and athlete info for description
-    const user = await db.user.findUnique({
-      where: { id: activity.userId },
-      select: { selectedCharityId: true },
-    });
+    const selectedCharity = await ensureUserHasSelectedCharity(activity.userId);
 
-    if (!user?.selectedCharityId) {
-      // Log as SKIPPED_UPDATE_FAILED with note about missing charity
+    if (!selectedCharity?.id) {
+      // Log as SKIPPED_NO_SELECTED_CHARITY
       const sponsorMatch = await db.sponsorMatch.create({
         data: {
           activityId: activity.id,
@@ -139,15 +145,15 @@ export async function matchActivityWithSponsor(
           athleteId: activity.athleteId,
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
-          result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
+          result: SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY,
           decrementCents: 0,
-          notes: 'User has no selected charity',
+          notes: 'User has no selected charity and no default charity is configured',
         },
       });
 
       return {
         success: false,
-        result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
+        result: SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY,
         sponsorMatchId: sponsorMatch.id,
         campaignId: campaign.id,
         error: 'User has no selected charity',
@@ -155,11 +161,6 @@ export async function matchActivityWithSponsor(
     }
 
     // Get charity details and athlete name for description
-    const charity = await db.charity.findUnique({
-      where: { id: user.selectedCharityId },
-      select: { name: true },
-    });
-
     const athlete = await db.stravaAthlete.findUnique({
       where: { id: activity.athleteId },
       select: { firstname: true },
@@ -171,7 +172,7 @@ export async function matchActivityWithSponsor(
       campaign,
       accessToken,
       athlete?.firstname || null,
-      charity?.name || 'charity'
+      selectedCharity.name || 'charity'
     );
 
     if (!updateResult.success) {
@@ -199,7 +200,7 @@ export async function matchActivityWithSponsor(
     }
 
     // Step 6: Everything successful - create records in transaction
-    const selectedCharityId = user.selectedCharityId;
+    const selectedCharityId = selectedCharity.id;
     
     const result = await db.$transaction(async (tx) => {
       // Decrement campaign budget
@@ -291,7 +292,7 @@ async function findActiveCampaign() {
  */
 async function updateStravaDescription(
   activity: ActivityData,
-  campaign: any,
+  campaign: CampaignWithSponsor,
   accessToken: string,
   athleteName: string | null,
   charityName: string
@@ -368,7 +369,7 @@ async function updateStravaDescription(
  */
 async function buildSponsorMessage(
   activity: ActivityData,
-  campaign: any,
+  campaign: CampaignWithSponsor,
   athleteName: string | null,
   charityName: string
 ): Promise<string> {

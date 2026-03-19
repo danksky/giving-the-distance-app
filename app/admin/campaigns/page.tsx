@@ -98,9 +98,6 @@ export default async function CampaignsPage() {
     0
   );
   const totalBudgetSpent = totalBudgetAllocated - totalBudgetRemaining;
-  const totalActivitiesMatched = recentMatches.filter(
-    (m) => m.result === SponsorMatchResult.MATCHED
-  ).length;
   const totalCommitments = campaigns.reduce(
     (sum, c) => sum + c._count.charityCommitments,
     0
@@ -119,6 +116,9 @@ export default async function CampaignsPage() {
     ).length,
     alreadySponsored: recentMatches.filter(
       (m) => m.result === SponsorMatchResult.SKIPPED_ALREADY_SPONSORED
+    ).length,
+    noSelectedCharity: recentMatches.filter(
+      (m) => m.result === SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY
     ).length,
     updateFailed: recentMatches.filter(
       (m) => m.result === SponsorMatchResult.SKIPPED_UPDATE_FAILED
@@ -206,6 +206,12 @@ export default async function CampaignsPage() {
                 <div className="stat-title">Already Sponsored</div>
                 <div className="stat-value text-info text-2xl">
                   {matchStats.alreadySponsored}
+                </div>
+              </div>
+              <div className="stat">
+                <div className="stat-title">No Charity</div>
+                <div className="stat-value text-warning text-2xl">
+                  {matchStats.noSelectedCharity}
                 </div>
               </div>
               <div className="stat">
@@ -375,6 +381,12 @@ export default async function CampaignsPage() {
                                     : match.result ===
                                       SponsorMatchResult.SKIPPED_NO_BUDGET
                                     ? "badge-warning"
+                                    : match.result ===
+                                      SponsorMatchResult.SKIPPED_ALREADY_SPONSORED
+                                    ? "badge-info"
+                                    : match.result ===
+                                      SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY
+                                    ? "badge-warning"
                                     : "badge-error"
                                 }`}
                               >
@@ -475,6 +487,9 @@ export default async function CampaignsPage() {
                               : match.result ===
                                 SponsorMatchResult.SKIPPED_ALREADY_SPONSORED
                               ? "badge-info"
+                              : match.result ===
+                                SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY
+                              ? "badge-warning"
                               : "badge-error"
                           }`}
                         >

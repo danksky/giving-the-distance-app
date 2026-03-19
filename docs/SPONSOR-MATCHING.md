@@ -61,6 +61,7 @@ Tracks every attempt to match an activity with a campaign.
   - `SKIPPED_NO_BUDGET`: Campaign has insufficient budget
   - `SKIPPED_NO_ACTIVE_CAMPAIGN`: No active campaign available
   - `SKIPPED_ALREADY_SPONSORED`: Activity already has a sponsor match
+  - `SKIPPED_NO_SELECTED_CHARITY`: No selected or default charity was available
   - `SKIPPED_UPDATE_FAILED`: Failed to update Strava description
 - `decrementCents`: Amount deducted from budget (0 if not matched)
 - `notes`: Optional notes about the match
@@ -104,7 +105,15 @@ Verify campaign has enough budget for the commitment amount.
 
 If insufficient budget, create sponsor match record with `SKIPPED_NO_BUDGET` and stop.
 
-### Step 4: Update Strava Description
+### Step 4: Verify User Has Selected Charity
+
+Ensure the user has a persisted `selectedCharityId`.
+
+If the user is missing one, the system first attempts to assign the platform default charity automatically.
+
+If no selected or default charity can be resolved, create a sponsor match record with `SKIPPED_NO_SELECTED_CHARITY` and stop.
+
+### Step 5: Update Strava Description
 
 1. Fetch current activity details from Strava API
 2. Check if description already contains `#GTD` marker
@@ -117,12 +126,6 @@ If insufficient budget, create sponsor match record with `SKIPPED_NO_BUDGET` and
 6. Update activity via Strava API
 
 If update fails, create sponsor match record with `SKIPPED_UPDATE_FAILED` and stop.
-
-### Step 5: Verify User Has Selected Charity
-
-Check that user has a `selectedCharityId`.
-
-If not, create sponsor match record with `SKIPPED_UPDATE_FAILED` and stop.
 
 ### Step 6: Create Records (Transaction)
 

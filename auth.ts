@@ -3,6 +3,7 @@ import { CustomPrismaAdapter } from "@/lib/custom-prisma-adapter"
 import { db } from "@/lib/db"
 import { authConfig } from "./auth.config"
 import { notifyNewUser, notifyStravaAuthSuccess, notifyStravaAuthFailure } from "@/lib/slack-notifications"
+import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers"
 
 const hasDatabaseConfigured = Boolean(
   process.env.DATABASE_URL?.trim() ||
@@ -110,6 +111,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
 
       console.log('👋 New user created:', user.email)
+
+      try {
+        await ensureUserHasSelectedCharity(user.id!)
+      } catch (error) {
+        console.error("⚠️  Failed to assign default charity to new user:", error)
+      }
       
       // Send Slack notification for new user
       try {
@@ -223,4 +230,3 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
 })
-
