@@ -108,5 +108,16 @@
     "website": "https://www.aspca.org/",
     "charityNavigatorScore": 99,
     "isDefault": false
+  },
+  {
+    "id": "nice-jewish-runners",
+    "name": "Nice Jewish Runners",
+    "fullName": "Nice Jewish Runners Inc",
+    "description": "Building Jewish community and connection through inclusive running groups, events, and shared wellness experiences.",
+    "category": "Community Building",
+    "logoUrl": "/logos/charities/nice-jewish-runners.webp",
+    "website": "https://nicejewishrunners.org/",
+    "charityNavigatorScore": 0,
+    "isDefault": false
   }
 ]

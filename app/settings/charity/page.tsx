@@ -144,8 +144,8 @@ export default async function CharitySettingsPage() {
           <div className="card-body">
             <h3 className="card-title mb-4">Available Charities</h3>
             <p className="text-sm text-base-content/60 mb-6">
-              Choose from our curated list of highly-rated charities. All
-              organizations have been verified by Charity Navigator.
+              Choose from our curated list of charities. Charity Navigator
+              ratings are shown when available.
             </p>
             <CharitySelector
               charities={charities}

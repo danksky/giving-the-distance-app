@@ -249,14 +249,16 @@ export default function CharitySelector({
                         <div className="badge badge-outline badge-sm">
                           {charity.category}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="font-semibold">
-                            Charity Navigator:
-                          </span>
-                          <span className="text-success font-bold">
-                            {charity.charityNavigatorScore}%
-                          </span>
-                        </div>
+                        {charity.charityNavigatorScore > 0 && (
+                          <div className="flex items-center gap-1">
+                            <span className="font-semibold">
+                              Charity Navigator:
+                            </span>
+                            <span className="text-success font-bold">
+                              {charity.charityNavigatorScore}%
+                            </span>
+                          </div>
+                        )}
                         <Link
                           href={charity.website}
                           target="_blank"
