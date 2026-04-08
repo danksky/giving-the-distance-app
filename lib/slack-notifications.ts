@@ -105,7 +105,8 @@ export async function notifyNewActivity(activity: {
   const distanceMiles = activity.distanceMeters
     ? (activity.distanceMeters / 1609.34).toFixed(2)
     : "N/A";
-  const activityUrl = `${getAppBaseUrl()}/activities/${activity.id}`;
+  const gtdActivityUrl = `${getAppBaseUrl()}/activities/${activity.id}`;
+  const stravaActivityUrl = `https://www.strava.com/activities/${activity.stravaActivityId.toString()}`;
 
   const message: SlackMessage = {
     channel: "",
@@ -140,7 +141,11 @@ export async function notifyNewActivity(activity: {
           },
           {
             type: "mrkdwn",
-            text: `*Activity URL:*\n<${activityUrl}|View activity>`,
+            text: `*Activity URL:*\n<${stravaActivityUrl}|View on Strava>`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*GTD URL:*\n<${gtdActivityUrl}|View on Giving the Distance>`,
           },
         ],
       },
