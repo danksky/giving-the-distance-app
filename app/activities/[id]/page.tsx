@@ -13,6 +13,7 @@ import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
 import ActivityPrivacyToggle from "@/components/ActivityPrivacyToggle";
 import ActivityMap from "@/components/ActivityMap";
+import { getUnmatchedImpactMessage } from "@/lib/activity-impact";
 import type { Metadata } from "next";
 
 // Helper function to format duration in seconds to HH:MM:SS
@@ -35,6 +36,10 @@ async function getActivity(id: string) {
       where: { id },
       include: {
         user: true,
+        sponsorMatches: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
         charityCommitments: {
           include: {
             charity: true,
@@ -222,6 +227,11 @@ export default async function ActivityPage({
   // Get the charity commitment for this activity (if sponsored)
   const commitment = activity.charityCommitments?.[0];
   const hasSponsorship = !!commitment;
+  const latestSponsorMatch = activity.sponsorMatches?.[0];
+  const unmatchedImpactMessage = getUnmatchedImpactMessage({
+    result: latestSponsorMatch?.result,
+    notes: latestSponsorMatch?.notes,
+  });
 
   // Get charity - either from commitment or fallback to user's charity at time of activity
   const activityCharity =
@@ -398,9 +408,7 @@ export default async function ActivityPage({
             <div className="card-body">
               <h3 className="text-xl font-bold mb-2">Impact</h3>
               <p className="text-base-content/70">
-                This activity has not been matched with a donor yet. New
-                activities are automatically matched when donors have available
-                budget.
+                {unmatchedImpactMessage}
               </p>
               {activityCharity && (
                 <div className="mt-4 p-4 bg-base-200 rounded-lg">

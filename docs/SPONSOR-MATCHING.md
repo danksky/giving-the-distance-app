@@ -11,6 +11,18 @@ The sponsor matching system is a proof-of-concept (v0) that:
 - Tracks budget decrements and charity commitments
 - Ensures idempotency (activities are only matched once)
 
+## Current Version
+
+The current matching logic should be treated as **matching algorithm v0**.
+
+Today, v0 is intentionally simple:
+
+- It requires GPS-tracked activities to start and end within rough New York City bounds
+- It checks for available campaigns and budget
+- It randomly selects from eligible campaigns
+
+This is a starting point, not the final matching model.
+
 ## Architecture
 
 ### Database Models
@@ -216,6 +228,21 @@ npm run test:coverage
 - Sponsor-specific rate cards
 - Campaign scheduling (start/end dates)
 - Budget alerts and notifications
+
+## Versioning Roadmap
+
+As the matching system becomes more sophisticated, it would be useful to record more structured decision metadata for each sponsor match, such as:
+
+- `matchingVersion`: the algorithm version used for the decision, such as `v0`, `v1`, or `v2`
+- `decisionReason`: a short machine-readable reason, such as `outside_nyc`, `no_budget`, or `random_selection`
+- `decisionContext`: optional JSON describing key inputs, such as location eligibility, candidate campaigns, and final selection details
+
+That structure is not implemented yet. Right now, the closest equivalent is the combination of:
+
+- `result` on `SponsorMatch`
+- `notes` on `SponsorMatch`
+
+Those fields already provide a basic audit trail, but they are not yet a full algorithm-versioning system.
 
 ## API Reference
 
