@@ -1,4 +1,4 @@
-# Sponsor Matching System (v0)
+# Sponsor Matching System
 
 This document describes the sponsor matching system that automatically matches Strava activities with sponsor campaigns.
 
@@ -22,6 +22,20 @@ Today, v0 is intentionally simple:
 - It randomly selects from eligible campaigns
 
 This is a starting point, not the final matching model.
+
+## Versioned Matcher Files
+
+The matching code now keeps algorithm versions in versioned files, similar in spirit to database migrations:
+
+- `lib/matching/versions/v0.ts` contains the current v0 campaign-selection and decision-metadata logic
+- `lib/matching/index.ts` exposes the current matcher entrypoints used by the app
+- `lib/sponsor-matching.ts` remains the orchestration layer that runs eligibility checks, updates Strava, and writes records
+
+As future matching versions are introduced, the expected pattern is:
+
+- `lib/matching/versions/v1.ts`
+- `lib/matching/versions/v2.ts`
+- and so on, without deleting old versions
 
 ## Architecture
 
@@ -68,6 +82,9 @@ Tracks every attempt to match an activity with a campaign.
 - `athleteId`: Foreign key to StravaAthlete
 - `stravaAthleteId`: Strava athlete ID (also stored for reference)
 - `campaignId`: Foreign key to Campaign (nullable if no match)
+- `matchingVersion`: Algorithm version used for the decision, such as `v0`
+- `decisionReason`: Machine-readable reason for the outcome, such as `outside_nyc` or `random_selection`
+- `decisionContext`: Optional JSON payload with structured metadata about the decision inputs
 - `result`: Enum of possible outcomes:
   - `MATCHED`: Successfully matched and description updated
   - `SKIPPED_NO_BUDGET`: Campaign has insufficient budget
@@ -120,7 +137,7 @@ Find an active campaign with sufficient budget:
 - `isActive = true`
 - `budgetRemainingCents >= COMMITMENT_AMOUNT_CENTS`
 
-For v0, randomly select from available campaigns.
+For v0, randomly select from available campaigns and store the decision as version `v0` with decision reason `random_selection`.
 
 If no campaign found, create sponsor match record with `SKIPPED_NO_ACTIVE_CAMPAIGN` and stop.
 
@@ -231,18 +248,23 @@ npm run test:coverage
 
 ## Versioning Roadmap
 
-As the matching system becomes more sophisticated, it would be useful to record more structured decision metadata for each sponsor match, such as:
+The first pass of structured versioning is now implemented on `SponsorMatch` via:
 
-- `matchingVersion`: the algorithm version used for the decision, such as `v0`, `v1`, or `v2`
-- `decisionReason`: a short machine-readable reason, such as `outside_nyc`, `no_budget`, or `random_selection`
-- `decisionContext`: optional JSON describing key inputs, such as location eligibility, candidate campaigns, and final selection details
+- `matchingVersion`
+- `decisionReason`
+- `decisionContext`
 
-That structure is not implemented yet. Right now, the closest equivalent is the combination of:
+That means each new matching decision can now answer:
 
-- `result` on `SponsorMatch`
-- `notes` on `SponsorMatch`
+- Which algorithm version made the decision
+- What high-level reason was recorded
+- What structured context was available at decision time
 
-Those fields already provide a basic audit trail, but they are not yet a full algorithm-versioning system.
+This is still an early version of the audit trail. Future versions can build on this by:
+
+- storing richer candidate-campaign details in `decisionContext`
+- recording more precise geographic or business targeting inputs
+- adding explicit version modules for more sophisticated matching logic
 
 ## API Reference
 

@@ -8,6 +8,11 @@
 import { db } from '@/lib/db';
 import { SponsorMatchResult } from '@prisma/client';
 import { ensureUserHasSelectedCharity } from '@/lib/charity-helpers';
+import {
+  buildDecisionMetadataV0,
+  selectCampaignV0,
+} from '@/lib/matching';
+import type { CampaignCandidate } from '@/lib/matching/types';
 
 // Constants
 export const COMMITMENT_AMOUNT_CENTS = 10; // $0.10
@@ -58,6 +63,7 @@ export interface ActivityData {
 
 interface CampaignWithSponsor {
   id: string;
+  budgetRemainingCents: number;
   sponsor: {
     businessName: string;
     website: string | null;
@@ -101,6 +107,9 @@ export async function matchActivityWithSponsor(
     );
 
     if (!eligibility.eligible) {
+      const decision = buildDecisionMetadataV0('outside_nyc', {
+        locationCheck: eligibility.locationCheck,
+      });
       const sponsorMatch = await db.sponsorMatch.create({
         data: {
           activityId: activity.id,
@@ -109,6 +118,9 @@ export async function matchActivityWithSponsor(
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: null,
           result: SponsorMatchResult.SKIPPED_OUTSIDE_NYC,
+          matchingVersion: decision.matchingVersion,
+          decisionReason: decision.decisionReason,
+          decisionContext: decision.decisionContext,
           decrementCents: 0,
           notes: eligibility.reason,
         },
@@ -126,6 +138,7 @@ export async function matchActivityWithSponsor(
     const campaign = await findActiveCampaign();
 
     if (!campaign) {
+      const decision = buildDecisionMetadataV0('no_active_campaign');
       // Log as SKIPPED_NO_ACTIVE_CAMPAIGN
       const sponsorMatch = await db.sponsorMatch.create({
         data: {
@@ -135,6 +148,8 @@ export async function matchActivityWithSponsor(
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: null,
           result: SponsorMatchResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
+          matchingVersion: decision.matchingVersion,
+          decisionReason: decision.decisionReason,
           decrementCents: 0,
           notes: 'No active campaign with budget available',
         },
@@ -150,6 +165,11 @@ export async function matchActivityWithSponsor(
 
     // Step 4: Check if campaign has enough budget
     if (campaign.budgetRemainingCents < COMMITMENT_AMOUNT_CENTS) {
+      const decision = buildDecisionMetadataV0('no_budget', {
+        campaignId: campaign.id,
+        campaignBudgetRemainingCents: campaign.budgetRemainingCents,
+        requiredCommitmentCents: COMMITMENT_AMOUNT_CENTS,
+      });
       // Log as SKIPPED_NO_BUDGET
       const sponsorMatch = await db.sponsorMatch.create({
         data: {
@@ -159,6 +179,9 @@ export async function matchActivityWithSponsor(
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
           result: SponsorMatchResult.SKIPPED_NO_BUDGET,
+          matchingVersion: decision.matchingVersion,
+          decisionReason: decision.decisionReason,
+          decisionContext: decision.decisionContext,
           decrementCents: 0,
           notes: `Campaign budget (${campaign.budgetRemainingCents} cents) insufficient for commitment (${COMMITMENT_AMOUNT_CENTS} cents)`,
         },
@@ -177,6 +200,9 @@ export async function matchActivityWithSponsor(
     const selectedCharity = await ensureUserHasSelectedCharity(activity.userId);
 
     if (!selectedCharity?.id) {
+      const decision = buildDecisionMetadataV0('no_selected_charity', {
+        campaignId: campaign.id,
+      });
       // Log as SKIPPED_NO_SELECTED_CHARITY
       const sponsorMatch = await db.sponsorMatch.create({
         data: {
@@ -186,6 +212,9 @@ export async function matchActivityWithSponsor(
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
           result: SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY,
+          matchingVersion: decision.matchingVersion,
+          decisionReason: decision.decisionReason,
+          decisionContext: decision.decisionContext,
           decrementCents: 0,
           notes: 'User has no selected charity and no default charity is configured',
         },
@@ -217,6 +246,9 @@ export async function matchActivityWithSponsor(
     );
 
     if (!updateResult.success) {
+      const decision = buildDecisionMetadataV0('update_failed', {
+        campaignId: campaign.id,
+      });
       // Log as SKIPPED_UPDATE_FAILED
       const sponsorMatch = await db.sponsorMatch.create({
         data: {
@@ -226,6 +258,9 @@ export async function matchActivityWithSponsor(
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
           result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
+          matchingVersion: decision.matchingVersion,
+          decisionReason: decision.decisionReason,
+          decisionContext: decision.decisionContext,
           decrementCents: 0,
           notes: `Failed to update Strava description: ${updateResult.error}`,
         },
@@ -242,6 +277,10 @@ export async function matchActivityWithSponsor(
 
     // Step 7: Everything successful - create records in transaction
     const selectedCharityId = selectedCharity.id;
+    const decision = buildDecisionMetadataV0('random_selection', {
+      selectedCampaignId: campaign.id,
+      commitmentCents: COMMITMENT_AMOUNT_CENTS,
+    });
     
     const result = await db.$transaction(async (tx) => {
       // Decrement campaign budget
@@ -263,6 +302,9 @@ export async function matchActivityWithSponsor(
           stravaAthleteId: activity.stravaAthleteId,
           campaignId: campaign.id,
           result: SponsorMatchResult.MATCHED,
+          matchingVersion: decision.matchingVersion,
+          decisionReason: decision.decisionReason,
+          decisionContext: decision.decisionContext,
           decrementCents: COMMITMENT_AMOUNT_CENTS,
           notes: 'Successfully matched and description updated',
         },
@@ -323,9 +365,7 @@ async function findActiveCampaign() {
     return null;
   }
 
-  // Random selection for v0
-  const randomIndex = Math.floor(Math.random() * activeCampaigns.length);
-  return activeCampaigns[randomIndex];
+  return selectCampaignV0(activeCampaigns as CampaignCandidate[]);
 }
 
 /**
@@ -417,8 +457,24 @@ async function checkActivityLocationEligibility(
   stravaActivityId: bigint,
   accessToken: string
 ): Promise<
-  | { eligible: true; activityData: StravaActivityLocationPayload }
-  | { eligible: false; reason: string }
+  | {
+      eligible: true;
+      activityData: StravaActivityLocationPayload;
+      locationCheck: {
+        startInBounds: boolean;
+        endInBounds: boolean;
+      };
+    }
+  | {
+      eligible: false;
+      reason: string;
+      locationCheck: {
+        hasStart: boolean;
+        hasEnd: boolean;
+        startInBounds: boolean;
+        endInBounds: boolean;
+      };
+    }
 > {
   try {
     const activityData = await fetchStravaActivityDetails(
@@ -428,24 +484,45 @@ async function checkActivityLocationEligibility(
 
     const start = normalizeLatLng(activityData.start_latlng);
     const end = normalizeLatLng(activityData.end_latlng);
+    const startInBounds = start ? isWithinRoughNycBounds(start) : false;
+    const endInBounds = end ? isWithinRoughNycBounds(end) : false;
 
     if (!start || !end) {
       return {
         eligible: false,
         reason:
           'Activity is not eligible for sponsor matching because it must include GPS start and end coordinates within New York City.',
+        locationCheck: {
+          hasStart: !!start,
+          hasEnd: !!end,
+          startInBounds,
+          endInBounds,
+        },
       };
     }
 
-    if (!isWithinRoughNycBounds(start) || !isWithinRoughNycBounds(end)) {
+    if (!startInBounds || !endInBounds) {
       return {
         eligible: false,
         reason:
           'Activity is not eligible for sponsor matching because its GPS start and end points must both fall within the current New York City service area.',
+        locationCheck: {
+          hasStart: true,
+          hasEnd: true,
+          startInBounds,
+          endInBounds,
+        },
       };
     }
 
-    return { eligible: true, activityData };
+    return {
+      eligible: true,
+      activityData,
+      locationCheck: {
+        startInBounds,
+        endInBounds,
+      },
+    };
   } catch (error) {
     return {
       eligible: false,
@@ -453,6 +530,12 @@ async function checkActivityLocationEligibility(
         error instanceof Error
           ? error.message
           : 'Failed to verify activity GPS eligibility.',
+      locationCheck: {
+        hasStart: false,
+        hasEnd: false,
+        startInBounds: false,
+        endInBounds: false,
+      },
     };
   }
 }

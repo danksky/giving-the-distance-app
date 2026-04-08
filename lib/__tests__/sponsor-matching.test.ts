@@ -138,6 +138,8 @@ describe('Sponsor Matching Service', () => {
       expect(db.sponsorMatch.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           result: SponsorMatchResult.SKIPPED_NO_ACTIVE_CAMPAIGN,
+          matchingVersion: 'v0',
+          decisionReason: 'no_active_campaign',
           decrementCents: 0,
         }),
       });
@@ -177,6 +179,8 @@ describe('Sponsor Matching Service', () => {
         data: expect.objectContaining({
           result: SponsorMatchResult.SKIPPED_NO_BUDGET,
           campaignId: lowBudgetCampaign.id,
+          matchingVersion: 'v0',
+          decisionReason: 'no_budget',
           decrementCents: 0,
         }),
       });
@@ -359,6 +363,7 @@ describe('Sponsor Matching Service', () => {
       expect(result.sponsorMatchId).toBe(mockSponsorMatch.id);
       expect(result.charityCommitmentId).toBe(mockCharityCommitment.id);
       expect(result.campaignId).toBe(mockCampaign.id);
+      expect(db.$transaction).toHaveBeenCalled();
     });
 
     it('should successfully match even if GTD marker already exists', async () => {
@@ -455,6 +460,12 @@ describe('Sponsor Matching Service', () => {
       expect(result.success).toBe(false);
       expect(result.result).toBe(SponsorMatchResult.SKIPPED_OUTSIDE_NYC);
       expect(result.message).toContain('GPS start and end coordinates');
+      expect(db.sponsorMatch.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          matchingVersion: 'v0',
+          decisionReason: 'outside_nyc',
+        }),
+      });
       expect(db.campaign.findMany).not.toHaveBeenCalled();
     });
 

@@ -262,6 +262,9 @@ model SponsorMatch {
   campaignId       String?            // Nullable if no match
   matchedAt        DateTime           @default(now())
   result           SponsorMatchResult // Enum for match status
+  matchingVersion  String?
+  decisionReason   String?
+  decisionContext  Json?
   decrementCents   Int                @default(0)
   notes            String?            @db.Text
   createdAt        DateTime           @default(now())
