@@ -12,6 +12,12 @@ import { ensureUserHasSelectedCharity } from '@/lib/charity-helpers';
 // Constants
 export const COMMITMENT_AMOUNT_CENTS = 10; // $0.10
 const GTD_MARKER = '#GTD';
+const NYC_BOUNDS = {
+  minLat: 40.47,
+  maxLat: 40.93,
+  minLng: -74.27,
+  maxLng: -73.68,
+} as const;
 
 function getActivityBaseUrl(): string {
   const configured =
@@ -58,6 +64,12 @@ interface CampaignWithSponsor {
   };
 }
 
+interface StravaActivityLocationPayload {
+  description?: string | null;
+  start_latlng?: [number, number] | [];
+  end_latlng?: [number, number] | [];
+}
+
 /**
  * Main entry point for sponsor matching
  * Checks idempotency, finds a campaign, and processes the match
@@ -82,7 +94,35 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 2: Find an active campaign with budget
+    // Step 2: Require GPS coordinates that start and end within rough NYC bounds
+    const eligibility = await checkActivityLocationEligibility(
+      activity.stravaActivityId,
+      accessToken
+    );
+
+    if (!eligibility.eligible) {
+      const sponsorMatch = await db.sponsorMatch.create({
+        data: {
+          activityId: activity.id,
+          stravaActivityId: activity.stravaActivityId,
+          athleteId: activity.athleteId,
+          stravaAthleteId: activity.stravaAthleteId,
+          campaignId: null,
+          result: SponsorMatchResult.SKIPPED_OUTSIDE_NYC,
+          decrementCents: 0,
+          notes: eligibility.reason,
+        },
+      });
+
+      return {
+        success: false,
+        result: SponsorMatchResult.SKIPPED_OUTSIDE_NYC,
+        sponsorMatchId: sponsorMatch.id,
+        message: eligibility.reason,
+      };
+    }
+
+    // Step 3: Find an active campaign with budget
     const campaign = await findActiveCampaign();
 
     if (!campaign) {
@@ -108,7 +148,7 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 3: Check if campaign has enough budget
+    // Step 4: Check if campaign has enough budget
     if (campaign.budgetRemainingCents < COMMITMENT_AMOUNT_CENTS) {
       // Log as SKIPPED_NO_BUDGET
       const sponsorMatch = await db.sponsorMatch.create({
@@ -133,7 +173,7 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 4: Get user's selected charity and athlete info for description
+    // Step 5: Get user's selected charity and athlete info for description
     const selectedCharity = await ensureUserHasSelectedCharity(activity.userId);
 
     if (!selectedCharity?.id) {
@@ -166,13 +206,14 @@ export async function matchActivityWithSponsor(
       select: { firstname: true },
     });
 
-    // Step 5: Update Strava activity description
+    // Step 6: Update Strava activity description
     const updateResult = await updateStravaDescription(
       activity,
       campaign,
       accessToken,
       athlete?.firstname || null,
-      selectedCharity.name || 'charity'
+      selectedCharity.name || 'charity',
+      eligibility.activityData
     );
 
     if (!updateResult.success) {
@@ -199,7 +240,7 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 6: Everything successful - create records in transaction
+    // Step 7: Everything successful - create records in transaction
     const selectedCharityId = selectedCharity.id;
     
     const result = await db.$transaction(async (tx) => {
@@ -295,28 +336,13 @@ async function updateStravaDescription(
   campaign: CampaignWithSponsor,
   accessToken: string,
   athleteName: string | null,
-  charityName: string
+  charityName: string,
+  prefetchedActivityData?: StravaActivityLocationPayload
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Fetch current activity details from Strava to get description
-    const activityResponse = await fetch(
-      `https://www.strava.com/api/v3/activities/${activity.stravaActivityId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    if (!activityResponse.ok) {
-      const errorText = await activityResponse.text();
-      return {
-        success: false,
-        error: `Failed to fetch activity: HTTP ${activityResponse.status} - ${errorText}`,
-      };
-    }
-
-    const activityData = await activityResponse.json();
+    const activityData =
+      prefetchedActivityData ||
+      (await fetchStravaActivityDetails(activity.stravaActivityId, accessToken));
     const currentDescription = activityData.description || '';
 
     // Check if already has GTD marker (idempotency check)
@@ -362,6 +388,97 @@ async function updateStravaDescription(
       error: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+async function fetchStravaActivityDetails(
+  stravaActivityId: bigint,
+  accessToken: string
+): Promise<StravaActivityLocationPayload> {
+  const activityResponse = await fetch(
+    `https://www.strava.com/api/v3/activities/${stravaActivityId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!activityResponse.ok) {
+    const errorText = await activityResponse.text();
+    throw new Error(
+      `Failed to fetch activity: HTTP ${activityResponse.status} - ${errorText}`
+    );
+  }
+
+  return activityResponse.json();
+}
+
+async function checkActivityLocationEligibility(
+  stravaActivityId: bigint,
+  accessToken: string
+): Promise<
+  | { eligible: true; activityData: StravaActivityLocationPayload }
+  | { eligible: false; reason: string }
+> {
+  try {
+    const activityData = await fetchStravaActivityDetails(
+      stravaActivityId,
+      accessToken
+    );
+
+    const start = normalizeLatLng(activityData.start_latlng);
+    const end = normalizeLatLng(activityData.end_latlng);
+
+    if (!start || !end) {
+      return {
+        eligible: false,
+        reason:
+          'Activity is not eligible for sponsor matching because it must include GPS start and end coordinates within New York City.',
+      };
+    }
+
+    if (!isWithinRoughNycBounds(start) || !isWithinRoughNycBounds(end)) {
+      return {
+        eligible: false,
+        reason:
+          'Activity is not eligible for sponsor matching because its GPS start and end points must both fall within the current New York City service area.',
+      };
+    }
+
+    return { eligible: true, activityData };
+  } catch (error) {
+    return {
+      eligible: false,
+      reason:
+        error instanceof Error
+          ? error.message
+          : 'Failed to verify activity GPS eligibility.',
+    };
+  }
+}
+
+function normalizeLatLng(
+  value: StravaActivityLocationPayload['start_latlng']
+): [number, number] | null {
+  if (!value || value.length !== 2) {
+    return null;
+  }
+
+  const [lat, lng] = value;
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    return null;
+  }
+
+  return [lat, lng];
+}
+
+function isWithinRoughNycBounds([lat, lng]: [number, number]): boolean {
+  return (
+    lat >= NYC_BOUNDS.minLat &&
+    lat <= NYC_BOUNDS.maxLat &&
+    lng >= NYC_BOUNDS.minLng &&
+    lng <= NYC_BOUNDS.maxLng
+  );
 }
 
 /**

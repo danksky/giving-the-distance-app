@@ -104,6 +104,14 @@ describe('Sponsor Matching Service', () => {
 
     it('should skip if no active campaign available', async () => {
       vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: mockActivity.stravaActivityId,
+          start_latlng: [40.75, -73.99],
+          end_latlng: [40.76, -73.98],
+        }),
+      });
       vi.mocked(db.campaign.findMany).mockResolvedValue([]);
       
       const createdMatch = {
@@ -133,8 +141,8 @@ describe('Sponsor Matching Service', () => {
           decrementCents: 0,
         }),
       });
-      // Verify that Strava API was never called (no campaign = no description update)
-      expect(mockFetch).not.toHaveBeenCalled();
+      // Verify that only the eligibility check hit Strava (no description update)
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
     it('should skip if campaign has insufficient budget', async () => {
@@ -144,6 +152,14 @@ describe('Sponsor Matching Service', () => {
       };
 
       vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: mockActivity.stravaActivityId,
+          start_latlng: [40.75, -73.99],
+          end_latlng: [40.76, -73.98],
+        }),
+      });
       vi.mocked(db.campaign.findMany).mockResolvedValue([lowBudgetCampaign as any]);
       
       const createdMatch = {
@@ -164,43 +180,29 @@ describe('Sponsor Matching Service', () => {
           decrementCents: 0,
         }),
       });
-      // Verify that Strava API was never called (no budget = no description update)
-      expect(mockFetch).not.toHaveBeenCalled();
+      // Verify that only the eligibility check hit Strava (no description update)
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
     it('should skip if Strava API fetch fails', async () => {
       vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
-      vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
-      
-      vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue({
-        id: mockActivity.userId,
-        name: 'UNICEF',
-      } as any);
+      const createdMatch = {
+        id: 'match-outside-nyc',
+        result: SponsorMatchResult.SKIPPED_OUTSIDE_NYC,
+      };
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
 
-      // Mock athlete lookup
-      vi.mocked(db.stravaAthlete.findUnique).mockResolvedValue({
-        id: mockActivity.athleteId,
-        firstname: 'John',
-      } as any);
-
-      // Mock failed Strava API fetch
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
         text: async () => 'Unauthorized',
       });
 
-      const createdMatch = {
-        id: 'match-update-failed',
-        result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
-      };
-      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
-
       const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
 
       expect(result.success).toBe(false);
-      expect(result.result).toBe(SponsorMatchResult.SKIPPED_UPDATE_FAILED);
-      expect(result.error).toContain('401');
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_OUTSIDE_NYC);
+      expect(result.message).toContain('401');
       expect(mockFetch).toHaveBeenCalledWith(
         `https://www.strava.com/api/v3/activities/${mockActivity.stravaActivityId}`,
         expect.objectContaining({
@@ -238,6 +240,8 @@ describe('Sponsor Matching Service', () => {
           ok: true,
           json: async () => ({
             id: mockActivity.stravaActivityId,
+            start_latlng: [40.75, -73.99],
+            end_latlng: [40.76, -73.98],
             description: 'Existing description',
           }),
         })
@@ -263,20 +267,15 @@ describe('Sponsor Matching Service', () => {
     it('should skip if user has no selected charity', async () => {
       vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
       vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
-      
-      // Mock successful Strava update
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            id: mockActivity.stravaActivityId,
-            description: '',
-          }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ id: mockActivity.stravaActivityId }),
-        });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: mockActivity.stravaActivityId,
+          start_latlng: [40.75, -73.99],
+          end_latlng: [40.76, -73.98],
+          description: '',
+        }),
+      });
 
       vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue(null);
 
@@ -320,6 +319,8 @@ describe('Sponsor Matching Service', () => {
           ok: true,
           json: async () => ({
             id: mockActivity.stravaActivityId,
+            start_latlng: [40.75, -73.99],
+            end_latlng: [40.76, -73.98],
             description: 'Existing description',
           }),
         })
@@ -393,6 +394,8 @@ describe('Sponsor Matching Service', () => {
         ok: true,
         json: async () => ({
           id: mockActivity.stravaActivityId,
+          start_latlng: [40.75, -73.99],
+          end_latlng: [40.76, -73.98],
           description: 'Existing description #GTD',
         }),
       });
@@ -428,6 +431,56 @@ describe('Sponsor Matching Service', () => {
       expect(result.result).toBe(SponsorMatchResult.MATCHED);
       expect(result.sponsorMatchId).toBe(mockSponsorMatch.id);
       expect(result.charityCommitmentId).toBe(mockCharityCommitment.id);
+    });
+
+    it('should skip if the activity is missing GPS coordinates', async () => {
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: mockActivity.stravaActivityId,
+          start_latlng: [],
+          end_latlng: [],
+        }),
+      });
+
+      const createdMatch = {
+        id: 'match-no-gps',
+        result: SponsorMatchResult.SKIPPED_OUTSIDE_NYC,
+      };
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
+
+      const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
+
+      expect(result.success).toBe(false);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_OUTSIDE_NYC);
+      expect(result.message).toContain('GPS start and end coordinates');
+      expect(db.campaign.findMany).not.toHaveBeenCalled();
+    });
+
+    it('should skip if the activity starts or ends outside rough NYC bounds', async () => {
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: mockActivity.stravaActivityId,
+          start_latlng: [40.75, -73.99],
+          end_latlng: [41.2, -73.5],
+        }),
+      });
+
+      const createdMatch = {
+        id: 'match-outside-nyc',
+        result: SponsorMatchResult.SKIPPED_OUTSIDE_NYC,
+      };
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
+
+      const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
+
+      expect(result.success).toBe(false);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_OUTSIDE_NYC);
+      expect(result.message).toContain('current New York City service area');
+      expect(db.campaign.findMany).not.toHaveBeenCalled();
     });
   });
 

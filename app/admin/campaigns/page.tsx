@@ -117,6 +117,9 @@ export default async function CampaignsPage() {
     alreadySponsored: recentMatches.filter(
       (m) => m.result === SponsorMatchResult.SKIPPED_ALREADY_SPONSORED
     ).length,
+    outsideNyc: recentMatches.filter(
+      (m) => m.result === SponsorMatchResult.SKIPPED_OUTSIDE_NYC
+    ).length,
     noSelectedCharity: recentMatches.filter(
       (m) => m.result === SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY
     ).length,
@@ -206,6 +209,12 @@ export default async function CampaignsPage() {
                 <div className="stat-title">Already Sponsored</div>
                 <div className="stat-value text-info text-2xl">
                   {matchStats.alreadySponsored}
+                </div>
+              </div>
+              <div className="stat">
+                <div className="stat-title">Outside NYC</div>
+                <div className="stat-value text-warning text-2xl">
+                  {matchStats.outsideNyc}
                 </div>
               </div>
               <div className="stat">
@@ -385,6 +394,9 @@ export default async function CampaignsPage() {
                                       SponsorMatchResult.SKIPPED_ALREADY_SPONSORED
                                     ? "badge-info"
                                     : match.result ===
+                                      SponsorMatchResult.SKIPPED_OUTSIDE_NYC
+                                    ? "badge-warning"
+                                    : match.result ===
                                       SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY
                                     ? "badge-warning"
                                     : "badge-error"
@@ -487,6 +499,9 @@ export default async function CampaignsPage() {
                               : match.result ===
                                 SponsorMatchResult.SKIPPED_ALREADY_SPONSORED
                               ? "badge-info"
+                              : match.result ===
+                                SponsorMatchResult.SKIPPED_OUTSIDE_NYC
+                              ? "badge-warning"
                               : match.result ===
                                 SponsorMatchResult.SKIPPED_NO_SELECTED_CHARITY
                               ? "badge-warning"
