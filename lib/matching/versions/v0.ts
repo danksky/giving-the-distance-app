@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import type {
   CampaignCandidate,
   MatchingDecisionMetadata,
@@ -18,7 +19,7 @@ export function selectCampaignV0(
 
 export function buildDecisionMetadataV0(
   decisionReason: string,
-  decisionContext?: Record<string, unknown>
+  decisionContext?: Prisma.InputJsonValue
 ): MatchingDecisionMetadata {
   return {
     matchingVersion: MATCHING_VERSION_V0,

@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 export interface CampaignCandidate {
   id: string;
   budgetRemainingCents: number;
@@ -10,5 +12,5 @@ export interface CampaignCandidate {
 export interface MatchingDecisionMetadata {
   matchingVersion: string;
   decisionReason: string;
-  decisionContext?: Record<string, unknown>;
+  decisionContext?: Prisma.InputJsonValue;
 }
