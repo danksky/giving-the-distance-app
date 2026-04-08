@@ -403,6 +403,7 @@ export async function POST(request: NextRequest) {
               userId: savedActivity.userId,
               athleteId: stravaAthlete.id,
               stravaAthleteId: stravaAthlete.stravaAthleteId,
+              isPrivate: savedActivity.isPrivate,
               name: savedActivity.name,
               type: savedActivity.type,
               description: activity.description,

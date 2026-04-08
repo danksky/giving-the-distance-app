@@ -52,6 +52,7 @@ describe('Sponsor Matching Service', () => {
     userId: 'user-456',
     athleteId: 'athlete-789',
     stravaAthleteId: BigInt(123456789),
+    isPrivate: false,
     name: 'Morning Run',
     type: 'Run',
     description: null,
@@ -145,6 +146,37 @@ describe('Sponsor Matching Service', () => {
       });
       // Verify that only the eligibility check hit Strava (no description update)
       expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should skip if the activity is private on Strava', async () => {
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
+
+      const createdMatch = {
+        id: 'match-private-activity',
+        result: SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY,
+      };
+      vi.mocked(db.sponsorMatch.create).mockResolvedValue(createdMatch as any);
+
+      const result = await matchActivityWithSponsor(
+        {
+          ...mockActivity,
+          isPrivate: true,
+        },
+        mockAccessToken
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY);
+      expect(result.message).toContain('private on Strava');
+      expect(db.sponsorMatch.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          result: SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY,
+          matchingVersion: 'v0',
+          decisionReason: 'private_activity',
+        }),
+      });
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(db.campaign.findMany).not.toHaveBeenCalled();
     });
 
     it('should skip if campaign has insufficient budget', async () => {

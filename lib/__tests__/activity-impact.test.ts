@@ -3,6 +3,14 @@ import { SponsorMatchResult } from "@prisma/client";
 import { getUnmatchedImpactMessage } from "@/lib/activity-impact";
 
 describe("getUnmatchedImpactMessage", () => {
+  it("explains when an activity is private on Strava", () => {
+    expect(
+      getUnmatchedImpactMessage({
+        result: SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY,
+      })
+    ).toContain("private on Strava");
+  });
+
   it("explains when an activity is outside the NYC service area", () => {
     expect(
       getUnmatchedImpactMessage({

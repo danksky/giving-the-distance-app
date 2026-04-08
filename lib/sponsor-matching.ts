@@ -56,6 +56,7 @@ export interface ActivityData {
   userId: string;
   athleteId: string;
   stravaAthleteId: bigint;
+  isPrivate: boolean;
   name?: string | null;
   type: string;
   description?: string | null;
@@ -100,7 +101,33 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 2: Require GPS coordinates that start and end within rough NYC bounds
+    // Step 2: Skip Strava-private activities in v0
+    if (activity.isPrivate) {
+      const decision = buildDecisionMetadataV0('private_activity');
+      const sponsorMatch = await db.sponsorMatch.create({
+        data: {
+          activityId: activity.id,
+          stravaActivityId: activity.stravaActivityId,
+          athleteId: activity.athleteId,
+          stravaAthleteId: activity.stravaAthleteId,
+          campaignId: null,
+          result: SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY,
+          matchingVersion: decision.matchingVersion,
+          decisionReason: decision.decisionReason,
+          decrementCents: 0,
+          notes: 'Activity is not eligible for sponsor matching because it is private on Strava.',
+        },
+      });
+
+      return {
+        success: false,
+        result: SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY,
+        sponsorMatchId: sponsorMatch.id,
+        message: 'Activity is private on Strava',
+      };
+    }
+
+    // Step 3: Require GPS coordinates that start and end within rough NYC bounds
     const eligibility = await checkActivityLocationEligibility(
       activity.stravaActivityId,
       accessToken
@@ -134,7 +161,7 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 3: Find an active campaign with budget
+    // Step 4: Find an active campaign with budget
     const campaign = await findActiveCampaign();
 
     if (!campaign) {
@@ -163,7 +190,7 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 4: Check if campaign has enough budget
+    // Step 5: Check if campaign has enough budget
     if (campaign.budgetRemainingCents < COMMITMENT_AMOUNT_CENTS) {
       const decision = buildDecisionMetadataV0('no_budget', {
         campaignId: campaign.id,
@@ -196,7 +223,7 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 5: Get user's selected charity and athlete info for description
+    // Step 6: Get user's selected charity and athlete info for description
     const selectedCharity = await ensureUserHasSelectedCharity(activity.userId);
 
     if (!selectedCharity?.id) {
@@ -235,7 +262,7 @@ export async function matchActivityWithSponsor(
       select: { firstname: true },
     });
 
-    // Step 6: Update Strava activity description
+    // Step 7: Update Strava activity description
     const updateResult = await updateStravaDescription(
       activity,
       campaign,
@@ -275,7 +302,7 @@ export async function matchActivityWithSponsor(
       };
     }
 
-    // Step 7: Everything successful - create records in transaction
+    // Step 8: Everything successful - create records in transaction
     const selectedCharityId = selectedCharity.id;
     const decision = buildDecisionMetadataV0('random_selection', {
       selectedCampaignId: campaign.id,
