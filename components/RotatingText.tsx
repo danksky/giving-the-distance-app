@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const messages = [
   "Hey there, athlete… way to go the distance for what you believe in.",
-  "Calling all donors… show your neighbors that you give a foot!",
+  "Calling all NYC donors… show your neighbors that you give a foot!",
 ];
 
 export default function RotatingText() {

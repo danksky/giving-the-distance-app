@@ -30,6 +30,11 @@ export default async function Home() {
 
             <RotatingText />
 
+            <p className="text-sm font-medium text-white/90 md:text-slate-600">
+              Currently focused on the New York City community, with plans to
+              grow from here.
+            </p>
+
             <div className="space-y-4 mt-6">
               <form
                 action={async () => {

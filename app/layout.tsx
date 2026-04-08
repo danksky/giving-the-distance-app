@@ -23,7 +23,7 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Giving the Distance - Turn Every Mile Into Meaningful Impact",
   description:
-    "Connect your Strava account and create donations where donors pay per mile or kilometer you run. Turn your athletic achievements into charitable donations.",
+    "Connect your Strava account and create donations where donors pay per mile or kilometer you run. Giving the Distance is currently focused on the New York City community as it grows.",
   keywords: [
     "strava",
     "running",
@@ -39,7 +39,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Giving the Distance",
-    description: "Turn every mile into meaningful impact",
+    description:
+      "Turn every mile into meaningful impact in a platform currently focused on the New York City community.",
     type: "website",
     images: [
       {

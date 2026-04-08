@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Become a Sponsor | Giving the Distance",
   description:
-    "Get your business seen while doing real good. Sponsor local runs & rides, and your name appears directly on athletes' activities.",
+    "Get your business seen while doing real good. Sponsor local New York City runs and rides, and your name appears directly on athletes' activities.",
 };
 
 export default function SponsorLandingPage() {
@@ -30,7 +30,8 @@ export default function SponsorLandingPage() {
             Your name appears directly on athletes&apos; activities.
           </p>
           <p className="text-sm text-[#6b7280] max-w-2xl mx-auto mb-6">
-            Built for small businesses. Always charity-first.
+            Built for small businesses. Currently focused on New York City.
+            Always charity-first.
           </p>
           <a
             href="#contact"
@@ -74,7 +75,7 @@ export default function SponsorLandingPage() {
                 Athletes log runs & rides
               </h3>
               <p className="text-[#6b7280]">
-                Local runners and cyclists record activities on Strava.
+                New York City runners and cyclists record activities on Strava.
               </p>
             </div>
 

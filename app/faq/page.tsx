@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 export const metadata: Metadata = {
   title: "FAQ - Giving the Distance",
   description:
-    "Frequently asked questions about Giving the Distance and connecting your Strava account.",
+    "Frequently asked questions about Giving the Distance, currently focused on the New York City community, and connecting your Strava account.",
 };
 
 export default function FAQPage() {
@@ -32,7 +32,8 @@ export default function FAQPage() {
                   charities. When you complete activities on Strava, supporters
                   can make donations inspired by your achievements. We help you
                   turn every mile, kilometer, and workout into an opportunity to
-                  support causes you care about.
+                  support causes you care about. Right now, the initiative is
+                  focused on the New York City community as we continue to grow.
                 </p>
               </section>
 
