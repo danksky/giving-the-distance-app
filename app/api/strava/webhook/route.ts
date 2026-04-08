@@ -360,21 +360,6 @@ export async function POST(request: NextRequest) {
 
         console.log(`✅ Activity ${object_id} saved successfully`);
         
-        // Send Slack notification for new activity
-        try {
-          await notifyNewActivity({
-            id: savedActivity.id,
-            stravaActivityId: savedActivity.stravaActivityId,
-            name: savedActivity.name,
-            type: savedActivity.type,
-            distanceMeters: savedActivity.distanceMeters?.toNumber() ?? null,
-            userName: stravaAthlete.user.name ?? undefined,
-            userEmail: stravaAthlete.user.email ?? undefined,
-          });
-        } catch (error) {
-          console.error(`⚠️  Slack notification failed (non-critical):`, error);
-        }
-        
         // Process GPX download and storage (non-blocking - errors won't fail the webhook)
         let gpxBlobUrl: string | null = null;
         try {
@@ -442,6 +427,70 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           descriptionUpdateError = error instanceof Error ? error.message : String(error);
           console.error('❌ Error in sponsor matching:', error);
+        }
+
+        try {
+          const activityNotificationData = await db.activity.findUnique({
+            where: { id: savedActivity.id },
+            select: {
+              id: true,
+              charityCommitments: {
+                orderBy: { createdAt: "desc" },
+                take: 1,
+                select: {
+                  charity: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                  campaign: {
+                    select: {
+                      sponsor: {
+                        select: {
+                          businessName: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              sponsorMatches: {
+                orderBy: { createdAt: "desc" },
+                take: 1,
+                select: {
+                  campaign: {
+                    select: {
+                      sponsor: {
+                        select: {
+                          businessName: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const latestCommitment = activityNotificationData?.charityCommitments[0];
+          const latestSponsorMatch = activityNotificationData?.sponsorMatches[0];
+
+          await notifyNewActivity({
+            id: savedActivity.id,
+            stravaActivityId: savedActivity.stravaActivityId,
+            name: savedActivity.name,
+            type: savedActivity.type,
+            distanceMeters: savedActivity.distanceMeters?.toNumber() ?? null,
+            userName: stravaAthlete.user.name ?? undefined,
+            userEmail: stravaAthlete.user.email ?? undefined,
+            sponsorName:
+              latestCommitment?.campaign.sponsor.businessName ??
+              latestSponsorMatch?.campaign?.sponsor.businessName ??
+              null,
+            charityName: latestCommitment?.charity.name ?? null,
+          });
+        } catch (error) {
+          console.error(`⚠️  Slack notification failed (non-critical):`, error);
         }
         
         // Mark webhook event as processed with description update status

@@ -27,6 +27,24 @@ interface SlackMessage {
   blocks: SlackBlock[];
 }
 
+function getAppBaseUrl(): string {
+  const configured =
+    process.env.NEXTAUTH_URL?.trim() ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
+    (process.env.VERCEL_URL?.trim()
+      ? `https://${process.env.VERCEL_URL.trim()}`
+      : "");
+
+  const withProtocol = configured.startsWith("http")
+    ? configured
+    : configured
+      ? `https://${configured}`
+      : "https://givingthedistance.org";
+
+  return withProtocol.replace(/\/+$/, "");
+}
+
 /**
  * Send a message to Slack
  */
@@ -78,6 +96,8 @@ export async function notifyNewActivity(activity: {
   distanceMeters: number | null;
   userName?: string;
   userEmail?: string;
+  sponsorName?: string | null;
+  charityName?: string | null;
 }) {
   const distanceKm = activity.distanceMeters
     ? (activity.distanceMeters / 1000).toFixed(2)
@@ -85,6 +105,7 @@ export async function notifyNewActivity(activity: {
   const distanceMiles = activity.distanceMeters
     ? (activity.distanceMeters / 1609.34).toFixed(2)
     : "N/A";
+  const activityUrl = `${getAppBaseUrl()}/activities/${activity.id}`;
 
   const message: SlackMessage = {
     channel: "",
@@ -117,6 +138,10 @@ export async function notifyNewActivity(activity: {
             type: "mrkdwn",
             text: `*Strava ID:*\n${activity.stravaActivityId.toString()}`,
           },
+          {
+            type: "mrkdwn",
+            text: `*Activity URL:*\n<${activityUrl}|View activity>`,
+          },
         ],
       },
     ],
@@ -138,6 +163,20 @@ export async function notifyNewActivity(activity: {
       ],
     });
   }
+
+  message.blocks.push({
+    type: "section",
+    fields: [
+      {
+        type: "mrkdwn",
+        text: `*Matched Sponsor:*\n${activity.sponsorName || "No sponsor matched"}`,
+      },
+      {
+        type: "mrkdwn",
+        text: `*Donated Charity:*\n${activity.charityName || "No charity donation created"}`,
+      },
+    ],
+  });
 
   message.blocks.push({
     type: "context",
@@ -228,10 +267,13 @@ export async function notifyActivityDeleted(activity: {
  * Notify when a new user joins
  */
 export async function notifyNewUser(user: {
+  id: string;
   name: string | null;
   email: string | null;
   provider?: string;
 }) {
+  const dashboardUrl = `${getAppBaseUrl()}/dashboard`;
+
   const message: SlackMessage = {
     channel: "",
     text: "👋 New User Joined!",
@@ -254,6 +296,14 @@ export async function notifyNewUser(user: {
           {
             type: "mrkdwn",
             text: `*Email:*\n${user.email || "Not provided"}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*User ID:*\n${user.id}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*User URL:*\n<${dashboardUrl}|Open dashboard>`,
           },
         ],
       },

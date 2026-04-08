@@ -121,6 +121,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       // Send Slack notification for new user
       try {
         await notifyNewUser({
+          id: user.id!,
           name: user.name ?? null,
           email: user.email ?? null,
         });
