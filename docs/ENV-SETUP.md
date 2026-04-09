@@ -21,6 +21,7 @@ Create `.env.local` from [.env.example](/Users/danielkawalsky/Documents/Code/Giv
 - `STRAVA_CLIENT_ID`
 - `STRAVA_CLIENT_SECRET`
 - `STRAVA_WEBHOOK_VERIFY_TOKEN`
+- `ENABLE_STRAVA_DESCRIPTION_UPDATES=false`
 
 ## Useful commands
 
@@ -28,6 +29,7 @@ Create `.env.local` from [.env.example](/Users/danielkawalsky/Documents/Code/Giv
 openssl rand -base64 32
 openssl rand -hex 32
 npm run config:audit
+npm run env:sanitize
 ```
 
 ## Remote environment workflow
@@ -36,3 +38,4 @@ npm run config:audit
 2. Pull Production vars into `.env.production` for maintenance tasks like migrations.
 3. Copy only the values you need for local development into `.env.local`.
 4. Re-run `npm run config:audit` after changes.
+5. Run `npm run env:sanitize` after each pull so the snapshot files stay focused on app-used vars instead of Vercel metadata.

@@ -42,6 +42,7 @@ Optional feature flags and integrations:
 - `SLACK_CHANNEL`
 - `BLOB_READ_WRITE_TOKEN`
 - `BLOB_STORE_ID`
+- `ENABLE_STRAVA_DESCRIPTION_UPDATES`
 - `NEXT_PUBLIC_APP_URL`
 
 Auto-provided platform variables the app can use as fallbacks:
@@ -89,6 +90,7 @@ For local work:
 2. Copy only the keys you actually want to run locally into `.env.local`.
 3. Keep `.env.local` pointed at dev auth and dev database unless you are doing a deliberate production maintenance task.
 4. Run `npm run config:audit` after env changes.
+5. After pulling remote snapshots into `.env.preview` or `.env.production`, run `npm run env:sanitize` to strip Vercel/Turbo metadata noise from those local files.
 
 For preview and production:
 

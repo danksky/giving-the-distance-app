@@ -31,6 +31,7 @@ Preview and Production currently have the app's core runtime env vars:
 - `BLOB_READ_WRITE_TOKEN`
 - `SLACK_BOT_TOKEN`
 - `SLACK_CHANNEL`
+- `ENABLE_STRAVA_DESCRIPTION_UPDATES`
 
 Completed cleanup on April 9, 2026:
 
@@ -96,6 +97,7 @@ The app currently reads these env keys in code:
 - `STRAVA_CLIENT_ID`
 - `STRAVA_CLIENT_SECRET`
 - `STRAVA_WEBHOOK_VERIFY_TOKEN`
+- `ENABLE_STRAVA_DESCRIPTION_UPDATES`
 - `VERCEL_ENV`
 - `VERCEL_PROJECT_PRODUCTION_URL`
 - `VERCEL_URL`

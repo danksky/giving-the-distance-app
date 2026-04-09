@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "config:audit": "node scripts/audit-config.mjs",
+    "env:sanitize": "node scripts/sanitize-env-files.mjs .env.local .env.preview .env.production",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",

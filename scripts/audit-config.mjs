@@ -19,6 +19,7 @@ const environmentSpecs = [
       "STRAVA_CLIENT_SECRET",
     ],
     recommendedKeys: [
+      "ENABLE_STRAVA_DESCRIPTION_UPDATES",
       "ADMIN_EMAILS",
       "STRAVA_WEBHOOK_VERIFY_TOKEN",
       "SLACK_BOT_TOKEN",
@@ -40,6 +41,7 @@ const environmentSpecs = [
       "STRAVA_WEBHOOK_VERIFY_TOKEN",
     ],
     recommendedKeys: [
+      "ENABLE_STRAVA_DESCRIPTION_UPDATES",
       "ADMIN_EMAILS",
       "SLACK_BOT_TOKEN",
       "SLACK_CHANNEL",
@@ -60,6 +62,7 @@ const environmentSpecs = [
       "STRAVA_WEBHOOK_VERIFY_TOKEN",
     ],
     recommendedKeys: [
+      "ENABLE_STRAVA_DESCRIPTION_UPDATES",
       "ADMIN_EMAILS",
       "SLACK_BOT_TOKEN",
       "SLACK_CHANNEL",

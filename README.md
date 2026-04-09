@@ -65,6 +65,7 @@ Key variables:
 
 - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` - Google OAuth
 - `STRAVA_CLIENT_ID` & `STRAVA_CLIENT_SECRET` - Strava integration
+- `ENABLE_STRAVA_DESCRIPTION_UPDATES` - Controls whether this environment writes donation text back to Strava
 - `NEXTAUTH_SECRET` - Session encryption
 - `DATABASE_URL` - Database connection
 - `ADMIN_EMAILS` - Admin access control
@@ -73,6 +74,7 @@ Useful command:
 
 ```bash
 npm run config:audit
+npm run env:sanitize
 ```
 
 ## 🌐 Domains
