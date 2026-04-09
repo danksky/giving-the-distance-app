@@ -3,6 +3,7 @@
 This is the canonical source of truth for authentication, database, and environment configuration in this repo.
 
 For the concrete cleanup sequence based on the April 9, 2026 audit, see [docs/CONFIG-CLEANUP-PLAN.md](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/docs/CONFIG-CLEANUP-PLAN.md).
+For the remaining manual console checks, see [docs/PROVIDER-CHECKLIST.md](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/docs/PROVIDER-CHECKLIST.md).
 
 ## Canonical environment model
 
