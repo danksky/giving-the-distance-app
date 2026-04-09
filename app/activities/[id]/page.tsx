@@ -60,6 +60,21 @@ async function getActivity(id: string) {
   }
 }
 
+async function getViewerUserId() {
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    return undefined;
+  }
+
+  const viewer = await db.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
+
+  return viewer?.id;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -74,14 +89,28 @@ export async function generateMetadata({
     };
   }
 
-  const title = `${activity.name || "Activity"} by ${
-    activity.user.name || "Athlete"
-  } | Giving the Distance`;
-  const description = `${activity.user.name} ${activity.type} for charity - ${
-    activity.distanceMeters
-      ? `${(Number(activity.distanceMeters) / 1000).toFixed(2)} km`
-      : ""
-  }`;
+  const viewerUserId = await getViewerUserId();
+  const showRealProfile = canViewRealProfile(
+    activity.userId,
+    activity.isPublicProfile,
+    viewerUserId
+  );
+  const activityLabel = activity.name || activity.type || "Activity";
+  const distanceText = activity.distanceMeters
+    ? `${(Number(activity.distanceMeters) / 1000).toFixed(2)} km`
+    : null;
+
+  const title = showRealProfile
+    ? `${activityLabel} by ${activity.user.name || "Athlete"} | Giving the Distance`
+    : `${activityLabel} | Giving the Distance`;
+
+  const description = showRealProfile
+    ? `${activity.user.name || "An athlete"} ${activity.type || "activity"} for charity${
+        distanceText ? ` - ${distanceText}` : ""
+      }`
+    : `${activity.type || "Activity"} supporting charity${
+        distanceText ? ` - ${distanceText}` : ""
+      }`;
 
   return {
     title,
@@ -112,15 +141,7 @@ export default async function ActivityPage({
   }
 
   // Get current session to check if viewer is owner
-  const session = await auth();
-  const viewerUserId = session?.user?.email
-    ? (
-        await db.user.findUnique({
-          where: { email: session.user.email },
-          select: { id: true },
-        })
-      )?.id
-    : undefined;
+  const viewerUserId = await getViewerUserId();
 
   // Check if viewer can see real profile details
   const showRealProfile = canViewRealProfile(
