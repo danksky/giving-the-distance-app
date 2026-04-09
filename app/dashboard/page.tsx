@@ -5,20 +5,6 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import Navbar from "@/components/Navbar";
 
-function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  }
-
-  return `${minutes}:${secs.toString().padStart(2, "0")}`;
-}
-
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -43,6 +29,31 @@ export default async function DashboardPage({
       activities: {
         where: {
           deletedAt: null,
+        },
+        include: {
+          charityCommitments: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: 1,
+            select: {
+              amountCents: true,
+              charity: {
+                select: {
+                  name: true,
+                },
+              },
+              campaign: {
+                select: {
+                  sponsor: {
+                    select: {
+                      businessName: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         orderBy: {
           startDate: "desc",
@@ -208,37 +219,21 @@ export default async function DashboardPage({
                           <tr>
                             <th className="whitespace-nowrap">Date</th>
                             <th>Activity</th>
+                            <th>Commitment</th>
                             <th>Type</th>
-                            <th>Distance</th>
-                            <th>Time</th>
-                            <th>Elevation</th>
+                            <th>Sponsor</th>
+                            <th>Charity</th>
                           </tr>
                         </thead>
                         <tbody>
                           {activities.map((activity) => {
-                            const distanceKm = activity.distanceMeters
-                              ? (Number(activity.distanceMeters) / 1000).toFixed(
-                                  2
-                                )
+                            const commitment = activity.charityCommitments[0];
+                            const commitmentAmount = commitment
+                              ? `$${(commitment.amountCents / 100).toFixed(2)}`
                               : "—";
-                            const distanceMi = activity.distanceMeters
-                              ? (
-                                  Number(activity.distanceMeters) / 1609.34
-                                ).toFixed(2)
-                              : "—";
-                            const movingTime = activity.movingTimeSeconds
-                              ? formatDuration(activity.movingTimeSeconds)
-                              : "—";
-                            const elevationM = activity.totalElevationGain
-                              ? `${Number(activity.totalElevationGain).toFixed(
-                                  0
-                                )}m`
-                              : "—";
-                            const elevationFt = activity.totalElevationGain
-                              ? `${(
-                                  Number(activity.totalElevationGain) * 3.28084
-                                ).toFixed(0)}ft`
-                              : "—";
+                            const sponsorName =
+                              commitment?.campaign.sponsor.businessName ?? "—";
+                            const charityName = commitment?.charity.name ?? "—";
                             const date = activity.startDateLocal
                               ? new Date(
                                   activity.startDateLocal
@@ -260,24 +255,10 @@ export default async function DashboardPage({
                                     {activity.name || "Untitled"}
                                   </Link>
                                 </td>
+                                <td>{commitmentAmount}</td>
                                 <td>{activity.type}</td>
-                                <td>
-                                  <>
-                                    <div>{distanceKm} km</div>
-                                    <div className="text-xs opacity-60">
-                                      {distanceMi} mi
-                                    </div>
-                                  </>
-                                </td>
-                                <td>{movingTime}</td>
-                                <td>
-                                  <>
-                                    <div>{elevationM}</div>
-                                    <div className="text-xs opacity-60">
-                                      {elevationFt}
-                                    </div>
-                                  </>
-                                </td>
+                                <td>{sponsorName}</td>
+                                <td>{charityName}</td>
                               </tr>
                             );
                           })}

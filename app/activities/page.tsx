@@ -13,20 +13,6 @@ const SORT_DIRECTIONS = ["asc", "desc"] as const;
 type SortField = (typeof SORT_FIELDS)[number];
 type SortDirection = (typeof SORT_DIRECTIONS)[number];
 
-function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  }
-
-  return `${minutes}:${secs.toString().padStart(2, "0")}`;
-}
-
 function getStringParam(
   value: string | string[] | undefined,
   fallback: string
@@ -154,6 +140,31 @@ export default async function ActivitiesPage({
 
   const activities = await db.activity.findMany({
     where,
+    include: {
+      charityCommitments: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
+        select: {
+          amountCents: true,
+          charity: {
+            select: {
+              name: true,
+            },
+          },
+          campaign: {
+            select: {
+              sponsor: {
+                select: {
+                  businessName: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     orderBy,
     skip: (currentPage - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
@@ -255,90 +266,22 @@ export default async function ActivitiesPage({
                               </Link>
                             </th>
                             <th>Activity</th>
+                            <th>Commitment</th>
                             <th>Type</th>
-                            <th>
-                              <Link
-                                href={buildPageHref({
-                                  page: 1,
-                                  sort: "distance",
-                                  dir: getNextSortDirection(
-                                    sortField,
-                                    sortDirection,
-                                    "distance"
-                                  ),
-                                  type: typeFilter,
-                                })}
-                                className="inline-flex items-center gap-1 font-semibold"
-                              >
-                                Distance
-                                <span className="text-xs opacity-70">
-                                  {sortField === "distance"
-                                    ? sortDirection === "desc"
-                                      ? "↓"
-                                      : "↑"
-                                    : "↕"}
-                                </span>
-                              </Link>
-                            </th>
-                            <th>
-                              <Link
-                                href={buildPageHref({
-                                  page: 1,
-                                  sort: "time",
-                                  dir: getNextSortDirection(
-                                    sortField,
-                                    sortDirection,
-                                    "time"
-                                  ),
-                                  type: typeFilter,
-                                })}
-                                className="inline-flex items-center gap-1 font-semibold"
-                              >
-                                Time
-                                <span className="text-xs opacity-70">
-                                  {sortField === "time"
-                                    ? sortDirection === "desc"
-                                      ? "↓"
-                                      : "↑"
-                                    : "↕"}
-                                </span>
-                              </Link>
-                            </th>
-                            <th>Elevation</th>
+                            <th>Sponsor</th>
+                            <th>Charity</th>
                           </tr>
                         </thead>
                         <tbody>
                           {activities.map((activity) => {
                             const isDeleted = !!activity.deletedAt;
-                            const distanceKm =
-                              !isDeleted && activity.distanceMeters
-                                ? (
-                                    Number(activity.distanceMeters) / 1000
-                                  ).toFixed(2)
-                                : "—";
-                            const distanceMi =
-                              !isDeleted && activity.distanceMeters
-                                ? (
-                                    Number(activity.distanceMeters) / 1609.34
-                                  ).toFixed(2)
-                                : "—";
-                            const movingTime =
-                              !isDeleted && activity.movingTimeSeconds
-                                ? formatDuration(activity.movingTimeSeconds)
-                                : "—";
-                            const elevationM =
-                              !isDeleted && activity.totalElevationGain
-                                ? `${Number(
-                                    activity.totalElevationGain
-                                  ).toFixed(0)}m`
-                                : "—";
-                            const elevationFt =
-                              !isDeleted && activity.totalElevationGain
-                                ? `${(
-                                    Number(activity.totalElevationGain) *
-                                    3.28084
-                                  ).toFixed(0)}ft`
-                                : "—";
+                            const commitment = activity.charityCommitments[0];
+                            const commitmentAmount = commitment
+                              ? `$${(commitment.amountCents / 100).toFixed(2)}`
+                              : "—";
+                            const sponsorName =
+                              commitment?.campaign.sponsor.businessName ?? "—";
+                            const charityName = commitment?.charity.name ?? "—";
                             const date = activity.startDateLocal
                               ? new Date(
                                   activity.startDateLocal
@@ -371,38 +314,10 @@ export default async function ActivitiesPage({
                                     </Link>
                                   )}
                                 </td>
+                                <td>{commitmentAmount}</td>
                                 <td>{!isDeleted ? activity.type : "—"}</td>
-                                <td>
-                                  {!isDeleted ? (
-                                    <>
-                                      <div>{distanceKm} km</div>
-                                      <div className="text-xs opacity-60">
-                                        {distanceMi} mi
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <span className="opacity-40">—</span>
-                                  )}
-                                </td>
-                                <td>
-                                  {!isDeleted ? (
-                                    movingTime
-                                  ) : (
-                                    <span className="opacity-40">—</span>
-                                  )}
-                                </td>
-                                <td>
-                                  {!isDeleted ? (
-                                    <>
-                                      <div>{elevationM}</div>
-                                      <div className="text-xs opacity-60">
-                                        {elevationFt}
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <span className="opacity-40">—</span>
-                                  )}
-                                </td>
+                                <td>{sponsorName}</td>
+                                <td>{charityName}</td>
                               </tr>
                             );
                           })}
