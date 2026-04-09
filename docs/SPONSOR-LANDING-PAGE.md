@@ -119,7 +119,7 @@ An interactive component for searching businesses and previewing sponsor profile
 Added to `.env.local`:
 
 ```
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="AIzaSyDLcssA5M1Q11cKteMSF2WWelhYc6HQ5A0"
+Google Maps key setup for this flow is currently paused.
 ```
 
 ## Dependencies Installed

@@ -1,137 +1,38 @@
-# Environment Variables Setup
+# Environment Setup
 
-## Local Development (.env.local)
+Start with [docs/ENVIRONMENT-CONTRACT.md](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/docs/ENVIRONMENT-CONTRACT.md). That document is the canonical source of truth for which environment uses which auth client, Strava app, and database.
 
-Create a `.env.local` file in the project root with these variables:
+## Quick rules
 
-```bash
-# Database
-# Standard DATABASE_URL - works with any Postgres provider
-# If using Vercel Postgres, their env vars (POSTGRES_*) are auto-detected
-DATABASE_URL=
+- Use `.env.local` for local development.
+- Treat `.env.preview` and `.env.production` as pulled snapshots of remote environments, not as files Next.js auto-loads locally.
+- Keep local and preview aligned with the development Google client, development Strava app, and development database.
+- Keep production on separate Google, Strava, and database credentials.
 
-# NextAuth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=  # Generate: openssl rand -base64 32
+## Minimum local setup
 
-# Google OAuth (Get from Google Cloud Console)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
+Create `.env.local` from [.env.example](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/.env.example), then fill in:
 
-# Strava OAuth - Development App
-# See .env.local for actual values
-STRAVA_CLIENT_ID=
-STRAVA_CLIENT_SECRET=
-STRAVA_WEBHOOK_VERIFY_TOKEN=  # Generate: openssl rand -hex 32
-```
+- `DATABASE_URL`
+- `NEXTAUTH_URL=http://localhost:3000`
+- `NEXTAUTH_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `STRAVA_CLIENT_ID`
+- `STRAVA_CLIENT_SECRET`
+- `STRAVA_WEBHOOK_VERIFY_TOKEN`
 
----
-
-## Vercel Preview Environment
-
-Environment variables for `beta.givingthedistance.org`:
-
-```bash
-# NextAuth
-NEXTAUTH_URL=https://beta.givingthedistance.org
-NEXTAUTH_SECRET=  # Same as local or generate new
-
-# Google OAuth
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-# Strava OAuth - Development App
-# See .env.local for actual values
-STRAVA_CLIENT_ID=
-STRAVA_CLIENT_SECRET=
-STRAVA_WEBHOOK_VERIFY_TOKEN=  # Same as local
-```
-
----
-
-## Vercel Production Environment
-
-Environment variables for `givingthedistance.org`:
-
-```bash
-# NextAuth
-NEXTAUTH_URL=https://givingthedistance.org
-NEXTAUTH_SECRET=  # Generate new for production
-
-# Google OAuth
-GOOGLE_CLIENT_ID=  # Production credentials
-GOOGLE_CLIENT_SECRET=
-
-# Strava OAuth - Production App (production.givingthedistance@gmail.com)
-STRAVA_CLIENT_ID=  # Get from production Strava app
-STRAVA_CLIENT_SECRET=
-STRAVA_WEBHOOK_VERIFY_TOKEN=  # Generate new
-```
-
----
-
-## Getting Credentials
-
-### 1. Generate NEXTAUTH_SECRET
+## Useful commands
 
 ```bash
 openssl rand -base64 32
-```
-
-### 2. Generate STRAVA_WEBHOOK_VERIFY_TOKEN
-
-```bash
 openssl rand -hex 32
+npm run config:audit
 ```
 
-### 3. Google OAuth (Google Cloud Console)
+## Remote environment workflow
 
-1. Go to: https://console.cloud.google.com/
-2. Create/select project: "Giving the Distance"
-3. Enable Google+ API
-4. Create OAuth 2.0 credentials
-5. Add authorized redirect URIs:
-   - `http://localhost:3000/api/auth/callback/google`
-   - `https://beta.givingthedistance.org/api/auth/callback/google`
-   - `https://givingthedistance.org/api/auth/callback/google` (production)
-6. Copy Client ID and Client Secret
-
-### 4. Strava App Settings
-
-**Development App** (development.givingthedistance@gmail.com):
-
-- Already have credentials (see above)
-- Update callback URLs at: https://www.strava.com/settings/api
-  - Add: `http://localhost:3000/api/auth/callback/strava`
-  - Add: `https://beta.givingthedistance.org/api/auth/callback/strava`
-
-**Production App** (production.givingthedistance@gmail.com):
-
-- Get credentials from: https://www.strava.com/settings/api
-- Add callback: `https://givingthedistance.org/api/auth/callback/strava`
-
-### 5. Vercel Postgres
-
-Database URLs are auto-configured when you:
-
-1. Create Vercel Postgres database
-2. Link to your project
-3. Vercel automatically injects `POSTGRES_*` env vars
-
----
-
-## Setting Variables in Vercel
-
-1. Go to Vercel Dashboard → Project Settings → Environment Variables
-2. Add each variable
-3. Select which environments (Production, Preview, Development)
-4. Deploy to apply changes
-
----
-
-## Notes
-
-- Never commit `.env.local` to git
-- Keep production and preview credentials separate
-- Rotate secrets if exposed
-- Use different Google OAuth credentials for dev/prod (recommended)
+1. Pull Preview vars into `.env.preview` when you want to inspect the deployed dev environment.
+2. Pull Production vars into `.env.production` for maintenance tasks like migrations.
+3. Copy only the values you need for local development into `.env.local`.
+4. Re-run `npm run config:audit` after changes.

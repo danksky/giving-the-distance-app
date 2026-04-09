@@ -10,8 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default function SponsorLandingPage() {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-
   return (
     <div className="min-h-screen bg-[#fafafa]">
       <Navbar />
@@ -45,7 +43,7 @@ export default function SponsorLandingPage() {
       {/* Interactive Preview Section */}
       <section className="py-16 md:py-20">
         <div className="container mx-auto px-4">
-          <BusinessSearchPreview apiKey={apiKey} />
+          <BusinessSearchPreview />
         </div>
       </section>
 

@@ -202,7 +202,7 @@ Selected: [Timestamp]
 **Troubleshooting:**
 
 - Check browser console for any API errors
-- Verify Google Maps API key is configured: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+- Google Maps-backed sponsor preview is currently paused, so no Maps key is expected here.
 - Look for: "Failed to send place selection notification" in console (non-blocking error)
 - The notification sends immediately when a place is selected, not when "Preview" is clicked
 

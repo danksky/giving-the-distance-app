@@ -3,6 +3,8 @@
 ## Overview
 Two separate Strava OAuth apps for development and production environments.
 
+The canonical environment split now lives in [docs/ENVIRONMENT-CONTRACT.md](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/docs/ENVIRONMENT-CONTRACT.md).
+
 ---
 
 ## Development App
@@ -76,9 +78,9 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=  (create a random string)
 
 The app requests the following permissions from users:
 
-- `activity:read` - Read user's activities
 - `activity:read_all` - Read all activities (including private)
 - `profile:read_all` - Read profile information
+- `activity:write` - Update activity descriptions after matching logic runs
 
 ---
 
@@ -140,7 +142,7 @@ ngrok http 3000
 ## Notes
 
 - Keep credentials separate for dev/prod environments
+- Keep local and preview on the development app
 - Never commit secrets to git
 - Rotate secrets if compromised
 - Monitor webhook delivery in Strava API settings
-

@@ -217,13 +217,9 @@ export default async function SponsorProfilePage({
 
   const mapUrl =
     embeddedSrc ??
-    (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-      ? `https://www.google.com/maps/embed/v1/place?key=${
-          process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-        }&q=${encodeURIComponent(businessInfo.address.fullAddress)}&zoom=15`
-      : `https://www.google.com/maps?q=${encodeURIComponent(
-          businessInfo.address.fullAddress
-        )}&output=embed`);
+    `https://www.google.com/maps?q=${encodeURIComponent(
+      businessInfo.address.fullAddress
+    )}&output=embed`;
 
   return (
     <div className="min-h-screen bg-[#fff]">

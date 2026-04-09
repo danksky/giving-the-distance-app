@@ -1,146 +1,42 @@
 # Secrets Management
 
-## ⚠️ IMPORTANT: Actual secrets are stored in `.env.*` files (gitignored)
+Secrets belong in gitignored `.env.*` files locally and in Vercel environment variables remotely.
 
-All secrets are stored in environment files that are:
-- ✅ Gitignored (never committed to VCS)
-- ✅ Visible in Cursor (via `.cursorignore`)
-- ✅ Organized by environment
+Use [docs/ENVIRONMENT-CONTRACT.md](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/docs/ENVIRONMENT-CONTRACT.md) for the canonical environment split. This page focuses on handling secrets safely.
 
----
+## Files and responsibilities
 
-## Environment Files
+- `.env.example` is a commit-safe template.
+- `.env.local` is the file Next.js auto-loads for local development.
+- `.env.preview` is a pulled snapshot of Preview values for inspection.
+- `.env.production` is a pulled snapshot of Production values for maintenance tasks.
 
-### `.env.local` - Local Development
-- Database connection strings (from Vercel)
-- Google OAuth credentials (development)
-- Strava development app credentials
-- NextAuth secret
+## Rules
 
-**Owner Accounts:**
-- Google: Your personal account
-- Strava: `development.givingthedistance@gmail.com`
+- Never commit real secrets to git.
+- Never paste real connection strings, OAuth client secrets, API keys, or webhook tokens into markdown docs.
+- Keep local and preview on development credentials.
+- Keep production on separate Google, Strava, and database credentials.
+- Rotate any secret that has already been committed or shared in plaintext.
 
-### `.env.production` - Production Deployment
-- Database connection strings (from Vercel)
-- Google OAuth credentials (production)
-- Strava production app credentials
-- NextAuth secret (separate from dev)
-
-**Owner Accounts:**
-- Google: Production account
-- Strava: `production.givingthedistance@gmail.com`
-
-### `.env.example` - Template Only
-- NO actual secrets
-- Shows what variables are needed
-- Safe to commit to git
-
----
-
-## Setup Instructions
-
-### 1. Google OAuth
-
-**For Development:**
-1. Go to: https://console.cloud.google.com/
-2. Create project: "Giving the Distance Dev"
-3. Enable Google+ API
-4. Create OAuth Client:
-   - Type: Web application
-   - Authorized origins: `http://localhost:3000`, `https://beta.givingthedistance.org`
-   - Authorized redirect: 
-     - `http://localhost:3000/api/auth/callback/google`
-     - `https://beta.givingthedistance.org/api/auth/callback/google`
-5. Copy Client ID and Secret to `.env.local`
-
-**For Production:**
-- Create separate OAuth client
-- Authorized origins: `https://givingthedistance.org`
-- Authorized redirect: `https://givingthedistance.org/api/auth/callback/google`
-- Copy credentials to `.env.production`
-
-### 2. Vercel Postgres
+## Useful commands
 
 ```bash
-# After creating database in Vercel:
-vercel env pull .env.local
-```
-
-This auto-populates database connection strings.
-
-### 3. Generate Secrets
-
-```bash
-# NextAuth secret (for .env.local and .env.production)
 openssl rand -base64 32
-
-# Strava webhook token (for .env.production)
 openssl rand -hex 32
+vercel env pull .env.preview --environment preview
+vercel env pull .env.production --environment production
+npm run config:audit
 ```
 
----
+## Recommended storage pattern
 
-## Strava App Configuration
+- Google OAuth client secrets: Vercel env vars and local `.env.local`
+- Strava client secrets: Vercel env vars and local `.env.local`
+- Database URLs: Vercel env vars and local `.env.local`
+- Webhook verify tokens: Vercel env vars and local `.env.local`
+- Slack tokens: Vercel env vars and local `.env.local`
 
-### Development App
-- **Owner**: development.givingthedistance@gmail.com
-- **Credentials**: See `.env.local`
-- **Callback URLs**: 
-  - `http://localhost:3000/api/auth/callback/strava`
-  - `https://beta.givingthedistance.org/api/auth/callback/strava`
+## Follow-up
 
-### Production App
-- **Owner**: production.givingthedistance@gmail.com
-- **Credentials**: See `.env.production`
-- **Callback URL**: `https://givingthedistance.org/api/auth/callback/strava`
-
----
-
-## Vercel Environment Variables
-
-Copy values from local `.env` files to Vercel Dashboard:
-
-**Project Settings → Environment Variables**
-
-### For Preview Environment
-- Copy from `.env.local`
-- Set environment: `Preview`
-- Update `NEXTAUTH_URL=https://beta.givingthedistance.org`
-
-### For Production Environment
-- Copy from `.env.production`
-- Set environment: `Production`
-- Generate new `NEXTAUTH_SECRET` for production
-
----
-
-## Security Checklist
-
-- ✅ All `.env.*` files are in `.gitignore`
-- ✅ `.env.example` contains NO actual secrets
-- ✅ `.cursorignore` allows viewing `.env.*` in Cursor
-- ✅ Separate credentials for dev/preview/prod
-- ✅ Markdown docs contain NO secrets
-- ⚠️ Never commit `.env.local` or `.env.production`
-- ⚠️ Rotate secrets immediately if exposed
-
----
-
-## Quick Reference
-
-```bash
-# View local secrets
-cat .env.local
-
-# View production secrets
-cat .env.production
-
-# Generate new secrets
-openssl rand -base64 32  # NextAuth
-openssl rand -hex 32     # Strava webhook
-
-# Pull Vercel environment
-vercel env pull .env.local
-```
-
+If a secret was previously committed to tracked docs, treat it as exposed and rotate it in the provider dashboard.

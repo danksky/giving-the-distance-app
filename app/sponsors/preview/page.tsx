@@ -110,7 +110,6 @@ async function PreviewContent({
   // Extract city and state from location
   const locationParts = businessLocation.split(",");
   const city = locationParts[locationParts.length - 2]?.trim() || "Brooklyn";
-  const state = locationParts[locationParts.length - 1]?.trim() || "NY";
 
   // Fetch Google Photos if we have a placeId
   const placePhotos = placeId
@@ -126,10 +125,9 @@ async function PreviewContent({
   const athletesSupported = new Set(MOCK_ACTIVITIES.map((a) => a.athleteName))
     .size;
 
-  // Create a simple Google Maps embed URL
-  const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${
-    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
-  }&q=${encodeURIComponent(businessLocation)}&zoom=15`;
+  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(
+    businessLocation
+  )}&output=embed`;
 
   return (
     <div className="min-h-screen bg-[#fff]">
@@ -242,21 +240,15 @@ async function PreviewContent({
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {/* Map */}
             <div className="w-full h-64 md:h-72 rounded overflow-hidden bg-base-200">
-              {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
-                <iframe
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                  src={mapUrl}
-                ></iframe>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#f3f4f6]">
-                  <p className="text-[#6b7280]">Map preview</p>
-                </div>
-              )}
+              <iframe
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                src={mapUrl}
+              ></iframe>
             </div>
 
             {/* Photo Grid */}

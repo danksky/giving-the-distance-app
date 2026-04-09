@@ -5,12 +5,16 @@ import ActivityPostMock from "./ActivityPostMock";
 import { useRouter } from "next/navigation";
 
 interface BusinessSearchPreviewProps {
-  apiKey: string;
+  apiKey?: string;
 }
 
 // Track if we've already loaded the API
 let isGoogleMapsLoaded = false;
 let googleMapsPromise: Promise<void> | null = null;
+
+type GoogleMapsWindow = Window & {
+  initGoogleMaps?: () => void;
+};
 
 function loadGoogleMapsScript(apiKey: string): Promise<void> {
   if (isGoogleMapsLoaded) {
@@ -38,9 +42,11 @@ function loadGoogleMapsScript(apiKey: string): Promise<void> {
     script.async = true;
     script.defer = true;
 
-    (window as any).initGoogleMaps = () => {
+    const googleMapsWindow = window as GoogleMapsWindow;
+
+    googleMapsWindow.initGoogleMaps = () => {
       isGoogleMapsLoaded = true;
-      delete (window as any).initGoogleMaps;
+      delete googleMapsWindow.initGoogleMaps;
       resolve();
     };
 
@@ -55,7 +61,7 @@ function loadGoogleMapsScript(apiKey: string): Promise<void> {
 }
 
 export default function BusinessSearchPreview({
-  apiKey,
+  apiKey = "",
 }: BusinessSearchPreviewProps) {
   const [businessName, setBusinessName] = useState("");
   const [businessLocation, setBusinessLocation] = useState("");
@@ -160,6 +166,13 @@ export default function BusinessSearchPreview({
             Search for your business to see a preview
           </p>
 
+          {!apiKey && (
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              Sponsor search preview is temporarily paused while Google Maps
+              access is being reworked.
+            </div>
+          )}
+
           {/* Search Input */}
           <div className="mb-6">
             <label
@@ -173,10 +186,13 @@ export default function BusinessSearchPreview({
               type="text"
               id="business-search"
               placeholder="e.g., Joe's Coffee Shop, Brooklyn"
+              disabled={!apiKey}
               className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:ring-2 focus:ring-[#B56DFF] focus:border-transparent outline-none transition-all text-[15px]"
             />
             <p className="text-xs text-[#6b7280] mt-2">
-              Start typing to see suggestions
+              {apiKey
+                ? "Start typing to see suggestions"
+                : "This interactive search will return once Google Maps access is restored"}
             </p>
           </div>
 

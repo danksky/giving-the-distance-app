@@ -59,15 +59,21 @@ prisma/
 
 ## 🔐 Environment Variables
 
-See `.env.example` for required environment variables.
+See [.env.example](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/.env.example) and [docs/ENVIRONMENT-CONTRACT.md](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/docs/ENVIRONMENT-CONTRACT.md) for the canonical environment model.
 
 Key variables:
 
 - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` - Google OAuth
 - `STRAVA_CLIENT_ID` & `STRAVA_CLIENT_SECRET` - Strava integration
-- `STRIPE_SECRET_KEY` - Payment processing
 - `NEXTAUTH_SECRET` - Session encryption
 - `DATABASE_URL` - Database connection
+- `ADMIN_EMAILS` - Admin access control
+
+Useful command:
+
+```bash
+npm run config:audit
+```
 
 ## 🌐 Domains
 
