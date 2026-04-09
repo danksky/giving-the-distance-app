@@ -46,6 +46,9 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 describe('Sponsor Matching Service', () => {
+  const originalEnableDescriptionUpdates =
+    process.env.ENABLE_STRAVA_DESCRIPTION_UPDATES;
+
   const mockActivity = {
     id: 'activity-123',
     stravaActivityId: BigInt(987654321),
@@ -75,10 +78,17 @@ describe('Sponsor Matching Service', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.ENABLE_STRAVA_DESCRIPTION_UPDATES = 'true';
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    if (originalEnableDescriptionUpdates === undefined) {
+      delete process.env.ENABLE_STRAVA_DESCRIPTION_UPDATES;
+    } else {
+      process.env.ENABLE_STRAVA_DESCRIPTION_UPDATES =
+        originalEnableDescriptionUpdates;
+    }
   });
 
   describe('matchActivityWithSponsor', () => {
@@ -468,6 +478,65 @@ describe('Sponsor Matching Service', () => {
       expect(result.result).toBe(SponsorMatchResult.MATCHED);
       expect(result.sponsorMatchId).toBe(mockSponsorMatch.id);
       expect(result.charityCommitmentId).toBe(mockCharityCommitment.id);
+    });
+
+    it('should match and skip the Strava description update when disabled by config', async () => {
+      process.env.ENABLE_STRAVA_DESCRIPTION_UPDATES = 'false';
+
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(null);
+      vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
+
+      vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue({
+        id: 'charity-unicef',
+        name: 'UNICEF',
+      } as any);
+
+      vi.mocked(db.stravaAthlete.findUnique).mockResolvedValue({
+        id: mockActivity.athleteId,
+        firstname: 'John',
+      } as any);
+
+      const mockSponsorMatch = {
+        id: 'match-matched-no-description',
+        result: SponsorMatchResult.MATCHED,
+      };
+      const mockCharityCommitment = {
+        id: 'commitment-456',
+      };
+
+      vi.mocked(db.$transaction).mockImplementation(async (callback: any) => {
+        return callback({
+          campaign: {
+            update: vi.fn().mockResolvedValue({}),
+          },
+          sponsorMatch: {
+            create: vi.fn().mockResolvedValue(mockSponsorMatch),
+          },
+          charityCommitment: {
+            create: vi.fn().mockResolvedValue(mockCharityCommitment),
+          },
+        });
+      });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: mockActivity.stravaActivityId,
+          start_latlng: [40.75, -73.99],
+          end_latlng: [40.76, -73.98],
+          description: 'Existing description',
+        }),
+      });
+
+      const result = await matchActivityWithSponsor(mockActivity, mockAccessToken);
+
+      expect(result.success).toBe(true);
+      expect(result.result).toBe(SponsorMatchResult.MATCHED);
+      expect(result.descriptionUpdated).toBe(false);
+      expect(result.descriptionUpdateSkipped).toBe(true);
+      expect(result.message).toContain('disabled for this environment');
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(db.$transaction).toHaveBeenCalled();
     });
 
     it('should skip if the activity is missing GPS coordinates', async () => {

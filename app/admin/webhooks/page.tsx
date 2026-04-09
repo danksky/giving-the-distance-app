@@ -1,9 +1,14 @@
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/auth-helpers";
+import {
+  getSkippedDescriptionUpdateReason,
+  isSkippedDescriptionUpdateMessage,
+} from "@/lib/strava-description-updates";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { Fragment } from "react";
 
 // Force dynamic rendering - don't cache this page
 export const dynamic = "force-dynamic";
@@ -55,7 +60,14 @@ export default async function WebhooksPage() {
     processed: events.filter((e) => e.processed).length,
     failed: events.filter((e) => e.processingError).length,
     descriptionUpdated: events.filter((e) => e.descriptionUpdated).length,
-    descriptionFailed: events.filter((e) => e.descriptionUpdateError).length,
+    descriptionSkipped: events.filter((e) =>
+      isSkippedDescriptionUpdateMessage(e.descriptionUpdateError)
+    ).length,
+    descriptionFailed: events.filter(
+      (e) =>
+        !!e.descriptionUpdateError &&
+        !isSkippedDescriptionUpdateMessage(e.descriptionUpdateError)
+    ).length,
     byType: {
       activity: events.filter((e) => e.objectType === "activity").length,
       athlete: events.filter((e) => e.objectType === "athlete").length,
@@ -108,6 +120,11 @@ export default async function WebhooksPage() {
             <div className="stat-value text-info">
               {stats.descriptionUpdated}
             </div>
+            {stats.descriptionSkipped > 0 && (
+              <div className="stat-desc text-warning">
+                {stats.descriptionSkipped} skipped
+              </div>
+            )}
             {stats.descriptionFailed > 0 && (
               <div className="stat-desc text-error">
                 {stats.descriptionFailed} failed
@@ -167,104 +184,122 @@ export default async function WebhooksPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {events.map((event) => (
-                    <>
-                      <tr key={event.id}>
-                        <td className="text-sm">
-                          {new Date(event.eventTime).toLocaleString()}
-                        </td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              event.objectType === "activity"
-                                ? "badge-info"
-                                : "badge-secondary"
-                            }`}
-                          >
-                            {event.objectType}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              event.aspectType === "create"
-                                ? "badge-success"
-                                : event.aspectType === "delete"
-                                ? "badge-error"
-                                : "badge-warning"
-                            }`}
-                          >
-                            {event.aspectType}
-                          </span>
-                        </td>
-                        <td className="font-mono text-sm opacity-70">
-                          {event.objectId.toString()}
-                        </td>
-                        <td className="font-mono text-sm opacity-70">
-                          {event.ownerId.toString()}
-                        </td>
-                        <td>
-                          {event.processingError ? (
+                  {events.map((event) => {
+                    const skippedReason = getSkippedDescriptionUpdateReason(
+                      event.descriptionUpdateError
+                    );
+
+                    return (
+                      <Fragment key={event.id}>
+                        <tr>
+                          <td className="text-sm">
+                            {new Date(event.eventTime).toLocaleString()}
+                          </td>
+                          <td>
                             <span
-                              className="badge badge-error cursor-help"
-                              title={event.processingError}
+                              className={`badge ${
+                                event.objectType === "activity"
+                                  ? "badge-info"
+                                  : "badge-secondary"
+                              }`}
                             >
-                              Error
+                              {event.objectType}
                             </span>
-                          ) : event.processed ? (
-                            <span className="badge badge-success">
-                              Processed
+                          </td>
+                          <td>
+                            <span
+                              className={`badge ${
+                                event.aspectType === "create"
+                                  ? "badge-success"
+                                  : event.aspectType === "delete"
+                                  ? "badge-error"
+                                  : "badge-warning"
+                              }`}
+                            >
+                              {event.aspectType}
                             </span>
-                          ) : (
-                            <span className="badge badge-ghost">Pending</span>
-                          )}
-                        </td>
-                        <td>
-                          {event.objectType === "activity" &&
-                          event.aspectType === "create" ? (
-                            event.descriptionUpdateError ? (
-                              <div className="flex items-start gap-2">
-                                <span
-                                  className="badge badge-error cursor-help"
-                                  title={event.descriptionUpdateError}
-                                >
-                                  Failed
-                                </span>
-                                <span className="text-xs opacity-60 line-clamp-2">
-                                  {event.descriptionUpdateError.substring(
-                                    0,
-                                    100
-                                  )}
-                                  {event.descriptionUpdateError.length > 100 &&
-                                    "..."}
-                                </span>
-                              </div>
-                            ) : event.descriptionUpdated ? (
-                              <span className="badge badge-info">Updated</span>
+                          </td>
+                          <td className="font-mono text-sm opacity-70">
+                            {event.objectId.toString()}
+                          </td>
+                          <td className="font-mono text-sm opacity-70">
+                            {event.ownerId.toString()}
+                          </td>
+                          <td>
+                            {event.processingError ? (
+                              <span
+                                className="badge badge-error cursor-help"
+                                title={event.processingError}
+                              >
+                                Error
+                              </span>
+                            ) : event.processed ? (
+                              <span className="badge badge-success">
+                                Processed
+                              </span>
                             ) : (
                               <span className="badge badge-ghost">Pending</span>
-                            )
-                          ) : (
-                            <span className="text-xs opacity-40">N/A</span>
-                          )}
-                        </td>
-                      </tr>
-                      {event.processingError && (
-                        <tr key={`${event.id}-error`} className="bg-error/10">
-                          <td colSpan={7} className="py-2">
-                            <div className="text-sm">
-                              <span className="font-semibold text-error">
-                                Error:{" "}
-                              </span>
-                              <span className="text-error opacity-90">
-                                {event.processingError}
-                              </span>
-                            </div>
+                            )}
+                          </td>
+                          <td>
+                            {event.objectType === "activity" &&
+                            event.aspectType === "create" ? (
+                              skippedReason ? (
+                                <div className="flex items-start gap-2">
+                                  <span
+                                    className="badge badge-warning cursor-help"
+                                    title={skippedReason}
+                                  >
+                                    Skipped
+                                  </span>
+                                  <span className="text-xs opacity-60 line-clamp-2">
+                                    {skippedReason}
+                                  </span>
+                                </div>
+                              ) : event.descriptionUpdateError ? (
+                                <div className="flex items-start gap-2">
+                                  <span
+                                    className="badge badge-error cursor-help"
+                                    title={event.descriptionUpdateError}
+                                  >
+                                    Failed
+                                  </span>
+                                  <span className="text-xs opacity-60 line-clamp-2">
+                                    {event.descriptionUpdateError.substring(
+                                      0,
+                                      100
+                                    )}
+                                    {event.descriptionUpdateError.length > 100 &&
+                                      "..."}
+                                  </span>
+                                </div>
+                              ) : event.descriptionUpdated ? (
+                                <span className="badge badge-info">Updated</span>
+                              ) : (
+                                <span className="badge badge-ghost">Pending</span>
+                              )
+                            ) : (
+                              <span className="text-xs opacity-40">N/A</span>
+                            )}
                           </td>
                         </tr>
-                      )}
-                    </>
-                  ))}
+                        {event.processingError && (
+                          <tr className="bg-error/10">
+                            <td colSpan={7} className="py-2">
+                              <div className="text-sm">
+                                <span className="font-semibold text-error">
+                                  Error:{" "}
+                                </span>
+                                <span className="text-error opacity-90">
+                                  {event.processingError}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -9,6 +9,10 @@ import { db } from '@/lib/db';
 import { SponsorMatchResult } from '@prisma/client';
 import { ensureUserHasSelectedCharity } from '@/lib/charity-helpers';
 import {
+  getStravaDescriptionSkipReason,
+  shouldUpdateStravaDescriptions,
+} from '@/lib/strava-description-updates';
+import {
   buildDecisionMetadataV0,
   selectCampaignV0,
 } from '@/lib/matching';
@@ -48,6 +52,8 @@ export interface MatchingResult {
   campaignId?: string;
   message?: string;
   error?: string;
+  descriptionUpdated?: boolean;
+  descriptionUpdateSkipped?: boolean;
 }
 
 export interface ActivityData {
@@ -76,6 +82,17 @@ interface StravaActivityLocationPayload {
   start_latlng?: [number, number] | [];
   end_latlng?: [number, number] | [];
 }
+
+type DescriptionUpdateResult =
+  | {
+      success: true;
+      updated: boolean;
+      message?: string;
+    }
+  | {
+      success: false;
+      error: string;
+    };
 
 /**
  * Main entry point for sponsor matching
@@ -309,6 +326,10 @@ export async function matchActivityWithSponsor(
       commitmentCents: COMMITMENT_AMOUNT_CENTS,
     });
     
+    const successNote = updateResult.updated
+      ? 'Successfully matched and description updated'
+      : updateResult.message || 'Successfully matched without updating Strava description';
+
     const result = await db.$transaction(async (tx) => {
       // Decrement campaign budget
       await tx.campaign.update({
@@ -333,7 +354,7 @@ export async function matchActivityWithSponsor(
           decisionReason: decision.decisionReason,
           decisionContext: decision.decisionContext,
           decrementCents: COMMITMENT_AMOUNT_CENTS,
-          notes: 'Successfully matched and description updated',
+          notes: successNote,
         },
       });
 
@@ -359,7 +380,9 @@ export async function matchActivityWithSponsor(
       sponsorMatchId: result.sponsorMatch.id,
       charityCommitmentId: result.charityCommitment.id,
       campaignId: campaign.id,
-      message: 'Successfully matched activity with sponsor',
+      message: successNote,
+      descriptionUpdated: updateResult.updated,
+      descriptionUpdateSkipped: !updateResult.updated,
     };
   } catch (error) {
     console.error('Error in sponsor matching:', error);
@@ -405,8 +428,20 @@ async function updateStravaDescription(
   athleteName: string | null,
   charityName: string,
   prefetchedActivityData?: StravaActivityLocationPayload
-): Promise<{ success: boolean; error?: string }> {
+): Promise<DescriptionUpdateResult> {
   try {
+    if (!shouldUpdateStravaDescriptions()) {
+      const reason = getStravaDescriptionSkipReason();
+      console.log(
+        `⏭️ Skipping Strava description update for activity ${activity.stravaActivityId}: ${reason}`
+      );
+      return {
+        success: true,
+        updated: false,
+        message: reason,
+      };
+    }
+
     const activityData =
       prefetchedActivityData ||
       (await fetchStravaActivityDetails(activity.stravaActivityId, accessToken));
@@ -415,7 +450,11 @@ async function updateStravaDescription(
     // Check if already has GTD marker (idempotency check)
     if (currentDescription.includes(GTD_MARKER)) {
       console.log(`Activity ${activity.stravaActivityId} already has GTD marker`);
-      return { success: true };
+      return {
+        success: true,
+        updated: false,
+        message: 'Activity already contains a Giving the Distance marker.',
+      };
     }
 
     // Build sponsor message
@@ -448,7 +487,7 @@ async function updateStravaDescription(
     }
 
     console.log(`✅ Updated description for activity ${activity.stravaActivityId}`);
-    return { success: true };
+    return { success: true, updated: true };
   } catch (error) {
     return {
       success: false,

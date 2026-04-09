@@ -6,6 +6,7 @@ import { generateUniqueShortcode } from "@/lib/shortcode";
 import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
 import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
 import { notifyNewActivity, notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
+import { formatSkippedDescriptionUpdateMessage } from "@/lib/strava-description-updates";
 
 /**
  * Strava Webhook Endpoint
@@ -414,7 +415,12 @@ export async function POST(request: NextRequest) {
           console.log(`📊 Matching result: ${matchingResult.result}`);
           
           if (matchingResult.success) {
-            descriptionUpdated = true;
+            descriptionUpdated = matchingResult.descriptionUpdated ?? false;
+            if (matchingResult.descriptionUpdateSkipped && matchingResult.message) {
+              descriptionUpdateError = formatSkippedDescriptionUpdateMessage(
+                matchingResult.message
+              );
+            }
             console.log(`✅ Successfully matched activity with campaign ${matchingResult.campaignId}`);
           } else {
             // Log the reason for not matching
