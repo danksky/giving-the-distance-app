@@ -45,6 +45,48 @@ function getAppBaseUrl(): string {
   return withProtocol.replace(/\/+$/, "");
 }
 
+function getEnvironmentLabel(): "DEV" | "PROD" {
+  const baseUrl = getAppBaseUrl().toLowerCase();
+  const vercelEnv = process.env.VERCEL_ENV?.trim().toLowerCase();
+  const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
+
+  if (
+    vercelEnv === "production" ||
+    baseUrl === "https://givingthedistance.org" ||
+    baseUrl.endsWith(".givingthedistance.org") && !baseUrl.includes("beta.")
+  ) {
+    return "PROD";
+  }
+
+  if (
+    vercelEnv === "preview" ||
+    vercelEnv === "development" ||
+    nodeEnv === "development" ||
+    baseUrl.includes("beta.givingthedistance.org") ||
+    baseUrl.includes("localhost")
+  ) {
+    return "DEV";
+  }
+
+  return "DEV";
+}
+
+function addEnvironmentBlock(message: SlackMessage): SlackMessage {
+  const environment = getEnvironmentLabel();
+
+  message.blocks.splice(1, 0, {
+    type: "section",
+    fields: [
+      {
+        type: "mrkdwn",
+        text: `*Environment:*\n${environment}`,
+      },
+    ],
+  });
+
+  return message;
+}
+
 /**
  * Send a message to Slack
  */
@@ -110,7 +152,7 @@ export async function notifyNewActivity(activity: {
 
   const message: SlackMessage = {
     channel: "",
-    text: "🎉 New Activity Created!",
+    text: `[${getEnvironmentLabel()}] 🎉 New Activity Created!`,
     blocks: [
       {
         type: "header",
@@ -193,7 +235,7 @@ export async function notifyNewActivity(activity: {
     ],
   });
 
-  await sendSlackMessage(message);
+  await sendSlackMessage(addEnvironmentBlock(message));
 }
 
 /**
@@ -208,7 +250,7 @@ export async function notifyActivityDeleted(activity: {
 }) {
   const message: SlackMessage = {
     channel: "",
-    text: "🗑️ Activity Deleted",
+    text: `[${getEnvironmentLabel()}] 🗑️ Activity Deleted`,
     blocks: [
       {
         type: "header",
@@ -265,7 +307,7 @@ export async function notifyActivityDeleted(activity: {
     ],
   });
 
-  await sendSlackMessage(message);
+  await sendSlackMessage(addEnvironmentBlock(message));
 }
 
 /**
@@ -277,11 +319,9 @@ export async function notifyNewUser(user: {
   email: string | null;
   provider?: string;
 }) {
-  const dashboardUrl = `${getAppBaseUrl()}/dashboard`;
-
   const message: SlackMessage = {
     channel: "",
-    text: "👋 New User Joined!",
+    text: `[${getEnvironmentLabel()}] 👋 New User Joined!`,
     blocks: [
       {
         type: "header",
@@ -305,10 +345,6 @@ export async function notifyNewUser(user: {
           {
             type: "mrkdwn",
             text: `*User ID:*\n${user.id}`,
-          },
-          {
-            type: "mrkdwn",
-            text: `*User URL:*\n<${dashboardUrl}|Open dashboard>`,
           },
         ],
       },
@@ -337,7 +373,7 @@ export async function notifyNewUser(user: {
     ],
   });
 
-  await sendSlackMessage(message);
+  await sendSlackMessage(addEnvironmentBlock(message));
 }
 
 /**
@@ -351,7 +387,7 @@ export async function notifyStravaAuthSuccess(user: {
 }) {
   const message: SlackMessage = {
     channel: "",
-    text: "✅ Strava Authorization Successful",
+    text: `[${getEnvironmentLabel()}] ✅ Strava Authorization Successful`,
     blocks: [
       {
         type: "header",
@@ -394,7 +430,7 @@ export async function notifyStravaAuthSuccess(user: {
     ],
   };
 
-  await sendSlackMessage(message);
+  await sendSlackMessage(addEnvironmentBlock(message));
 }
 
 /**
@@ -408,7 +444,7 @@ export async function notifyStravaAuthFailure(details: {
 }) {
   const message: SlackMessage = {
     channel: "",
-    text: "❌ Strava Authorization Failed",
+    text: `[${getEnvironmentLabel()}] ❌ Strava Authorization Failed`,
     blocks: [
       {
         type: "header",
@@ -465,7 +501,7 @@ export async function notifyStravaAuthFailure(details: {
     ],
   });
 
-  await sendSlackMessage(message);
+  await sendSlackMessage(addEnvironmentBlock(message));
 }
 
 /**
@@ -478,7 +514,7 @@ export async function notifyStravaDeauthorization(user: {
 }) {
   const message: SlackMessage = {
     channel: "",
-    text: "🔓 Strava De-authorization",
+    text: `[${getEnvironmentLabel()}] 🔓 Strava De-authorization`,
     blocks: [
       {
         type: "header",
@@ -517,7 +553,7 @@ export async function notifyStravaDeauthorization(user: {
     ],
   };
 
-  await sendSlackMessage(message);
+  await sendSlackMessage(addEnvironmentBlock(message));
 }
 
 /**
@@ -534,7 +570,7 @@ export async function notifyGooglePlaceSelection(placeData: {
 
   const message: SlackMessage = {
     channel: "",
-    text: "🏢 New Business Interest - Google Place Selected",
+    text: `[${getEnvironmentLabel()}] 🏢 New Business Interest - Google Place Selected`,
     blocks: [
       {
         type: "header",
@@ -582,5 +618,5 @@ export async function notifyGooglePlaceSelection(placeData: {
     ],
   };
 
-  await sendSlackMessage(message);
+  await sendSlackMessage(addEnvironmentBlock(message));
 }
