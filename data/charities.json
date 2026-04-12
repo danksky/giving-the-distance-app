@@ -119,5 +119,16 @@
     "website": "https://nicejewishrunners.org/",
     "charityNavigatorScore": 0,
     "isDefault": false
+  },
+  {
+    "id": "care-usa",
+    "name": "CARE",
+    "fullName": "CARE USA",
+    "description": "Fighting global poverty and delivering humanitarian aid with a focus on women, girls, and communities facing crisis.",
+    "category": "Development and Relief Services",
+    "logoUrl": "/logos/charities/care-usa.png",
+    "website": "https://www.care.org/",
+    "charityNavigatorScore": 0,
+    "isDefault": false
   }
 ]
