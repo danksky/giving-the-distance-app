@@ -267,6 +267,12 @@ export default function CharitySelector({
                         >
                           Visit Website →
                         </Link>
+                        <Link
+                          href={`/charities/${charity.id}`}
+                          className="link link-hover"
+                        >
+                          View Impact →
+                        </Link>
                       </div>
                     </div>
 

@@ -373,6 +373,14 @@ export default async function ActivityPage({
                       </div>
                     </div>
                   </div>
+                  {activityCharity?.id && (
+                    <Link
+                      href={`/charities/${activityCharity.id}`}
+                      className="btn btn-outline btn-sm"
+                    >
+                      View Charity
+                    </Link>
+                  )}
                 </div>
 
                 {/* Donation Amount */}
@@ -450,6 +458,14 @@ export default async function ActivityPage({
                         {activityCharity.fullName}
                       </div>
                     </div>
+                  </div>
+                  <div className="mt-3">
+                    <Link
+                      href={`/charities/${activityCharity.id}`}
+                      className="btn btn-outline btn-sm"
+                    >
+                      View Charity
+                    </Link>
                   </div>
                 </div>
               )}

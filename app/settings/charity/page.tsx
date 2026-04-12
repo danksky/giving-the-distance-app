@@ -104,6 +104,12 @@ export default async function CharitySettingsPage() {
                     >
                       Visit Website
                     </Link>
+                    <Link
+                      href={`/charities/${currentCharity.id}`}
+                      className="btn btn-sm btn-primary"
+                    >
+                      View Impact Page
+                    </Link>
                     {currentCharity.isDefault && (
                       <div className="badge badge-outline">Default Charity</div>
                     )}
