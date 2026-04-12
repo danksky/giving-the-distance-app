@@ -6,10 +6,14 @@ This directory is the Terraform starting point for infra that belongs with the a
 
 - Better Stack Telemetry sources for this app
 - One source each for `preview` and `production` by default
+- The linked Vercel project
+- The app's custom Vercel domains
+- The project's current Vercel environment variables
 
 ## What this does not manage yet
 
-- Vercel projects, domains, or environment variables
+- DNS records outside Vercel
+- Non-app Vercel team resources
 - App-side logging code
 
 ## Authentication
@@ -29,6 +33,12 @@ logtail_api_token = "your-better-stack-telemetry-api-token"
 ```
 
 For CI, store it in your secret manager and expose it as `TF_VAR_logtail_api_token`.
+
+Vercel provider auth is stored the same way:
+
+```bash
+export TF_VAR_vercel_api_token="your-vercel-api-token"
+```
 
 ## Important security note
 
@@ -73,3 +83,7 @@ Edit `terraform.tfvars` to change:
 
 The default source `platform` is `javascript`, which fits this Next.js app well.
 The default data region is `germany`, since Better Stack region availability is account-specific and this workspace currently only has `germany` enabled.
+
+## Existing Vercel resources
+
+`terraform/import-vercel-existing.sh` imports the current linked Vercel project, custom domains, and environment variables into local Terraform state so Terraform reflects what already exists instead of trying to recreate it.
