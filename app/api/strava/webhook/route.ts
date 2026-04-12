@@ -112,6 +112,108 @@ async function processAndStoreGPX(
   }
 }
 
+async function processSponsorMatchingForWebhook(params: {
+  activity: {
+    id: string;
+    stravaActivityId: bigint;
+    userId: string;
+    isPrivate: boolean;
+    name: string | null;
+    type: string;
+  };
+  activityDescription?: string | null;
+  accessToken: string;
+  stravaAthlete: {
+    id: string;
+    stravaAthleteId: bigint;
+  };
+  webhookEventId: string | null;
+}) {
+  const { activity, activityDescription, accessToken, stravaAthlete, webhookEventId } =
+    params;
+
+  const existingMatch = await db.sponsorMatch.findUnique({
+    where: { activityId: activity.id },
+  });
+
+  if (existingMatch) {
+    console.log(
+      `ℹ️  Skipping sponsor matching for activity ${activity.stravaActivityId} because it already has ${existingMatch.result}`
+    );
+
+    if (webhookEventId) {
+      await db.stravaWebhookEvent.update({
+        where: { id: webhookEventId },
+        data: { processed: true },
+      });
+    }
+
+    return;
+  }
+
+  let descriptionUpdated = false;
+  let descriptionUpdateError: string | null = null;
+
+  try {
+    console.log('🎯 Starting sponsor matching process...');
+
+    const matchingResult = await matchActivityWithSponsor(
+      {
+        id: activity.id,
+        stravaActivityId: activity.stravaActivityId,
+        userId: activity.userId,
+        athleteId: stravaAthlete.id,
+        stravaAthleteId: stravaAthlete.stravaAthleteId,
+        isPrivate: activity.isPrivate,
+        name: activity.name,
+        type: activity.type,
+        description: activityDescription,
+      },
+      accessToken
+    );
+
+    console.log(`📊 Matching result: ${matchingResult.result}`);
+
+    if (matchingResult.success) {
+      descriptionUpdated = matchingResult.descriptionUpdated ?? false;
+      if (matchingResult.descriptionUpdateSkipped && matchingResult.message) {
+        descriptionUpdateError = formatSkippedDescriptionUpdateMessage(
+          matchingResult.message
+        );
+      }
+      console.log(
+        `✅ Successfully matched activity with campaign ${matchingResult.campaignId}`
+      );
+    } else {
+      console.log(
+        `ℹ️  Activity not matched: ${matchingResult.result} - ${matchingResult.message || matchingResult.error}`
+      );
+
+      if (matchingResult.error) {
+        descriptionUpdateError = matchingResult.error;
+      }
+    }
+  } catch (error) {
+    descriptionUpdateError = error instanceof Error ? error.message : String(error);
+    console.error('❌ Error in sponsor matching:', error);
+  }
+
+  if (webhookEventId) {
+    console.log(
+      `📊 Updating webhook event status: descriptionUpdated=${descriptionUpdated}, error=${descriptionUpdateError || 'none'}`
+    );
+    await db.stravaWebhookEvent.update({
+      where: { id: webhookEventId },
+      data: {
+        processed: true,
+        descriptionUpdated,
+        descriptionUpdateError,
+      },
+    });
+    console.log(`✅ Webhook event ${webhookEventId} marked as processed`);
+  }
+}
+
 // POST handler - Webhook events
 export async function POST(request: NextRequest) {
   let webhookEventId: string | null = null;
@@ -390,51 +492,16 @@ export async function POST(request: NextRequest) {
           // Don't fail the webhook - GPX is optional
         }
         
-        // Process sponsor matching and description update
-        let descriptionUpdated = false;
-        let descriptionUpdateError: string | null = null;
-        
-        try {
-          console.log('🎯 Starting sponsor matching process...');
-          
-          const matchingResult = await matchActivityWithSponsor(
-            {
-              id: savedActivity.id,
-              stravaActivityId: savedActivity.stravaActivityId,
-              userId: savedActivity.userId,
-              athleteId: stravaAthlete.id,
-              stravaAthleteId: stravaAthlete.stravaAthleteId,
-              isPrivate: savedActivity.isPrivate,
-              name: savedActivity.name,
-              type: savedActivity.type,
-              description: activity.description,
-            },
-            accessToken
-          );
-
-          console.log(`📊 Matching result: ${matchingResult.result}`);
-          
-          if (matchingResult.success) {
-            descriptionUpdated = matchingResult.descriptionUpdated ?? false;
-            if (matchingResult.descriptionUpdateSkipped && matchingResult.message) {
-              descriptionUpdateError = formatSkippedDescriptionUpdateMessage(
-                matchingResult.message
-              );
-            }
-            console.log(`✅ Successfully matched activity with campaign ${matchingResult.campaignId}`);
-          } else {
-            // Log the reason for not matching
-            console.log(`ℹ️  Activity not matched: ${matchingResult.result} - ${matchingResult.message || matchingResult.error}`);
-            
-            // Only set error if it was an actual failure (not just a skip condition)
-            if (matchingResult.error) {
-              descriptionUpdateError = matchingResult.error;
-            }
-          }
-        } catch (error) {
-          descriptionUpdateError = error instanceof Error ? error.message : String(error);
-          console.error('❌ Error in sponsor matching:', error);
-        }
+        await processSponsorMatchingForWebhook({
+          activity: savedActivity,
+          activityDescription: activity.description,
+          accessToken,
+          stravaAthlete: {
+            id: stravaAthlete.id,
+            stravaAthleteId: stravaAthlete.stravaAthleteId,
+          },
+          webhookEventId,
+        });
 
         try {
           const activityNotificationData = await db.activity.findUnique({
@@ -498,20 +565,6 @@ export async function POST(request: NextRequest) {
           });
         } catch (error) {
           console.error(`⚠️  Slack notification failed (non-critical):`, error);
-        }
-        
-        // Mark webhook event as processed with description update status
-        if (webhookEventId) {
-          console.log(`📊 Updating webhook event status: descriptionUpdated=${descriptionUpdated}, error=${descriptionUpdateError || 'none'}`);
-          await db.stravaWebhookEvent.update({
-            where: { id: webhookEventId },
-            data: { 
-              processed: true,
-              descriptionUpdated,
-              descriptionUpdateError,
-            },
-          });
-          console.log(`✅ Webhook event ${webhookEventId} marked as processed`);
         }
       } else if (aspect_type === 'update') {
         console.log(`📝 Activity ${object_id} was updated`);
@@ -625,14 +678,17 @@ export async function POST(request: NextRequest) {
           console.error(`⚠️  GPX processing failed (non-critical):`, error);
           // Don't fail the webhook - GPX is optional
         }
-        
-        // Mark webhook event as processed
-        if (webhookEventId) {
-          await db.stravaWebhookEvent.update({
-            where: { id: webhookEventId },
-            data: { processed: true },
-          });
-        }
+
+        await processSponsorMatchingForWebhook({
+          activity: updatedActivity,
+          activityDescription: activity.description,
+          accessToken,
+          stravaAthlete: {
+            id: stravaAthlete.id,
+            stravaAthleteId: stravaAthlete.stravaAthleteId,
+          },
+          webhookEventId,
+        });
       }
     } else if (object_type === 'athlete') {
       console.log(`👤 Athlete event: ${aspect_type} for athlete ${owner_id}`);
