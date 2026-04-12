@@ -1,10 +1,14 @@
 locals {
   resolved_sources = {
     for env, source in var.sources : env => merge(source, {
-      data_region = coalesce(try(source.data_region, null), var.default_data_region)
-      team_name   = coalesce(try(source.team_name, null), var.better_stack_team_name)
+      data_region = try(source.data_region, null) != null ? source.data_region : var.default_data_region
+      team_name   = try(source.team_name, null) != null ? source.team_name : var.better_stack_team_name
     })
   }
+}
+
+provider "logtail" {
+  api_token = var.logtail_api_token
 }
 
 resource "logtail_source" "app" {

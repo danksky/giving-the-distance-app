@@ -1,4 +1,4 @@
-default_data_region = "us_east"
+default_data_region = "germany"
 
 sources = {
   preview = {

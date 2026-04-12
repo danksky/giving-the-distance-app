@@ -19,10 +19,16 @@ Terraform should authenticate to Better Stack with a management token, not a sou
 Use one of these patterns:
 
 ```bash
-export LOGTAIL_API_TOKEN="your-better-stack-telemetry-api-token"
+export TF_VAR_logtail_api_token="your-better-stack-telemetry-api-token"
 ```
 
-Or supply the provider token another way supported by your secret tooling and CI.
+Or place it in an ignored `terraform.tfvars` file:
+
+```hcl
+logtail_api_token = "your-better-stack-telemetry-api-token"
+```
+
+For CI, store it in your secret manager and expose it as `TF_VAR_logtail_api_token`.
 
 ## Important security note
 
@@ -66,3 +72,4 @@ Edit `terraform.tfvars` to change:
 - team targeting when needed
 
 The default source `platform` is `javascript`, which fits this Next.js app well.
+The default data region is `germany`, since Better Stack region availability is account-specific and this workspace currently only has `germany` enabled.

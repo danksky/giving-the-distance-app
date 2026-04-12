@@ -1,3 +1,9 @@
+variable "logtail_api_token" {
+  description = "Better Stack Telemetry API token used by Terraform to manage Better Stack resources."
+  type        = string
+  sensitive   = true
+}
+
 variable "better_stack_team_name" {
   description = "Optional Better Stack team name. Useful when authenticating Terraform with a global token."
   type        = string
@@ -8,7 +14,7 @@ variable "better_stack_team_name" {
 variable "default_data_region" {
   description = "Default Better Stack data region for created sources."
   type        = string
-  default     = "us_east"
+  default     = "germany"
 }
 
 variable "sources" {
