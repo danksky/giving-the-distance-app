@@ -7,6 +7,9 @@ import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
 import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
 import { notifyNewActivity, notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
 import { formatSkippedDescriptionUpdateMessage } from "@/lib/strava-description-updates";
+import { getLogger } from "@/lib/logger";
+
+const routeLogger = getLogger("api/strava/webhook");
 
 /**
  * Strava Webhook Endpoint
@@ -27,17 +30,26 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
-  console.log('🔍 Webhook verification request:', { mode, token, challenge });
+  routeLogger.info("Received Strava webhook verification request", {
+    challengePresent: Boolean(challenge),
+    mode,
+    tokenMatchesExpected: token === process.env.STRAVA_WEBHOOK_VERIFY_TOKEN,
+  });
 
   // Verify the token matches our configured token
   const expectedToken = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN;
   
   if (mode === 'subscribe' && token === expectedToken) {
-    console.log('✅ Webhook verification successful');
+    routeLogger.info("Strava webhook verification succeeded", {
+      mode,
+    });
     // Respond with the challenge to verify the endpoint
     return NextResponse.json({ 'hub.challenge': challenge });
   } else {
-    console.error('❌ Webhook verification failed - token mismatch');
+    routeLogger.error("Strava webhook verification failed", {
+      mode,
+      tokenMatchesExpected: token === expectedToken,
+    });
     return NextResponse.json(
       { error: 'Verification failed' },
       { status: 403 }
@@ -63,18 +75,31 @@ async function processAndStoreGPX(
 ): Promise<string | null> {
   // Skip if blob storage is not configured
   if (!isBlobStorageConfigured()) {
-    console.log('⚠️  Blob storage not configured - skipping GPX download');
+    routeLogger.warn("Blob storage not configured; skipping GPX download", {
+      activityId,
+      stravaActivityId,
+      userId,
+    });
     return null;
   }
 
   // Skip if we already have a GPX file
   if (existingGpxUrl) {
-    console.log(`✅ GPX already exists for activity ${activityId}: ${existingGpxUrl}`);
+    routeLogger.debug("GPX already exists for activity", {
+      activityId,
+      existingGpxUrl,
+      stravaActivityId,
+      userId,
+    });
     return existingGpxUrl;
   }
 
   try {
-    console.log(`🎯 Processing GPX for activity ${activityId}...`);
+    routeLogger.info("Processing GPX for activity", {
+      activityId,
+      stravaActivityId,
+      userId,
+    });
 
     // Fetch streams and generate GPX
     const gpxContent = await fetchAndGenerateGPX(
@@ -88,7 +113,12 @@ async function processAndStoreGPX(
     );
 
     if (!gpxContent) {
-      console.log(`⚠️  No GPX content generated for activity ${activityId} (likely no GPS data)`);
+      routeLogger.warn("No GPX content generated for activity", {
+        activityId,
+        reason: "likely-no-gps-data",
+        stravaActivityId,
+        userId,
+      });
       return null;
     }
 
@@ -100,14 +130,28 @@ async function processAndStoreGPX(
     );
 
     if (blobUrl) {
-      console.log(`✅ GPX stored successfully: ${blobUrl}`);
+      routeLogger.info("GPX stored successfully", {
+        activityId,
+        blobUrl,
+        stravaActivityId,
+        userId,
+      });
       return blobUrl;
     } else {
-      console.error(`❌ Failed to upload GPX to blob storage`);
+      routeLogger.error("Failed to upload GPX to blob storage", {
+        activityId,
+        stravaActivityId,
+        userId,
+      });
       return null;
     }
   } catch (error) {
-    console.error(`❌ Error processing GPX for activity ${activityId}:`, error);
+    routeLogger.error("Error processing GPX for activity", {
+      activityId,
+      error,
+      stravaActivityId,
+      userId,
+    });
     return null;
   }
 }
@@ -136,10 +180,17 @@ async function processSponsorMatchingForWebhook(params: {
     where: { activityId: activity.id },
   });
 
+  const webhookLogger = routeLogger.child({
+    activityId: activity.id,
+    stravaActivityId: activity.stravaActivityId,
+    userId: activity.userId,
+    webhookEventId,
+  });
+
   if (existingMatch) {
-    console.log(
-      `ℹ️  Skipping sponsor matching for activity ${activity.stravaActivityId} because it already has ${existingMatch.result}`
-    );
+    webhookLogger.info("Skipping sponsor matching because a match already exists", {
+      existingResult: existingMatch.result,
+    });
 
     if (webhookEventId) {
       await db.stravaWebhookEvent.update({
@@ -155,7 +206,7 @@ async function processSponsorMatchingForWebhook(params: {
   let descriptionUpdateError: string | null = null;
 
   try {
-    console.log('🎯 Starting sponsor matching process...');
+    webhookLogger.info("Starting sponsor matching for webhook activity");
 
     const matchingResult = await matchActivityWithSponsor(
       {
@@ -172,7 +223,11 @@ async function processSponsorMatchingForWebhook(params: {
       accessToken
     );
 
-    console.log(`📊 Matching result: ${matchingResult.result}`);
+    webhookLogger.info("Completed sponsor matching for webhook activity", {
+      campaignId: matchingResult.campaignId,
+      matchingResult: matchingResult.result,
+      success: matchingResult.success,
+    });
 
     if (matchingResult.success) {
       descriptionUpdated = matchingResult.descriptionUpdated ?? false;
@@ -181,13 +236,16 @@ async function processSponsorMatchingForWebhook(params: {
           matchingResult.message
         );
       }
-      console.log(
-        `✅ Successfully matched activity with campaign ${matchingResult.campaignId}`
-      );
+      webhookLogger.info("Activity matched with sponsor campaign", {
+        campaignId: matchingResult.campaignId,
+        descriptionUpdated,
+      });
     } else {
-      console.log(
-        `ℹ️  Activity not matched: ${matchingResult.result} - ${matchingResult.message || matchingResult.error}`
-      );
+      webhookLogger.info("Activity was not matched to a sponsor campaign", {
+        matchingResult: matchingResult.result,
+        message: matchingResult.message,
+        errorMessage: matchingResult.error,
+      });
 
       if (matchingResult.error) {
         descriptionUpdateError = matchingResult.error;
@@ -195,13 +253,16 @@ async function processSponsorMatchingForWebhook(params: {
     }
   } catch (error) {
     descriptionUpdateError = error instanceof Error ? error.message : String(error);
-    console.error('❌ Error in sponsor matching:', error);
+    webhookLogger.error("Error during sponsor matching", {
+      error,
+    });
   }
 
   if (webhookEventId) {
-    console.log(
-      `📊 Updating webhook event status: descriptionUpdated=${descriptionUpdated}, error=${descriptionUpdateError || 'none'}`
-    );
+    webhookLogger.info("Updating webhook event after sponsor matching", {
+      descriptionUpdated,
+      descriptionUpdateError,
+    });
     await db.stravaWebhookEvent.update({
       where: { id: webhookEventId },
       data: {
@@ -210,7 +271,7 @@ async function processSponsorMatchingForWebhook(params: {
         descriptionUpdateError,
       },
     });
-    console.log(`✅ Webhook event ${webhookEventId} marked as processed`);
+    webhookLogger.info("Webhook event marked as processed");
   }
 }
 
@@ -220,8 +281,6 @@ export async function POST(request: NextRequest) {
   
   try {
     const event = await request.json();
-    
-    console.log('📨 Received Strava webhook event:', JSON.stringify(event, null, 2));
 
     // Event structure:
     // {
@@ -244,6 +303,19 @@ export async function POST(request: NextRequest) {
       updates,
     } = event;
 
+    const eventLogger = routeLogger.child({
+      aspectType: aspect_type,
+      objectId: object_id,
+      objectType: object_type,
+      ownerId: owner_id,
+      subscriptionId: subscription_id,
+    });
+
+    eventLogger.info("Received Strava webhook event", {
+      eventTime: event_time,
+      updates,
+    });
+
     // Log the webhook event to database
     const webhookEvent = await db.stravaWebhookEvent.create({
       data: {
@@ -260,16 +332,18 @@ export async function POST(request: NextRequest) {
     });
     
     webhookEventId = webhookEvent.id;
-    console.log(`💾 Webhook event logged: ${webhookEventId}`);
+    eventLogger.info("Persisted Strava webhook event", {
+      webhookEventId,
+    });
 
     // Handle activity events
     if (object_type === 'activity') {
-      console.log(`🏃 Activity ${aspect_type} event for activity ${object_id} by athlete ${owner_id}`);
+      eventLogger.info("Handling Strava activity webhook event");
 
       // Handle delete events first - they don't need user/athlete lookup or API access
       // This is important: users who deauthorize can still trigger delete events
       if (aspect_type === 'delete') {
-        console.log(`🗑️ Activity ${object_id} was deleted`);
+        eventLogger.info("Handling Strava activity deletion");
         
         // First, get the activity details for notification
         const activity = await db.activity.findFirst({
@@ -299,7 +373,9 @@ export async function POST(request: NextRequest) {
         });
 
         if (result.count > 0) {
-          console.log(`✅ Activity ${object_id} marked as deleted (soft delete)`);
+          eventLogger.info("Soft-deleted activity after webhook", {
+            updatedCount: result.count,
+          });
           
           // Send Slack notification
           if (activity) {
@@ -312,7 +388,7 @@ export async function POST(request: NextRequest) {
             });
           }
         } else {
-          console.log(`⚠️ Activity ${object_id} not found or already deleted`);
+          eventLogger.warn("Activity not found or already deleted");
         }
         
         // Mark webhook event as processed
@@ -334,7 +410,9 @@ export async function POST(request: NextRequest) {
 
       if (!stravaAthlete) {
         const errorMessage = `No user found for Strava athlete ${owner_id}`;
-        console.warn(`⚠️ ${errorMessage}`);
+        eventLogger.warn("No user found for Strava athlete", {
+          errorMessage,
+        });
         
         // Mark webhook event as processed with error
         if (webhookEventId) {
@@ -355,7 +433,9 @@ export async function POST(request: NextRequest) {
       const accessToken = await getValidStravaToken(stravaAthlete.userId);
 
       if (!accessToken) {
-        console.error('❌ No valid Strava access token available for user');
+        eventLogger.error("No valid Strava access token available", {
+          userId: stravaAthlete.userId,
+        });
         
         // Mark webhook event as failed with error
         if (webhookEventId) {
@@ -374,7 +454,7 @@ export async function POST(request: NextRequest) {
       // Handle create and update event types
       if (aspect_type === 'create') {
         // Fetch full activity details from Strava
-        console.log(`📥 Fetching activity ${object_id} from Strava API...`);
+        eventLogger.info("Fetching created activity from Strava API");
         
         const activityResponse = await fetch(
           `https://www.strava.com/api/v3/activities/${object_id}`,
@@ -388,7 +468,10 @@ export async function POST(request: NextRequest) {
         if (!activityResponse.ok) {
           const errorText = await activityResponse.text();
           const errorMessage = `Failed to fetch activity: HTTP ${activityResponse.status} - ${errorText}`;
-          console.error(`❌ ${errorMessage}`);
+          eventLogger.error("Failed to fetch created activity from Strava API", {
+            errorMessage,
+            status: activityResponse.status,
+          });
           
           // Mark webhook event as failed
           if (webhookEventId) {
@@ -405,13 +488,20 @@ export async function POST(request: NextRequest) {
         }
 
         const activity = await activityResponse.json();
-        console.log('📊 Activity data:', JSON.stringify(activity, null, 2));
+        eventLogger.info("Fetched created activity from Strava API", {
+          activitySummary: {
+            id: activity.id,
+            name: activity.name,
+            private: activity.private,
+            type: activity.type,
+          },
+        });
 
         // Generate unique shortcode for new activities
         const shortcode = await generateUniqueShortcode();
         
         if (!shortcode) {
-          console.error('⚠️ Failed to generate unique shortcode for activity');
+          eventLogger.error("Failed to generate unique shortcode for activity");
         }
 
         // Store or update activity in database (use upsert to handle duplicates)
@@ -461,7 +551,9 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        console.log(`✅ Activity ${object_id} saved successfully`);
+        eventLogger.info("Saved activity from create webhook", {
+          activityId: savedActivity.id,
+        });
         
         // Process GPX download and storage (non-blocking - errors won't fail the webhook)
         let gpxBlobUrl: string | null = null;
@@ -485,10 +577,15 @@ export async function POST(request: NextRequest) {
               where: { id: savedActivity.id },
               data: { gpxBlobUrl },
             });
-            console.log(`✅ Activity ${object_id} updated with GPX URL`);
+            eventLogger.info("Updated activity with GPX URL", {
+              activityId: savedActivity.id,
+              gpxBlobUrl,
+            });
           }
         } catch (error) {
-          console.error(`⚠️  GPX processing failed (non-critical):`, error);
+          eventLogger.error("GPX processing failed for create webhook", {
+            error,
+          });
           // Don't fail the webhook - GPX is optional
         }
         
@@ -564,14 +661,17 @@ export async function POST(request: NextRequest) {
             charityName: latestCommitment?.charity.name ?? null,
           });
         } catch (error) {
-          console.error(`⚠️  Slack notification failed (non-critical):`, error);
+          eventLogger.error("Slack notification failed for created activity", {
+            error,
+          });
         }
       } else if (aspect_type === 'update') {
-        console.log(`📝 Activity ${object_id} was updated`);
-        console.log(`📝 Update fields:`, JSON.stringify(updates, null, 2));
+        eventLogger.info("Handling Strava activity update", {
+          updates,
+        });
         
         // Fetch updated activity data from Strava
-        console.log(`📥 Fetching updated activity ${object_id} from Strava API...`);
+        eventLogger.info("Fetching updated activity from Strava API");
         
         const activityResponse = await fetch(
           `https://www.strava.com/api/v3/activities/${object_id}`,
@@ -585,7 +685,10 @@ export async function POST(request: NextRequest) {
         if (!activityResponse.ok) {
           const errorText = await activityResponse.text();
           const errorMessage = `Failed to fetch updated activity: HTTP ${activityResponse.status} - ${errorText}`;
-          console.error(`❌ ${errorMessage}`);
+          eventLogger.error("Failed to fetch updated activity from Strava API", {
+            errorMessage,
+            status: activityResponse.status,
+          });
           
           // Mark webhook event as failed
           if (webhookEventId) {
@@ -602,7 +705,14 @@ export async function POST(request: NextRequest) {
         }
 
         const activity = await activityResponse.json();
-        console.log('📊 Updated activity data:', JSON.stringify(activity, null, 2));
+        eventLogger.info("Fetched updated activity from Strava API", {
+          activitySummary: {
+            id: activity.id,
+            name: activity.name,
+            private: activity.private,
+            type: activity.type,
+          },
+        });
 
         // Upsert activity - update if exists, create if doesn't (self-healing)
         const updatedActivity = await db.activity.upsert({
@@ -649,7 +759,9 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        console.log(`✅ Activity ${object_id} updated successfully (or created if missing)`);
+        eventLogger.info("Upserted activity from update webhook", {
+          activityId: updatedActivity.id,
+        });
 
         // Process GPX download and storage if we don't have it yet
         try {
@@ -672,10 +784,15 @@ export async function POST(request: NextRequest) {
               where: { id: updatedActivity.id },
               data: { gpxBlobUrl },
             });
-            console.log(`✅ Activity ${object_id} updated with GPX URL`);
+            eventLogger.info("Updated activity with refreshed GPX URL", {
+              activityId: updatedActivity.id,
+              gpxBlobUrl,
+            });
           }
         } catch (error) {
-          console.error(`⚠️  GPX processing failed (non-critical):`, error);
+          eventLogger.error("GPX processing failed for update webhook", {
+            error,
+          });
           // Don't fail the webhook - GPX is optional
         }
 
@@ -691,11 +808,11 @@ export async function POST(request: NextRequest) {
         });
       }
     } else if (object_type === 'athlete') {
-      console.log(`👤 Athlete event: ${aspect_type} for athlete ${owner_id}`);
+      eventLogger.info("Handling Strava athlete webhook event");
       
       if (aspect_type === 'update' && event.updates?.authorized === 'false') {
         // User deauthorized the app
-        console.log(`❌ Athlete ${owner_id} deauthorized the app`);
+        eventLogger.warn("Athlete deauthorized the app");
         
         // Get athlete details for notification before updating
         const athlete = await db.stravaAthlete.findUnique({
@@ -725,7 +842,9 @@ export async function POST(request: NextRequest) {
               userEmail: athlete.user.email,
             });
           } catch (error) {
-            console.error(`⚠️  Slack notification failed (non-critical):`, error);
+            eventLogger.error("Slack notification failed for athlete deauthorization", {
+              error,
+            });
           }
         }
       }
@@ -742,7 +861,10 @@ export async function POST(request: NextRequest) {
     // Always return 200 to acknowledge receipt
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('❌ Error processing webhook:', error);
+    routeLogger.error("Unexpected error while processing Strava webhook", {
+      error,
+      webhookEventId,
+    });
     
     // Log error to webhook event if we have an ID
     if (webhookEventId) {
@@ -754,7 +876,10 @@ export async function POST(request: NextRequest) {
           },
         });
       } catch (dbError) {
-        console.error('❌ Failed to log error to database:', dbError);
+        routeLogger.error("Failed to persist webhook processing error to database", {
+          dbError,
+          webhookEventId,
+        });
       }
     }
     

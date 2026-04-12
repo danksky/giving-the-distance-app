@@ -4,12 +4,15 @@ import { db } from "@/lib/db"
 import { authConfig } from "./auth.config"
 import { notifyNewUser, notifyStravaAuthSuccess, notifyStravaAuthFailure } from "@/lib/slack-notifications"
 import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers"
+import { getLogger } from "@/lib/logger"
 
 const hasDatabaseConfigured = Boolean(
   process.env.DATABASE_URL?.trim() ||
     process.env.POSTGRES_PRISMA_URL?.trim() ||
     process.env.POSTGRES_URL?.trim()
 )
+
+const authLogger = getLogger("auth")
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...(hasDatabaseConfigured
@@ -42,7 +45,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async signIn({ account, user }) {
       // For Strava, validate permissions before allowing sign-in
       if (account?.provider === "strava") {
-        console.log('🔍 signIn callback - validating Strava permissions')
+        authLogger.info("Validating Strava permissions during sign-in", {
+          provider: account.provider,
+          userEmail: user?.email,
+        })
         
         // Get scope from account object or from our stored callback scope
         let scope = account.scope as string | undefined
@@ -52,11 +58,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           // Import and check the stored scope
           const { getStoredCallbackScope } = await import('@/lib/custom-prisma-adapter')
           scope = getStoredCallbackScope() ?? undefined
-          console.log('🔍 Retrieved scope from storage:', scope)
+          authLogger.debug("Retrieved Strava scope from callback storage", {
+            hasScope: Boolean(scope),
+          })
         }
         
         if (!scope) {
-          console.error('❌ No scope found - cannot validate permissions')
+          authLogger.error("No Strava scope found during sign-in", {
+            userEmail: user?.email,
+          })
           const errorMsg = 'Authorization failed: No permissions received from Strava'
           
           // Send Slack notification for failed auth
@@ -73,15 +83,22 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const requiredScopes = ['activity:read_all', 'profile:read_all', 'activity:write']
         const grantedScopes = scope.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
         
-        console.log('🔍 Required scopes:', requiredScopes)
-        console.log('🔍 Granted scopes:', grantedScopes)
+        authLogger.debug("Resolved Strava scopes for sign-in", {
+          grantedScopes,
+          requiredScopes,
+          userEmail: user?.email,
+        })
         
         const missingScopes = requiredScopes.filter(
           reqScope => !grantedScopes.includes(reqScope)
         )
         
         if (missingScopes.length > 0) {
-          console.error('❌ Missing required permissions:', missingScopes)
+          authLogger.error("Missing required Strava permissions", {
+            grantedScopes,
+            missingScopes,
+            userEmail: user?.email,
+          })
           const errorMsg = `Missing required permissions: ${missingScopes.join(', ')}. Please reconnect and grant ALL requested permissions.`
           
           // Send Slack notification for failed auth
@@ -95,7 +112,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           throw new Error(errorMsg)
         }
         
-        console.log('✅ All Strava permissions validated:', grantedScopes)
+        authLogger.info("Strava permissions validated successfully", {
+          grantedScopes,
+          userEmail: user?.email,
+        })
       }
       
       return true
@@ -104,18 +124,23 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   events: {
     async createUser({ user }) {
       if (!hasDatabaseConfigured) {
-        console.warn(
-          "[auth] Database not configured; skipping createUser notification."
-        )
+        authLogger.warn("Database not configured; skipping createUser work")
         return
       }
 
-      console.log('👋 New user created:', user.email)
+      authLogger.info("New user created", {
+        userEmail: user.email,
+        userId: user.id,
+      })
 
       try {
         await ensureUserHasSelectedCharity(user.id!)
       } catch (error) {
-        console.error("⚠️  Failed to assign default charity to new user:", error)
+        authLogger.error("Failed to assign default charity to new user", {
+          error,
+          userEmail: user.email,
+          userId: user.id,
+        })
       }
       
       // Send Slack notification for new user
@@ -126,21 +151,27 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           email: user.email ?? null,
         });
       } catch (error) {
-        console.error('⚠️  Failed to send new user notification to Slack:', error);
+        authLogger.error("Failed to send new user notification to Slack", {
+          error,
+          userEmail: user.email,
+          userId: user.id,
+        });
       }
     },
     async linkAccount({ user, account }) {
       if (!hasDatabaseConfigured) {
-        console.warn(
-          "[auth] Database not configured; skipping linkAccount persistence."
-        )
+        authLogger.warn("Database not configured; skipping linkAccount persistence")
         return
       }
 
       // When Strava is linked, save athlete data
       // (Permission validation already happened in signIn callback)
       if (account.provider === "strava") {
-        console.log('💾 linkAccount event - saving athlete data')
+        authLogger.info("Persisting Strava athlete data after linkAccount", {
+          provider: account.provider,
+          userEmail: user.email,
+          userId: user.id,
+        })
         
         // Fetch and save athlete data
         if (account.access_token) {
@@ -174,7 +205,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
               scopeString = dbAccount?.scope || ''
             }
             
-            console.log('💾 Saving athlete with scope:', scopeString)
+            authLogger.debug("Saving Strava athlete data with resolved scope", {
+              hasScope: Boolean(scopeString),
+              scopeCount: scopeString
+                ? scopeString.split(",").filter((value) => value.trim().length > 0).length
+                : 0,
+              userEmail: user.email,
+              userId: user.id,
+            })
             
             await db.stravaAthlete.upsert({
               where: { userId: user.id! },
@@ -208,7 +246,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
               },
             })
             
-            console.log('✅ Strava athlete data saved successfully')
+            authLogger.info("Strava athlete data saved successfully", {
+              stravaAthleteId: athlete.id,
+              userEmail: user.email,
+              userId: user.id,
+            })
             
             // Send Slack notification for successful Strava authorization
             try {
@@ -220,10 +262,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
                 scopes,
               });
             } catch (error) {
-              console.error('⚠️  Failed to send Strava auth success notification to Slack:', error);
+              authLogger.error("Failed to send Strava auth success notification to Slack", {
+                error,
+                stravaAthleteId: athlete.id,
+                userEmail: user.email,
+                userId: user.id,
+              });
             }
           } catch (error) {
-            console.error('❌ Error saving Strava athlete data:', error)
+            authLogger.error("Error saving Strava athlete data", {
+              error,
+              userEmail: user.email,
+              userId: user.id,
+            })
             throw error // Throw to prevent incomplete connection
           }
         }

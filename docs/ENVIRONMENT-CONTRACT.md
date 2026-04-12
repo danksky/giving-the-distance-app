@@ -42,6 +42,7 @@ Optional feature flags and integrations:
 - `SLACK_CHANNEL`
 - `BLOB_READ_WRITE_TOKEN`
 - `BLOB_STORE_ID`
+- `BETTER_STACK_SOURCE_TOKEN`
 - `ENABLE_STRAVA_DESCRIPTION_UPDATES`
 - `NEXT_PUBLIC_APP_URL`
 
@@ -113,6 +114,7 @@ These settings are still controlled outside git and should be audited there:
 - Google OAuth authorized origins and redirect URIs
 - Strava app callback settings
 - Strava webhook subscriptions
+- Better Stack source-token assignment into Vercel environments
 - Vercel environment-variable assignment
 - Neon database provisioning
 

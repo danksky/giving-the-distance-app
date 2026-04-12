@@ -1,4 +1,7 @@
 import { db } from "@/lib/db";
+import { getLogger } from "@/lib/logger";
+
+const stravaTokenLogger = getLogger("strava-token-refresh");
 
 /**
  * Refresh a Strava access token if it's expired or about to expire
@@ -13,7 +16,9 @@ export async function getValidStravaToken(userId: string): Promise<string | null
   });
 
   if (!account?.refresh_token) {
-    console.error('❌ No Strava account or refresh token found for user:', userId);
+    stravaTokenLogger.error("No Strava account or refresh token found", {
+      userId,
+    });
     return null;
   }
 
@@ -23,11 +28,17 @@ export async function getValidStravaToken(userId: string): Promise<string | null
   const isExpired = expiresAt <= now + 300; // Refresh if expires within 5 minutes
 
   if (!isExpired && account.access_token) {
-    console.log('✅ Access token is still valid');
+    stravaTokenLogger.debug("Existing Strava access token is still valid", {
+      expiresAt,
+      userId,
+    });
     return account.access_token;
   }
 
-  console.log('🔄 Access token expired or expiring soon, refreshing...');
+  stravaTokenLogger.info("Refreshing Strava access token", {
+    expiresAt,
+    userId,
+  });
 
   // Refresh the token
   try {
@@ -35,12 +46,13 @@ export async function getValidStravaToken(userId: string): Promise<string | null
     const clientSecret = process.env.STRAVA_CLIENT_SECRET?.trim();
     
     // Debug logging (will mask the secret for security)
-    console.log('🔧 Using Strava credentials:', {
+    stravaTokenLogger.debug("Preparing Strava token refresh request", {
       clientId,
       clientSecretPresent: !!clientSecret,
       clientSecretLength: clientSecret?.length,
       refreshTokenPresent: !!account.refresh_token,
       refreshTokenLength: account.refresh_token?.length,
+      userId,
     });
 
     const response = await fetch('https://www.strava.com/oauth/token', {
@@ -58,7 +70,11 @@ export async function getValidStravaToken(userId: string): Promise<string | null
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Failed to refresh Strava token:', response.status, errorText);
+      stravaTokenLogger.error("Failed to refresh Strava token", {
+        errorText,
+        status: response.status,
+        userId,
+      });
       return null;
     }
 
@@ -74,10 +90,16 @@ export async function getValidStravaToken(userId: string): Promise<string | null
       },
     });
 
-    console.log('✅ Access token refreshed successfully');
+    stravaTokenLogger.info("Strava access token refreshed successfully", {
+      expiresAt: data.expires_at,
+      userId,
+    });
     return data.access_token;
   } catch (error) {
-    console.error('❌ Error refreshing Strava token:', error);
+    stravaTokenLogger.error("Unexpected error refreshing Strava token", {
+      error,
+      userId,
+    });
     return null;
   }
 }

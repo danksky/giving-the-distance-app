@@ -26,6 +26,7 @@
     "@auth/core": "^0.41.1",
     "@auth/prisma-adapter": "^2.11.1",
     "@googlemaps/js-api-loader": "^2.0.2",
+    "@logtail/node": "^0.5.8",
     "@prisma/client": "^6.19.0",
     "@vercel/blob": "^2.0.0",
     "bootstrap-icons": "^1.13.1",

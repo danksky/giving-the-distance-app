@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getLogger } from "@/lib/logger";
+
+const routeLogger = getLogger("api/strava/webhook/subscribe");
 
 /**
  * Strava Webhook Subscription Management
@@ -31,7 +34,10 @@ export async function GET() {
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('Failed to fetch subscriptions:', error);
+      routeLogger.error("Failed to fetch Strava webhook subscriptions", {
+        error,
+        status: response.status,
+      });
       return NextResponse.json(
         { error: 'Failed to fetch subscriptions', details: error },
         { status: response.status }
@@ -52,7 +58,9 @@ export async function GET() {
       database: serializedDbSubscriptions,
     });
   } catch (error) {
-    console.error('Error fetching subscriptions:', error);
+    routeLogger.error("Unexpected error fetching Strava webhook subscriptions", {
+      error,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -84,8 +92,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('📝 Creating Strava webhook subscription...');
-    console.log('Callback URL:', callbackUrl);
+    routeLogger.info("Creating Strava webhook subscription", {
+      callbackUrl,
+    });
 
     // Create subscription with Strava
     const formData = new URLSearchParams({
@@ -108,7 +117,11 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('Failed to create subscription:', error);
+      routeLogger.error("Failed to create Strava webhook subscription", {
+        callbackUrl,
+        error,
+        status: response.status,
+      });
       return NextResponse.json(
         { error: 'Failed to create subscription', details: error },
         { status: response.status }
@@ -116,7 +129,10 @@ export async function POST(request: NextRequest) {
     }
 
     const subscription = await response.json();
-    console.log('✅ Subscription created:', subscription);
+    routeLogger.info("Strava webhook subscription created", {
+      callbackUrl,
+      subscription,
+    });
 
     // Save to database
     await db.stravaWebhookSubscription.create({
@@ -132,7 +148,9 @@ export async function POST(request: NextRequest) {
       subscription,
     });
   } catch (error) {
-    console.error('Error creating subscription:', error);
+    routeLogger.error("Unexpected error creating Strava webhook subscription", {
+      error,
+    });
     return NextResponse.json(
       { error: 'Internal server error', details: String(error) },
       { status: 500 }
@@ -163,7 +181,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.log('🗑️ Deleting Strava webhook subscription:', subscriptionId);
+    routeLogger.info("Deleting Strava webhook subscription", {
+      subscriptionId,
+    });
 
     // Delete from Strava
     const response = await fetch(
@@ -175,7 +195,11 @@ export async function DELETE(request: NextRequest) {
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('Failed to delete subscription:', error);
+      routeLogger.error("Failed to delete Strava webhook subscription", {
+        error,
+        status: response.status,
+        subscriptionId,
+      });
       return NextResponse.json(
         { error: 'Failed to delete subscription', details: error },
         { status: response.status }
@@ -188,11 +212,15 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false },
     });
 
-    console.log('✅ Subscription deleted');
+    routeLogger.info("Strava webhook subscription deleted", {
+      subscriptionId,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting subscription:', error);
+    routeLogger.error("Unexpected error deleting Strava webhook subscription", {
+      error,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
