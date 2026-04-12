@@ -6,6 +6,7 @@
  */
 
 import { db } from '@/lib/db';
+import { getLogger } from '@/lib/logger';
 import { SponsorMatchResult } from '@prisma/client';
 import { ensureUserHasSelectedCharity } from '@/lib/charity-helpers';
 import {
@@ -21,12 +22,14 @@ import type { CampaignCandidate } from '@/lib/matching/types';
 // Constants
 export const COMMITMENT_AMOUNT_CENTS = 10; // $0.10
 const GTD_MARKER = '#GTD';
+const DESCRIPTION_ERROR_SNIPPET_LENGTH = 300;
 const NYC_BOUNDS = {
   minLat: 40.47,
   maxLat: 40.93,
   minLng: -74.27,
   maxLng: -73.68,
 } as const;
+const sponsorMatchingLogger = getLogger('sponsor-matching');
 
 function getActivityBaseUrl(): string {
   const configured =
@@ -102,14 +105,28 @@ export async function matchActivityWithSponsor(
   activity: ActivityData,
   accessToken: string
 ): Promise<MatchingResult> {
+  const activityLogger = sponsorMatchingLogger.child({
+    activityId: activity.id,
+    stravaActivityId: activity.stravaActivityId,
+    stravaAthleteId: activity.stravaAthleteId,
+    type: activity.type,
+    userId: activity.userId,
+  });
+
   try {
+    activityLogger.info('Starting sponsor matching evaluation', {
+      isPrivate: activity.isPrivate,
+    });
+
     // Step 1: Check if activity already has a sponsor match (idempotency)
     const existingMatch = await db.sponsorMatch.findUnique({
       where: { activityId: activity.id },
     });
 
     if (existingMatch) {
-      console.log(`✅ Activity ${activity.stravaActivityId} already has sponsor match: ${existingMatch.result}`);
+      activityLogger.info('Skipping sponsor matching because a match already exists', {
+        existingResult: existingMatch.result,
+      });
       return {
         success: false,
         result: SponsorMatchResult.SKIPPED_ALREADY_SPONSORED,
@@ -120,6 +137,7 @@ export async function matchActivityWithSponsor(
 
     // Step 2: Skip Strava-private activities in v0
     if (activity.isPrivate) {
+      activityLogger.info('Skipping sponsor matching because activity is private on Strava');
       const decision = buildDecisionMetadataV0('private_activity');
       const sponsorMatch = await db.sponsorMatch.create({
         data: {
@@ -151,6 +169,10 @@ export async function matchActivityWithSponsor(
     );
 
     if (!eligibility.eligible) {
+      activityLogger.info('Skipping sponsor matching because activity is outside eligibility bounds', {
+        locationCheck: eligibility.locationCheck,
+        reason: eligibility.reason,
+      });
       const decision = buildDecisionMetadataV0('outside_nyc', {
         locationCheck: eligibility.locationCheck,
       });
@@ -182,6 +204,7 @@ export async function matchActivityWithSponsor(
     const campaign = await findActiveCampaign();
 
     if (!campaign) {
+      activityLogger.info('Skipping sponsor matching because no active campaign is available');
       const decision = buildDecisionMetadataV0('no_active_campaign');
       // Log as SKIPPED_NO_ACTIVE_CAMPAIGN
       const sponsorMatch = await db.sponsorMatch.create({
@@ -209,6 +232,10 @@ export async function matchActivityWithSponsor(
 
     // Step 5: Check if campaign has enough budget
     if (campaign.budgetRemainingCents < COMMITMENT_AMOUNT_CENTS) {
+      activityLogger.info('Skipping sponsor matching because campaign budget is insufficient', {
+        campaignId: campaign.id,
+        campaignBudgetRemainingCents: campaign.budgetRemainingCents,
+      });
       const decision = buildDecisionMetadataV0('no_budget', {
         campaignId: campaign.id,
         campaignBudgetRemainingCents: campaign.budgetRemainingCents,
@@ -244,6 +271,9 @@ export async function matchActivityWithSponsor(
     const selectedCharity = await ensureUserHasSelectedCharity(activity.userId);
 
     if (!selectedCharity?.id) {
+      activityLogger.warn('Skipping sponsor matching because user has no selected charity', {
+        campaignId: campaign.id,
+      });
       const decision = buildDecisionMetadataV0('no_selected_charity', {
         campaignId: campaign.id,
       });
@@ -279,6 +309,11 @@ export async function matchActivityWithSponsor(
       select: { firstname: true },
     });
 
+    activityLogger.info('Selected sponsor campaign for eligible activity', {
+      campaignId: campaign.id,
+      sponsorName: campaign.sponsor.businessName,
+    });
+
     // Step 7: Update Strava activity description
     const updateResult = await updateStravaDescription(
       activity,
@@ -286,10 +321,15 @@ export async function matchActivityWithSponsor(
       accessToken,
       athlete?.firstname || null,
       selectedCharity.name || 'charity',
-      eligibility.activityData
+      eligibility.activityData,
+      activityLogger
     );
 
     if (!updateResult.success) {
+      activityLogger.error('Failed to update Strava activity description', {
+        campaignId: campaign.id,
+        errorMessage: updateResult.error,
+      });
       const decision = buildDecisionMetadataV0('update_failed', {
         campaignId: campaign.id,
       });
@@ -372,7 +412,12 @@ export async function matchActivityWithSponsor(
       return { sponsorMatch, charityCommitment };
     });
 
-    console.log(`✅ Successfully matched activity ${activity.stravaActivityId} with campaign ${campaign.id}`);
+    activityLogger.info('Successfully matched activity with sponsor campaign', {
+      campaignId: campaign.id,
+      charityCommitmentId: result.charityCommitment.id,
+      descriptionUpdated: updateResult.updated,
+      sponsorMatchId: result.sponsorMatch.id,
+    });
 
     return {
       success: true,
@@ -385,7 +430,9 @@ export async function matchActivityWithSponsor(
       descriptionUpdateSkipped: !updateResult.updated,
     };
   } catch (error) {
-    console.error('Error in sponsor matching:', error);
+    activityLogger.error('Unexpected error in sponsor matching', {
+      error,
+    });
     return {
       success: false,
       result: SponsorMatchResult.SKIPPED_UPDATE_FAILED,
@@ -427,14 +474,15 @@ async function updateStravaDescription(
   accessToken: string,
   athleteName: string | null,
   charityName: string,
-  prefetchedActivityData?: StravaActivityLocationPayload
+  prefetchedActivityData?: StravaActivityLocationPayload,
+  logger = sponsorMatchingLogger
 ): Promise<DescriptionUpdateResult> {
   try {
     if (!shouldUpdateStravaDescriptions()) {
       const reason = getStravaDescriptionSkipReason();
-      console.log(
-        `⏭️ Skipping Strava description update for activity ${activity.stravaActivityId}: ${reason}`
-      );
+      logger.info('Skipping Strava description update because environment writes are disabled', {
+        reason,
+      });
       return {
         success: true,
         updated: false,
@@ -449,7 +497,9 @@ async function updateStravaDescription(
 
     // Check if already has GTD marker (idempotency check)
     if (currentDescription.includes(GTD_MARKER)) {
-      console.log(`Activity ${activity.stravaActivityId} already has GTD marker`);
+      logger.info('Skipping Strava description update because GTD marker already exists', {
+        currentDescriptionLength: currentDescription.length,
+      });
       return {
         success: true,
         updated: false,
@@ -464,6 +514,13 @@ async function updateStravaDescription(
     const newDescription = currentDescription
       ? `${sponsorMessage}\n\n${currentDescription}`
       : sponsorMessage;
+
+    logger.debug('Sending Strava description update', {
+      campaignId: campaign.id,
+      currentDescriptionLength: currentDescription.length,
+      hadExistingDescription: currentDescription.length > 0,
+      newDescriptionLength: newDescription.length,
+    });
 
     // Update Strava activity
     const updateResponse = await fetch(
@@ -480,15 +537,27 @@ async function updateStravaDescription(
 
     if (!updateResponse.ok) {
       const errorText = await updateResponse.text();
+      logger.error('Strava activity description update request failed', {
+        campaignId: campaign.id,
+        errorTextSnippet: errorText.slice(0, DESCRIPTION_ERROR_SNIPPET_LENGTH),
+        status: updateResponse.status,
+      });
       return {
         success: false,
         error: `Failed to update description: HTTP ${updateResponse.status} - ${errorText}`,
       };
     }
 
-    console.log(`✅ Updated description for activity ${activity.stravaActivityId}`);
+    logger.info('Strava activity description update request succeeded', {
+      campaignId: campaign.id,
+      status: updateResponse.status,
+    });
     return { success: true, updated: true };
   } catch (error) {
+    logger.error('Unexpected error while updating Strava activity description', {
+      campaignId: campaign.id,
+      error,
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
