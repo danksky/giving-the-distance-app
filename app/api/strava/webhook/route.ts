@@ -7,7 +7,7 @@ import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
 import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
 import { notifyNewActivity, notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
 import { formatSkippedDescriptionUpdateMessage } from "@/lib/strava-description-updates";
-import { getLogger } from "@/lib/logger";
+import { getLogger, scheduleLogFlush } from "@/lib/logger";
 
 const routeLogger = getLogger("api/strava/webhook");
 
@@ -23,6 +23,8 @@ const routeLogger = getLogger("api/strava/webhook");
 
 // GET handler - Webhook verification
 export async function GET(request: NextRequest) {
+  scheduleLogFlush(routeLogger);
+
   const searchParams = request.nextUrl.searchParams;
   
   // Strava sends these parameters for verification
@@ -277,6 +279,8 @@ async function processSponsorMatchingForWebhook(params: {
 
 // POST handler - Webhook events
 export async function POST(request: NextRequest) {
+  scheduleLogFlush(routeLogger);
+
   let webhookEventId: string | null = null;
   
   try {

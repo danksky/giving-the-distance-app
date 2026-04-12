@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getLogger } from "@/lib/logger";
+import { getLogger, scheduleLogFlush } from "@/lib/logger";
 
 const routeLogger = getLogger("api/strava/webhook/subscribe");
 
@@ -16,6 +16,8 @@ const routeLogger = getLogger("api/strava/webhook/subscribe");
 
 // GET - View current subscriptions
 export async function GET() {
+  scheduleLogFlush(routeLogger);
+
   try {
     const clientId = process.env.STRAVA_CLIENT_ID;
     const clientSecret = process.env.STRAVA_CLIENT_SECRET;
@@ -70,6 +72,8 @@ export async function GET() {
 
 // POST - Create webhook subscription
 export async function POST(request: NextRequest) {
+  scheduleLogFlush(routeLogger);
+
   try {
     const clientId = process.env.STRAVA_CLIENT_ID;
     const clientSecret = process.env.STRAVA_CLIENT_SECRET;
@@ -160,6 +164,8 @@ export async function POST(request: NextRequest) {
 
 // DELETE - Remove webhook subscription
 export async function DELETE(request: NextRequest) {
+  scheduleLogFlush(routeLogger);
+
   try {
     const clientId = process.env.STRAVA_CLIENT_ID;
     const clientSecret = process.env.STRAVA_CLIENT_SECRET;

@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { getLogger } from "@/lib/logger";
+import { getLogger, scheduleLogFlush } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 const routeLogger = getLogger("api/activities/[id]/public");
@@ -13,6 +13,8 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  scheduleLogFlush(routeLogger);
+
   try {
     const session = await auth();
     const { id } = await context.params;
