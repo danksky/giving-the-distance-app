@@ -39,8 +39,7 @@ export async function recordStravaActivityHistory(
     }
 
     const hasDescriptionSnapshot = input.descriptionText !== undefined;
-    const normalizedDescription =
-      input.descriptionText === undefined ? null : input.descriptionText ?? "";
+    const descriptionSnapshot = input.descriptionText ?? "";
 
     await historyModel.create({
       data: {
@@ -54,15 +53,15 @@ export async function recordStravaActivityHistory(
         type: input.type ?? null,
         isPrivate: input.isPrivate ?? null,
         visibility: input.visibility ?? null,
-        descriptionText: hasDescriptionSnapshot ? normalizedDescription : null,
+        descriptionText: hasDescriptionSnapshot ? descriptionSnapshot : null,
         descriptionPresent: hasDescriptionSnapshot
-          ? normalizedDescription.length > 0
+          ? descriptionSnapshot.length > 0
           : null,
         descriptionHasGtdMarker: hasDescriptionSnapshot
-          ? normalizedDescription.includes(GTD_MARKER)
+          ? descriptionSnapshot.includes(GTD_MARKER)
           : null,
         descriptionLength: hasDescriptionSnapshot
-          ? normalizedDescription.length
+          ? descriptionSnapshot.length
           : null,
         updates: input.updates,
         metadata: input.metadata,
