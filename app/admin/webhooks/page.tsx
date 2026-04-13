@@ -55,6 +55,13 @@ export default async function WebhooksPage() {
     take: 100, // Last 100 events
   });
 
+  const historyEntries = await db.stravaActivityHistory.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 100,
+  });
+
   const stats = {
     total: events.length,
     processed: events.filter((e) => e.processed).length,
@@ -300,6 +307,104 @@ export default async function WebhooksPage() {
                       </Fragment>
                     );
                   })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className="card bg-base-100 mt-8">
+          <div className="card-body">
+            <h2 className="card-title">Activity History</h2>
+            <p className="text-sm opacity-70">
+              Timeline of webhook snapshots and app-driven description changes.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="table table-zebra">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Source</th>
+                    <th>Event</th>
+                    <th>Activity</th>
+                    <th>Visibility</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyEntries.map((entry) => (
+                    <tr key={entry.id}>
+                      <td className="text-sm">
+                        {new Date(entry.createdAt).toLocaleString()}
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            entry.source === "app"
+                              ? "badge-secondary"
+                              : "badge-info"
+                          }`}
+                        >
+                          {entry.source}
+                        </span>
+                      </td>
+                      <td className="font-mono text-xs">{entry.eventType}</td>
+                      <td>
+                        <div className="font-mono text-sm opacity-70">
+                          {entry.stravaActivityId.toString()}
+                        </div>
+                        {entry.name && (
+                          <div className="text-xs opacity-70">{entry.name}</div>
+                        )}
+                      </td>
+                      <td className="text-xs">
+                        {entry.visibility ?? "n/a"}
+                        {entry.isPrivate === null
+                          ? ""
+                          : entry.isPrivate
+                          ? " / private"
+                          : " / public"}
+                      </td>
+                      <td>
+                        <div className="flex items-start gap-2">
+                          <span
+                            className={`badge ${
+                              entry.descriptionPresent
+                                ? "badge-success"
+                                : entry.descriptionPresent === false
+                                ? "badge-ghost"
+                                : "badge-warning"
+                            }`}
+                          >
+                            {entry.descriptionPresent === null
+                              ? "No Snapshot"
+                              : entry.descriptionPresent
+                              ? "Present"
+                              : "Empty"}
+                          </span>
+                          {entry.descriptionHasGtdMarker && (
+                            <span className="badge badge-info">#GTD</span>
+                          )}
+                          <div
+                            className="max-w-md text-xs opacity-70 line-clamp-2"
+                            title={entry.descriptionText ?? undefined}
+                          >
+                            {entry.descriptionText ||
+                              (entry.descriptionPresent === false
+                                ? "Description is empty"
+                                : "No description snapshot captured")}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {historyEntries.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center opacity-60">
+                        No activity history recorded yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

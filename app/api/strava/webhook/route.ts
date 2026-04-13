@@ -7,6 +7,7 @@ import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
 import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
 import { notifyNewActivity, notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
 import { formatSkippedDescriptionUpdateMessage } from "@/lib/strava-description-updates";
+import { recordStravaActivityHistory } from "@/lib/strava-activity-history";
 import { getLogger, scheduleLogFlush } from "@/lib/logger";
 
 const routeLogger = getLogger("api/strava/webhook");
@@ -380,6 +381,19 @@ export async function POST(request: NextRequest) {
           eventLogger.info("Soft-deleted activity after webhook", {
             updatedCount: result.count,
           });
+
+          await recordStravaActivityHistory({
+            activityId: activity?.id ?? null,
+            stravaActivityId: BigInt(object_id),
+            webhookEventId,
+            source: "strava_webhook",
+            eventType: "activity_deleted",
+            aspectType: aspect_type,
+            metadata: {
+              deletedAt: new Date().toISOString(),
+              updatedCount: result.count,
+            },
+          });
           
           // Send Slack notification
           if (activity) {
@@ -557,6 +571,24 @@ export async function POST(request: NextRequest) {
 
         eventLogger.info("Saved activity from create webhook", {
           activityId: savedActivity.id,
+        });
+
+        await recordStravaActivityHistory({
+          activityId: savedActivity.id,
+          stravaActivityId: savedActivity.stravaActivityId,
+          webhookEventId,
+          source: "strava_webhook",
+          eventType: "activity_snapshot",
+          aspectType: aspect_type,
+          name: activity.name,
+          type: activity.type,
+          isPrivate: activity.private || false,
+          visibility: activity.visibility ?? null,
+          descriptionText: activity.description ?? "",
+          updates,
+          metadata: {
+            sourceState: "fetched_after_create_webhook",
+          },
         });
         
         // Process GPX download and storage (non-blocking - errors won't fail the webhook)
@@ -765,6 +797,24 @@ export async function POST(request: NextRequest) {
 
         eventLogger.info("Upserted activity from update webhook", {
           activityId: updatedActivity.id,
+        });
+
+        await recordStravaActivityHistory({
+          activityId: updatedActivity.id,
+          stravaActivityId: updatedActivity.stravaActivityId,
+          webhookEventId,
+          source: "strava_webhook",
+          eventType: "activity_snapshot",
+          aspectType: aspect_type,
+          name: activity.name,
+          type: activity.type,
+          isPrivate: activity.private || false,
+          visibility: activity.visibility ?? null,
+          descriptionText: activity.description ?? "",
+          updates,
+          metadata: {
+            sourceState: "fetched_after_update_webhook",
+          },
         });
 
         // Process GPX download and storage if we don't have it yet

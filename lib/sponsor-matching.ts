@@ -6,6 +6,7 @@
  */
 
 import { db } from '@/lib/db';
+import { recordStravaActivityHistory } from '@/lib/strava-activity-history';
 import { getLogger } from '@/lib/logger';
 import { SponsorMatchResult } from '@prisma/client';
 import { ensureUserHasSelectedCharity } from '@/lib/charity-helpers';
@@ -477,11 +478,26 @@ async function updateStravaDescription(
   prefetchedActivityData?: StravaActivityLocationPayload,
   logger = sponsorMatchingLogger
 ): Promise<DescriptionUpdateResult> {
+  let currentDescription: string | null | undefined;
+  let newDescription: string | undefined;
+
   try {
     if (!shouldUpdateStravaDescriptions()) {
       const reason = getStravaDescriptionSkipReason();
       logger.info('Skipping Strava description update because environment writes are disabled', {
         reason,
+      });
+      await recordStravaActivityHistory({
+        activityId: activity.id,
+        stravaActivityId: activity.stravaActivityId,
+        source: 'app',
+        eventType: 'description_update_skipped',
+        descriptionText: null,
+        metadata: {
+          campaignId: campaign.id,
+          reason,
+          skipReason: 'environment_disabled',
+        },
       });
       return {
         success: true,
@@ -493,12 +509,23 @@ async function updateStravaDescription(
     const activityData =
       prefetchedActivityData ||
       (await fetchStravaActivityDetails(activity.stravaActivityId, accessToken));
-    const currentDescription = activityData.description || '';
+    currentDescription = activityData.description || '';
 
     // Check if already has GTD marker (idempotency check)
     if (currentDescription.includes(GTD_MARKER)) {
       logger.info('Skipping Strava description update because GTD marker already exists', {
         currentDescriptionLength: currentDescription.length,
+      });
+      await recordStravaActivityHistory({
+        activityId: activity.id,
+        stravaActivityId: activity.stravaActivityId,
+        source: 'app',
+        eventType: 'description_update_skipped',
+        descriptionText: currentDescription,
+        metadata: {
+          campaignId: campaign.id,
+          skipReason: 'gtd_marker_already_present',
+        },
       });
       return {
         success: true,
@@ -511,7 +538,7 @@ async function updateStravaDescription(
     const sponsorMessage = await buildSponsorMessage(activity, campaign, athleteName, charityName);
 
     // Prepend sponsor message so GTD context appears first
-    const newDescription = currentDescription
+    newDescription = currentDescription
       ? `${sponsorMessage}\n\n${currentDescription}`
       : sponsorMessage;
 
@@ -542,6 +569,19 @@ async function updateStravaDescription(
         errorTextSnippet: errorText.slice(0, DESCRIPTION_ERROR_SNIPPET_LENGTH),
         status: updateResponse.status,
       });
+      await recordStravaActivityHistory({
+        activityId: activity.id,
+        stravaActivityId: activity.stravaActivityId,
+        source: 'app',
+        eventType: 'description_update_failed',
+        descriptionText: currentDescription,
+        metadata: {
+          campaignId: campaign.id,
+          errorTextSnippet: errorText.slice(0, DESCRIPTION_ERROR_SNIPPET_LENGTH),
+          status: updateResponse.status,
+          targetDescriptionLength: newDescription.length,
+        },
+      });
       return {
         success: false,
         error: `Failed to update description: HTTP ${updateResponse.status} - ${errorText}`,
@@ -552,11 +592,35 @@ async function updateStravaDescription(
       campaignId: campaign.id,
       status: updateResponse.status,
     });
+    await recordStravaActivityHistory({
+      activityId: activity.id,
+      stravaActivityId: activity.stravaActivityId,
+      source: 'app',
+      eventType: 'description_update_succeeded',
+      descriptionText: newDescription,
+      metadata: {
+        campaignId: campaign.id,
+        previousDescriptionLength: currentDescription.length,
+        status: updateResponse.status,
+      },
+    });
     return { success: true, updated: true };
   } catch (error) {
     logger.error('Unexpected error while updating Strava activity description', {
       campaignId: campaign.id,
       error,
+    });
+    await recordStravaActivityHistory({
+      activityId: activity.id,
+      stravaActivityId: activity.stravaActivityId,
+      source: 'app',
+      eventType: 'description_update_failed',
+      descriptionText: currentDescription,
+      metadata: {
+        campaignId: campaign.id,
+        error: error instanceof Error ? error.message : String(error),
+        targetDescriptionLength: newDescription?.length ?? null,
+      },
     });
     return {
       success: false,
