@@ -55,12 +55,39 @@ export default async function WebhooksPage() {
     take: 100, // Last 100 events
   });
 
-  const historyEntries = await db.stravaActivityHistory.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 100,
-  });
+  const historyModel = (
+    db as typeof db & {
+      stravaActivityHistory?: {
+        findMany: (args: {
+          orderBy: { createdAt: "desc" };
+          take: number;
+        }) => Promise<
+          Array<{
+            id: string;
+            createdAt: Date;
+            descriptionHasGtdMarker: boolean | null;
+            descriptionPresent: boolean | null;
+            descriptionText: string | null;
+            eventType: string;
+            isPrivate: boolean | null;
+            name: string | null;
+            source: string;
+            stravaActivityId: bigint;
+            visibility: string | null;
+          }>
+        >;
+      };
+    }
+  ).stravaActivityHistory;
+
+  const historyEntries = historyModel
+    ? await historyModel.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 100,
+      })
+    : [];
 
   const stats = {
     total: events.length,
@@ -319,6 +346,12 @@ export default async function WebhooksPage() {
             <p className="text-sm opacity-70">
               Timeline of webhook snapshots and app-driven description changes.
             </p>
+            {!historyModel && (
+              <div className="alert alert-warning text-sm">
+                Activity history is not available in this runtime yet. Regenerate
+                Prisma Client and restart the app server.
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="table table-zebra">
                 <thead>
