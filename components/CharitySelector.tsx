@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CharityLogo from "@/components/CharityLogo";
+import { searchCharities } from "@/lib/charity-search";
 
 interface Charity {
   id: string;
@@ -58,16 +59,7 @@ export default function CharitySelector({
     }
   };
 
-  // Filter charities based on search query
-  const filteredCharities = charities.filter((charity) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      charity.name.toLowerCase().includes(query) ||
-      charity.fullName.toLowerCase().includes(query) ||
-      charity.description.toLowerCase().includes(query) ||
-      charity.category.toLowerCase().includes(query)
-    );
-  });
+  const filteredCharities = searchCharities(charities, searchQuery);
 
   const totalPages = Math.max(
     1,
