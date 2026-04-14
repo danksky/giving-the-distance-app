@@ -117,6 +117,15 @@ export default async function CharitySettingsPage() {
                 </div>
               </div>
             </div>
+
+            <div className="mt-4">
+              <a
+                href="#available-charities"
+                className="btn btn-outline btn-primary"
+              >
+                Change Selected Charity
+              </a>
+            </div>
           </div>
         </div>
 
@@ -146,7 +155,10 @@ export default async function CharitySettingsPage() {
         </div>
 
         {/* Available Charities */}
-        <div className="card bg-base-100">
+        <div
+          id="available-charities"
+          className="card bg-base-100 scroll-mt-24"
+        >
           <div className="card-body">
             <h3 className="card-title mb-4">Available Charities</h3>
             <p className="text-sm text-base-content/60 mb-6">

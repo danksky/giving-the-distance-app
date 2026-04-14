@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CharityLogo from "@/components/CharityLogo";
@@ -26,9 +26,11 @@ export default function CharitySelector({
   charities,
   currentCharityId,
 }: CharitySelectorProps) {
+  const charitiesPerPage = 5;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCharityId, setSelectedCharityId] = useState(currentCharityId);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
   const handleSelectCharity = async (charityId: string) => {
@@ -67,6 +69,22 @@ export default function CharitySelector({
     );
   });
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredCharities.length / charitiesPerPage)
+  );
+  const startIndex = (currentPage - 1) * charitiesPerPage;
+  const paginatedCharities = filteredCharities.slice(
+    startIndex,
+    startIndex + charitiesPerPage
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   return (
     <div>
       {/* Search Input */}
@@ -91,14 +109,20 @@ export default function CharitySelector({
           <input
             type="text"
             placeholder="Search charities by name, category, or description..."
-            className="input input-bordered w-full pl-12 pr-12"
+            className="input input-bordered w-full border border-base-300 bg-base-100 pl-12 pr-12 shadow-sm"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
           />
           {searchQuery && (
             <button
               className="absolute inset-y-0 right-0 flex items-center pr-3 text-base-content/40 hover:text-base-content"
-              onClick={() => setSearchQuery("")}
+              onClick={() => {
+                setSearchQuery("");
+                setCurrentPage(1);
+              }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -126,6 +150,14 @@ export default function CharitySelector({
           : `Found ${filteredCharities.length} of ${charities.length} charities`}
       </div>
 
+      {filteredCharities.length > 0 && (
+        <div className="text-sm text-base-content/60 mb-4">
+          Showing {startIndex + 1}-
+          {Math.min(startIndex + paginatedCharities.length, filteredCharities.length)}{" "}
+          of {filteredCharities.length}
+        </div>
+      )}
+
       {/* Charity List */}
       <div className="space-y-4">
         {filteredCharities.length === 0 ? (
@@ -136,7 +168,7 @@ export default function CharitySelector({
             </div>
           </div>
         ) : (
-          filteredCharities.map((charity) => {
+          paginatedCharities.map((charity) => {
             const isSelected = charity.id === selectedCharityId;
 
             return (
@@ -303,6 +335,46 @@ export default function CharitySelector({
           })
         )}
       </div>
+
+      {filteredCharities.length > charitiesPerPage && (
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-base-content/60">
+            Page {currentPage} of {totalPages}
+          </div>
+          <div className="join self-start sm:self-auto">
+            <button
+              className="btn btn-sm join-item"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, index) => {
+              const page = index + 1;
+              return (
+                <button
+                  key={page}
+                  className={`btn btn-sm join-item ${
+                    currentPage === page ? "btn-primary" : "btn-ghost"
+                  }`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              );
+            })}
+            <button
+              className="btn btn-sm join-item"
+              onClick={() =>
+                setCurrentPage((page) => Math.min(totalPages, page + 1))
+              }
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
