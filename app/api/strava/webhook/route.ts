@@ -5,9 +5,10 @@ import { matchActivityWithSponsor } from "@/lib/sponsor-matching";
 import { generateUniqueShortcode } from "@/lib/shortcode";
 import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
 import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
-import { notifyNewActivity, notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
+import { notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
 import { formatSkippedDescriptionUpdateMessage } from "@/lib/strava-description-updates";
 import { recordStravaActivityHistory } from "@/lib/strava-activity-history";
+import { sendNewActivitySlackNotificationOnce } from "@/lib/activity-notifications";
 import { getLogger, scheduleLogFlush } from "@/lib/logger";
 
 const routeLogger = getLogger("api/strava/webhook");
@@ -637,64 +638,10 @@ export async function POST(request: NextRequest) {
         });
 
         try {
-          const activityNotificationData = await db.activity.findUnique({
-            where: { id: savedActivity.id },
-            select: {
-              id: true,
-              charityCommitments: {
-                orderBy: { createdAt: "desc" },
-                take: 1,
-                select: {
-                  charity: {
-                    select: {
-                      name: true,
-                    },
-                  },
-                  campaign: {
-                    select: {
-                      sponsor: {
-                        select: {
-                          businessName: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              sponsorMatches: {
-                orderBy: { createdAt: "desc" },
-                take: 1,
-                select: {
-                  campaign: {
-                    select: {
-                      sponsor: {
-                        select: {
-                          businessName: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          });
-
-          const latestCommitment = activityNotificationData?.charityCommitments[0];
-          const latestSponsorMatch = activityNotificationData?.sponsorMatches[0];
-
-          await notifyNewActivity({
-            id: savedActivity.id,
-            stravaActivityId: savedActivity.stravaActivityId,
-            name: savedActivity.name,
-            type: savedActivity.type,
-            distanceMeters: savedActivity.distanceMeters?.toNumber() ?? null,
+          await sendNewActivitySlackNotificationOnce({
+            activityId: savedActivity.id,
             userName: stravaAthlete.user.name ?? undefined,
             userEmail: stravaAthlete.user.email ?? undefined,
-            sponsorName:
-              latestCommitment?.campaign.sponsor.businessName ??
-              latestSponsorMatch?.campaign?.sponsor.businessName ??
-              null,
-            charityName: latestCommitment?.charity.name ?? null,
           });
         } catch (error) {
           eventLogger.error("Slack notification failed for created activity", {
@@ -860,6 +807,18 @@ export async function POST(request: NextRequest) {
           },
           webhookEventId,
         });
+
+        try {
+          await sendNewActivitySlackNotificationOnce({
+            activityId: updatedActivity.id,
+            userName: stravaAthlete.user.name ?? undefined,
+            userEmail: stravaAthlete.user.email ?? undefined,
+          });
+        } catch (error) {
+          eventLogger.error("Slack notification failed for updated activity", {
+            error,
+          });
+        }
       }
     } else if (object_type === 'athlete') {
       eventLogger.info("Handling Strava athlete webhook event");

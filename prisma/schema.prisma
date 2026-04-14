@@ -123,6 +123,7 @@ model Activity {
   sponsorMatches     SponsorMatch[]
   charityCommitments CharityCommitment[]
   historyEntries     StravaActivityHistory[]
+  notifications      ActivityNotification[]
 
   @@index([userId])
   @@index([startDate(sort: Desc)])
@@ -130,6 +131,25 @@ model Activity {
   @@index([deletedAt]) // Index for filtering deleted activities
   @@index([shortcode]) // Index for shortcode lookups
   @@map("activities")
+}
+
+model ActivityNotification {
+  id         String   @id @default(cuid())
+  activityId String
+  type       String
+  status     String   @default("PENDING")
+  sentAt     DateTime?
+  lastError  String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, type])
+  @@index([activityId])
+  @@index([type])
+  @@index([status])
+  @@map("activity_notifications")
 }
 
 model StravaWebhookSubscription {
