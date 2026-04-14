@@ -4,6 +4,29 @@ import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import Navbar from "@/components/Navbar";
+import RaisedOverTimeChart from "@/components/RaisedOverTimeChart";
+
+function getLastFourMonths() {
+  const months: { key: string; label: string; shortLabel: string; date: Date }[] = [];
+  const now = new Date();
+
+  for (let offset = 3; offset >= 0; offset -= 1) {
+    const date = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+    months.push({
+      key: `${date.getFullYear()}-${date.getMonth()}`,
+      label: date.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      }),
+      shortLabel: date.toLocaleDateString("en-US", {
+        month: "short",
+      }),
+      date,
+    });
+  }
+
+  return months;
+}
 
 export default async function DashboardPage({
   searchParams,
@@ -76,6 +99,44 @@ export default async function DashboardPage({
       })
     : null;
   const totalRaised = (totalRaisedAggregate?._sum.amountCents ?? 0) / 100;
+  const monthlyCommitments = user
+    ? await db.charityCommitment.findMany({
+        where: {
+          userId: user.id,
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth() - 3, 1),
+          },
+        },
+        select: {
+          amountCents: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+      })
+    : [];
+  const lastFourMonths = getLastFourMonths();
+  const monthlyRaisedMap = new Map(
+    lastFourMonths.map((month) => [month.key, 0] as const)
+  );
+
+  monthlyCommitments.forEach((commitment) => {
+    const createdAt = new Date(commitment.createdAt);
+    const key = `${createdAt.getFullYear()}-${createdAt.getMonth()}`;
+
+    if (monthlyRaisedMap.has(key)) {
+      monthlyRaisedMap.set(
+        key,
+        (monthlyRaisedMap.get(key) ?? 0) + commitment.amountCents / 100
+      );
+    }
+  });
+
+  const monthlyRaised = lastFourMonths.map((month) => ({
+    ...month,
+    amount: monthlyRaisedMap.get(month.key) ?? 0,
+  }));
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -197,6 +258,17 @@ export default async function DashboardPage({
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="card bg-base-100">
+              <div className="card-body">
+                <h3 className="card-title">Raised Over Time</h3>
+                <p className="text-sm text-base-content/70">
+                  Your last four months of fundraising activity.
+                </p>
+
+                <RaisedOverTimeChart data={monthlyRaised} />
               </div>
             </div>
 
