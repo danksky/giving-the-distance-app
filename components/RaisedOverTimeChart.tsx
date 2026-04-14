@@ -62,7 +62,14 @@ export default function RaisedOverTimeChart({
 
           <Tooltip
             cursor={{ stroke: "rgba(139, 74, 204, 0.12)", strokeWidth: 2 }}
-            formatter={(value: number) => [`$${value.toFixed(2)}`, "Raised"]}
+            formatter={(value) => {
+              const numericValue =
+                typeof value === "number"
+                  ? value
+                  : Number.parseFloat(String(value ?? 0));
+
+              return [`$${numericValue.toFixed(2)}`, "Raised"];
+            }}
             labelFormatter={(label) => `${label}`}
             contentStyle={{
               borderRadius: "0.75rem",

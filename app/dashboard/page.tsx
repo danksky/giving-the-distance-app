@@ -117,8 +117,8 @@ export default async function DashboardPage({
       })
     : [];
   const lastFourMonths = getLastFourMonths();
-  const monthlyRaisedMap = new Map(
-    lastFourMonths.map((month) => [month.key, 0] as const)
+  const monthlyRaisedMap = new Map<string, number>(
+    lastFourMonths.map((month) => [month.key, 0])
   );
 
   monthlyCommitments.forEach((commitment) => {
