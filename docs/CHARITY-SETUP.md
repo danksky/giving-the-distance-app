@@ -33,7 +33,7 @@ This will:
 npm run db:seed
 ```
 
-This will populate the `charities` table with 10 highly-rated organizations:
+This will populate the `charities` table with the full curated roster from `data/charities.json` (currently 32 organizations), including:
 - UNICEF (default)
 - Doctors Without Borders
 - American Red Cross
@@ -44,6 +44,16 @@ This will populate the `charities` table with 10 highly-rated organizations:
 - Save the Children
 - DAV (Disabled American Veterans)
 - ASPCA
+- Feeding America
+- Direct Relief
+- charity: water
+- Habitat for Humanity
+- Meals on Wheels America
+- Best Friends Animal Society
+- World Central Kitchen
+- The Trevor Project
+- Khan Academy
+- Girls Who Code
 
 ### 4. Verify in Prisma Studio
 
@@ -52,7 +62,7 @@ npm run db:studio
 ```
 
 Check that:
-- The `charities` table has 10 records
+- The `charities` table has 32 records
 - UNICEF has `isDefault: true`
 - Users can be linked to charities via `selectedCharityId`
 
