@@ -277,34 +277,39 @@ export default function CharitySelector({
                         {charity.description}
                       </p>
 
-                      <div className="flex items-center gap-2 sm:gap-4 flex-wrap text-xs sm:text-sm">
-                        <div className="badge badge-outline badge-sm">
-                          {charity.category}
-                        </div>
-                        {charity.charityNavigatorScore > 0 && (
-                          <div className="flex items-center gap-1">
-                            <span className="font-semibold">
-                              Charity Navigator:
-                            </span>
-                            <span className="text-success font-bold">
-                              {charity.charityNavigatorScore}%
-                            </span>
+                      <div className="mt-1 space-y-3 text-xs sm:text-sm">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                          <div className="badge badge-outline badge-sm">
+                            {charity.category}
                           </div>
-                        )}
-                        <Link
-                          href={charity.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="link link-primary"
-                        >
-                          Visit Website →
-                        </Link>
-                        <Link
-                          href={`/charities/${charity.id}`}
-                          className="link link-hover"
-                        >
-                          View Impact →
-                        </Link>
+                          {charity.charityNavigatorScore > 0 && (
+                            <div className="inline-flex items-center gap-1 rounded-full bg-base-200 px-3 py-1 font-medium">
+                              <span className="text-base-content/70">
+                                Charity Navigator
+                              </span>
+                              <span className="text-success font-bold">
+                                {charity.charityNavigatorScore}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                          <Link
+                            href={charity.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="link link-primary"
+                          >
+                            Visit Website →
+                          </Link>
+                          <Link
+                            href={`/charities/${charity.id}`}
+                            className="link link-hover"
+                          >
+                            View Impact →
+                          </Link>
+                        </div>
                       </div>
                     </div>
 
