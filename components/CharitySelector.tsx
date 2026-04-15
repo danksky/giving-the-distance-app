@@ -353,6 +353,9 @@ export default function CharitySelector({
                     <div className="flex-1 min-w-0 w-full sm:w-auto">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="min-w-0">
+                          <h3 className="hidden sm:block text-xl font-bold text-base-content mb-1">
+                            {charity.name}
+                          </h3>
                           <div className="text-sm font-semibold text-base-content/70">
                             {charity.fullName}
                           </div>
