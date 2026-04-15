@@ -183,8 +183,8 @@ export default async function ActivitiesPage({
               pagination.
             </p>
           </div>
-          <Link href="/dashboard" className="btn btn-ghost btn-sm w-fit">
-            Back to dashboard
+          <Link href="/dashboard" className="btn btn-outline btn-sm w-fit">
+            ← Back to Dashboard
           </Link>
         </div>
 
