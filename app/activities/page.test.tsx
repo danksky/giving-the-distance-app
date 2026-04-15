@@ -129,14 +129,22 @@ describe("ActivitiesPage", () => {
     );
 
     expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
-      "href",
-      "/activities?page=1&sort=date&dir=desc"
-    );
-    expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
-      "href",
-      "/activities?page=3&sort=date&dir=desc"
-    );
+    expect(
+      screen
+        .getAllByRole("link", { name: "Previous" })
+        .every(
+          (link) =>
+            link.getAttribute("href") === "/activities?page=1&sort=date&dir=desc"
+        )
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole("link", { name: "Next" })
+        .every(
+          (link) =>
+            link.getAttribute("href") === "/activities?page=3&sort=date&dir=desc"
+        )
+    ).toBe(true);
   });
 
   it("preserves the selected type filter in sort links", async () => {

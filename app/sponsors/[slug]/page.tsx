@@ -5,6 +5,7 @@ import path from "path";
 import { db } from "@/lib/db";
 import { anonymizeName } from "@/lib/activity-privacy";
 import LightboxImage from "@/components/LightboxImage";
+import LocationPin from "@/components/LocationPin";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
 import type { Metadata } from "next";
@@ -264,8 +265,9 @@ export default async function SponsorProfilePage({
                   DONOR
                 </span>
               </div>
-              <p className="font-medium">
-                📍 {businessInfo.address.fullAddress}
+              <p className="font-medium inline-flex items-center gap-2">
+                <LocationPin className="w-5 h-5 text-[#8B4ACC]" />
+                <span>{businessInfo.address.fullAddress}</span>
               </p>
             </div>
           </div>

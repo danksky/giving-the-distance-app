@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import CharityLogo from "@/components/CharityLogo";
+import LocationPin from "@/components/LocationPin";
 import SponsorContactForm from "@/components/SponsorContactForm";
 import type { Metadata } from "next";
 
@@ -232,7 +233,10 @@ async function PreviewContent({
                   DONOR
                 </span>
               </div>
-              <p className="font-medium">📍 {businessLocation}</p>
+              <p className="font-medium inline-flex items-center gap-2">
+                <LocationPin className="w-5 h-5 text-[#8B4ACC]" />
+                <span>{businessLocation}</span>
+              </p>
             </div>
           </div>
 
