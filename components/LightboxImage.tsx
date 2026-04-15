@@ -37,6 +37,7 @@ export default function LightboxImage({
 }: Props) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const titleId = toDomId(`${src}-${alt}`);
+  const closeDialog = () => dialogRef.current?.close();
 
   return (
     <>
@@ -67,29 +68,42 @@ export default function LightboxImage({
         )}
       </button>
 
-      <dialog ref={dialogRef} className="modal" aria-labelledby={titleId}>
-        <div className="modal-box max-w-5xl p-2">
-          <div className="flex items-start justify-between gap-4 px-2 pt-2">
-            <h3 id={titleId} className="font-semibold">
+      <dialog
+        ref={dialogRef}
+        className="lightbox-dialog fixed inset-0 m-0 h-screen max-h-none w-screen max-w-none overflow-y-auto bg-transparent p-4 md:p-6"
+        aria-labelledby={titleId}
+      >
+        <button
+          type="button"
+          aria-label="Close backdrop"
+          className="fixed inset-0 z-0 bg-gray-900/55 backdrop-blur-[2px]"
+          onClick={closeDialog}
+        />
+
+        <div className="relative z-10 w-fit max-w-[min(92vw,1100px)]">
+          <div className="relative inline-block overflow-hidden rounded-2xl">
+            <h3 id={titleId} className="sr-only">
               {alt}
             </h3>
-            <form method="dialog">
-              <button className="btn btn-sm" aria-label="Close">
-                Close
-              </button>
-            </form>
-          </div>
 
-          <div className="p-2">
-            {/* Use a plain img to guarantee full-size rendering. */}
-            <img src={src} alt={alt} className="w-full h-auto rounded" />
+          <button
+            type="button"
+            className="btn btn-sm btn-circle absolute right-3 top-3 z-20 border-white bg-white text-base-content shadow-md hover:bg-base-100"
+            aria-label="Close"
+            onClick={closeDialog}
+          >
+            ✕
+          </button>
+
+          {/* Use a plain img to guarantee full-size rendering. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            className="block max-h-[85vh] max-w-full w-auto h-auto rounded-2xl object-contain shadow-2xl"
+          />
           </div>
         </div>
-
-        {/* Clicking the backdrop closes the modal */}
-        <form method="dialog" className="modal-backdrop">
-          <button aria-label="Close backdrop">close</button>
-        </form>
       </dialog>
     </>
   );

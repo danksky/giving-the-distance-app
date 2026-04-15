@@ -277,7 +277,7 @@ export default async function SponsorProfilePage({
           {/* Map + Photos Grid */}
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {/* Map */}
-            <div className="w-full h-64 md:h-72 rounded overflow-hidden bg-base-200">
+            <div className="w-full h-80 md:h-[26rem] rounded overflow-hidden bg-base-200">
               <iframe
                 width="100%"
                 height="100%"
@@ -293,11 +293,11 @@ export default async function SponsorProfilePage({
             {(businessInfo.images.staff ||
               (businessInfo.images.products &&
                 businessInfo.images.products.length > 0)) && (
-              <div className="grid grid-cols-2 grid-rows-3 gap-2 h-64 md:h-72">
+              <div className="grid grid-cols-2 grid-rows-3 gap-2 h-80 md:h-[26rem]">
                 {businessInfo.images.staff && (
                   <LightboxImage
                     src={businessInfo.images.staff}
-                    alt={`${businessInfo.businessName} staff`}
+                    alt={businessInfo.businessName}
                     containerClassName="relative col-span-2 row-span-2 bg-base-200 rounded-lg overflow-hidden cursor-pointer"
                     imageClassName="object-cover"
                     sizes="(max-width: 768px) 100vw, 600px"
@@ -307,13 +307,11 @@ export default async function SponsorProfilePage({
                 {businessInfo.images.products &&
                   businessInfo.images.products
                     .slice(0, 4)
-                    .map((product, index) => (
+                    .map((product) => (
                       <LightboxImage
                         key={product}
                         src={product}
-                        alt={`${businessInfo.businessName} product ${
-                          index + 1
-                        }`}
+                        alt={businessInfo.businessName}
                         containerClassName="relative bg-base-200 rounded-lg overflow-hidden cursor-pointer"
                         imageClassName="object-cover"
                         sizes="(max-width: 768px) 50vw, 300px"
@@ -337,6 +335,7 @@ export default async function SponsorProfilePage({
                 rel="noopener noreferrer"
                 className="btn btn-outline btn-sm"
               >
+                <i className="bi bi-globe2 text-base-content/60" aria-hidden="true" />
                 Website
               </Link>
             )}
@@ -347,6 +346,10 @@ export default async function SponsorProfilePage({
                 rel="noopener noreferrer"
                 className="btn btn-outline btn-sm"
               >
+                <i
+                  className="bi bi-instagram text-base-content/60"
+                  aria-hidden="true"
+                />
                 Instagram
               </Link>
             )}
