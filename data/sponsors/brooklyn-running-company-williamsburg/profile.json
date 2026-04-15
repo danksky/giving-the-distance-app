@@ -1,0 +1,35 @@
+{
+  "id": "brooklyn-running-company-williamsburg",
+  "businessName": "Brooklyn Running Company Williamsburg",
+  "address": {
+    "street": "222 Grand Street",
+    "city": "Brooklyn",
+    "state": "NY",
+    "zipCode": "11211",
+    "fullAddress": "222 Grand Street, Brooklyn, NY 11211"
+  },
+  "map": {
+    "embedUrl": "https://www.google.com/maps?q=222+Grand+Street,+Brooklyn,+NY+11211&output=embed"
+  },
+  "blurb": "A Williamsburg running shop helping Brooklyn runners get fitted, find community, and stay moving with gear chosen by runners for runners.",
+  "links": {
+    "instagram": "https://www.instagram.com/brooklynrunningco",
+    "website": "https://www.brooklynrunningco.com/"
+  },
+  "images": {
+    "logo": "/sponsors/brooklyn-running-company-williamsburg/logo-circle.png",
+    "cover": "/sponsors/brooklyn-running-company-williamsburg/cover-williamsburg.png",
+    "staff": "/sponsors/brooklyn-running-company-williamsburg/staff.jpg",
+    "products": [
+      "/sponsors/brooklyn-running-company-williamsburg/product2.png",
+      "/sponsors/brooklyn-running-company-williamsburg/product3.png"
+    ]
+  },
+  "impact": {
+    "totalDonated": 0,
+    "activitiesSponsored": 0,
+    "athletesSupported": 0,
+    "charities": []
+  },
+  "recentActivities": []
+}
