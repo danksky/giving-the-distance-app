@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-required_commands=(pg_dump aws python3)
+required_commands=(aws python3)
 
 for cmd in "${required_commands[@]}"; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -38,6 +38,7 @@ done
 backup_database_url="${BACKUP_DATABASE_URL//$'\r'/}"
 backup_database_url="${backup_database_url//$'\n'/}"
 backup_database_url="${backup_database_url//\\n/}"
+pg_dump_image="${PG_DUMP_IMAGE:-postgres:17}"
 
 retention_days="${BACKUP_RETENTION_DAYS:-30}"
 backup_prefix="${BACKUP_PREFIX:-postgres/production}"
@@ -64,12 +65,27 @@ export AWS_EC2_METADATA_DISABLED="true"
 export PGAPPNAME="giving-the-distance-backup"
 
 echo "Creating production database backup: ${filename}"
-pg_dump \
-  --dbname="${backup_database_url}" \
-  --format=custom \
-  --no-owner \
-  --no-privileges \
-  --file="${dump_path}"
+if command -v docker >/dev/null 2>&1; then
+  docker run --rm \
+    -v "${tmp_dir}:/backup" \
+    "${pg_dump_image}" \
+    pg_dump \
+      --dbname="${backup_database_url}" \
+      --format=custom \
+      --no-owner \
+      --no-privileges \
+      --file="/backup/${filename}"
+elif command -v pg_dump >/dev/null 2>&1; then
+  pg_dump \
+    --dbname="${backup_database_url}" \
+    --format=custom \
+    --no-owner \
+    --no-privileges \
+    --file="${dump_path}"
+else
+  echo "Missing required command: docker or pg_dump" >&2
+  exit 1
+fi
 
 "${checksum_cmd[@]}" "${dump_path}" | awk '{print $1}' > "${checksum_path}"
 
