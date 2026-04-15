@@ -4,11 +4,14 @@ import fs from "fs";
 import path from "path";
 import { db } from "@/lib/db";
 import { anonymizeName } from "@/lib/activity-privacy";
+import { getLogger } from "@/lib/logger";
 import LightboxImage from "@/components/LightboxImage";
 import LocationPin from "@/components/LocationPin";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
 import type { Metadata } from "next";
+
+const logger = getLogger("sponsor-profile-page");
 
 // Business info from JSON file
 interface SponsorBusinessInfo {
@@ -59,6 +62,16 @@ interface SponsorImpact {
   }>;
 }
 
+function emptySponsorImpact(): SponsorImpact {
+  return {
+    totalDonated: 0,
+    activitiesSponsored: 0,
+    athletesSupported: 0,
+    charities: [],
+    recentActivities: [],
+  };
+}
+
 // Get business information from JSON file
 async function getSponsorBusinessInfo(
   slug: string
@@ -80,26 +93,36 @@ async function getSponsorBusinessInfo(
 
 // Get real impact data from database
 async function getSponsorImpact(sponsorId: string): Promise<SponsorImpact> {
-  // Query all commitments for this sponsor
-  const commitments = await db.charityCommitment.findMany({
-    where: {
-      campaign: {
-        sponsorId: sponsorId,
-      },
-    },
-    include: {
-      activity: {
-        include: {
-          user: true,
+  let commitments;
+
+  try {
+    // Query all commitments for this sponsor
+    commitments = await db.charityCommitment.findMany({
+      where: {
+        campaign: {
+          sponsorId: sponsorId,
         },
       },
-      charity: true,
-      campaign: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      include: {
+        activity: {
+          include: {
+            user: true,
+          },
+        },
+        charity: true,
+        campaign: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  } catch (error) {
+    logger.warn("Failed to load sponsor impact data; falling back to empty state", {
+      sponsorId,
+      error,
+    });
+    return emptySponsorImpact();
+  }
 
   // Calculate impact statistics
   const totalDonated = commitments.reduce(
