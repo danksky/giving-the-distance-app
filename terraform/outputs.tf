@@ -20,3 +20,12 @@ output "better_stack_source_tokens" {
     for env, source in logtail_source.app : env => source.token
   }
 }
+
+output "backblaze_backup_bucket" {
+  description = "Managed Backblaze B2 bucket metadata for database backups."
+  value = {
+    bucket_id   = b2_bucket.backups.bucket_id
+    bucket_name = b2_bucket.backups.bucket_name
+    bucket_type = b2_bucket.backups.bucket_type
+  }
+}

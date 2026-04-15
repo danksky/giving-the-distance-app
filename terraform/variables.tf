@@ -4,6 +4,18 @@ variable "logtail_api_token" {
   sensitive   = true
 }
 
+variable "backblaze_application_key_id" {
+  description = "Backblaze B2 management application key ID used by Terraform to manage the backups bucket."
+  type        = string
+  sensitive   = true
+}
+
+variable "backblaze_application_key" {
+  description = "Backblaze B2 management application key used by Terraform to manage the backups bucket."
+  type        = string
+  sensitive   = true
+}
+
 variable "better_stack_team_name" {
   description = "Optional Better Stack team name. Useful when authenticating Terraform with a global token."
   type        = string
