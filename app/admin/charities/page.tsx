@@ -131,8 +131,8 @@ export default async function AdminCharitiesPage({
               Database-first catalog
             </span>
             <span className="mt-2 block">
-              Routine app reads already come from the database. The remaining
-              legacy JSON import is now a one-time bootstrap tool only.
+              The live charity roster, descriptions, and logos now come from
+              the database rather than a checked-in JSON file.
             </span>
           </div>
         </div>

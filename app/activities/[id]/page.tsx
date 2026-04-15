@@ -366,6 +366,7 @@ export default async function ActivityPage({
                   </div>
                   <div className="flex items-center gap-3 mb-4">
                     <CharityLogo
+                      charityId={activityCharity?.id}
                       name={activityCharity?.name || "Charity"}
                       logoUrl={activityCharity?.logoUrl}
                       size="lg"
@@ -452,6 +453,7 @@ export default async function ActivityPage({
                   </div>
                   <div className="flex items-center gap-3">
                     <CharityLogo
+                      charityId={activityCharity.id}
                       name={activityCharity.name}
                       logoUrl={activityCharity.logoUrl}
                       size="md"

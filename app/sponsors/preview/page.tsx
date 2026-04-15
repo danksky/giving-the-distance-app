@@ -47,10 +47,12 @@ async function fetchPlacePhotos(
 // Mock data for preview
 const MOCK_CHARITIES = [
   {
+    id: "aspca",
     name: "ASPCA",
     logoUrl: "/logos/charities/aspca.jpeg",
   },
   {
+    id: "unicef",
     name: "UNICEF",
     logoUrl: "/logos/charities/unicef.png",
   },
@@ -390,6 +392,7 @@ async function PreviewContent({
                     className="flex items-center gap-2 bg-base-200 rounded-lg p-3"
                   >
                     <CharityLogo
+                      charityId={charity.id}
                       name={charity.name}
                       logoUrl={charity.logoUrl}
                       size="md"

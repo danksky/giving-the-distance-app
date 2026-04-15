@@ -135,6 +135,7 @@ export default async function SettingsPage() {
                 <div className="flex items-start sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                     <CharityLogo
+                      charityId={currentCharity?.id}
                       name={currentCharity?.name || "Charity"}
                       logoUrl={currentCharity?.logoUrl}
                       size="md"
@@ -155,6 +156,7 @@ export default async function SettingsPage() {
                       {currentCharity && (
                         <div className="flex items-center gap-2 mt-2">
                           <CharityLogo
+                            charityId={currentCharity.id}
                             name={currentCharity.name}
                             logoUrl={currentCharity.logoUrl}
                             size="sm"

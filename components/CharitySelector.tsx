@@ -307,6 +307,7 @@ export default function CharitySelector({
                   <div className="flex flex-col sm:flex-row items-start gap-4">
                     <div className="flex items-start justify-between gap-4 w-full sm:w-auto">
                       <CharityLogo
+                        charityId={charity.id}
                         name={charity.name}
                         logoUrl={charity.logoUrl}
                         size="lg"

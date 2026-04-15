@@ -215,7 +215,7 @@ await db.campaign.update({
 
 1. Go to `/admin/charities`
 2. Create or edit charities directly in the database-backed catalog
-3. Use `npm run db:import-charities` only for one-time legacy JSON imports
+3. Store logo files in `public/logos/charities/` and point `logoUrl` at the local asset path
 
 ### 4. Investigate Failed Matches
 

@@ -64,9 +64,19 @@ function parseLogoUrl(value: unknown): string | null {
     return logoUrl;
   }
 
-  throw new Error(
-    "Logo URL must be a root-relative path like /logos/charities/example.png."
-  );
+  try {
+    const parsed = new URL(logoUrl);
+
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      throw new Error("Logo URL must use http or https.");
+    }
+
+    return parsed.toString();
+  } catch {
+    throw new Error(
+      "Logo URL must be a root-relative path or a valid http/https URL."
+    );
+  }
 }
 
 export function normalizeCharityInput(

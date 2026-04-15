@@ -209,12 +209,6 @@ This will:
 - Create a default campaign for each sponsor with $100.00 initial budget
 - Create an initial top-up record for each campaign
 
-If you need to bootstrap a database with the legacy charity catalog, run:
-
-```bash
-npm run db:import-charities
-```
-
 ### 3. Webhook Integration
 
 The webhook handler (`app/api/strava/webhook/route.ts`) automatically calls the sponsor matching service for new activities.

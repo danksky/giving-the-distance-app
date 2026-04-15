@@ -212,7 +212,7 @@ function CharityFields({
 
       <FieldShell
         label="Logo URL"
-        hint="Use a local app path like /logos/charities/feeding-america.png."
+        hint="Use a local app path or a remote https URL. Remote logos are proxied and cached by the app."
         className="md:col-span-2"
       >
         <input
@@ -222,7 +222,7 @@ function CharityFields({
             setForm((current) => ({ ...current, logoUrl: e.target.value }))
           }
           className={inputClassName}
-          placeholder="/logos/charities/feeding-america.png"
+          placeholder="https://cdn.example.org/feeding-america.png"
           disabled={disabled}
         />
       </FieldShell>
@@ -346,6 +346,7 @@ export default function CharityCatalogManager({
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                   <div className="flex items-start gap-4 sm:gap-5">
                     <CharityLogo
+                      charityId={charity.id}
                       name={charity.name}
                       logoUrl={draft.logoUrl || null}
                       size="lg"

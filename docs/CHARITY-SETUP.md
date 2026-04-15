@@ -35,15 +35,11 @@ npm run db:seed
 
 This now seeds sponsor data only.
 
-### 4. Import the Legacy Charity Catalog (One-Time)
+### 4. Manage the Charity Catalog
 
-```bash
-npm run db:import-charities
-```
+Use `/admin/charities` and `/admin/charities/new` to manage the live charity roster directly in the database.
 
-This imports the curated roster from `data/charities.json` into the `charities` table. After import, the database is the primary source of truth and charities should be managed from the admin UI.
-
-The legacy import currently includes 32 organizations, including:
+The current catalog includes 32 organizations, including:
 - UNICEF (default)
 - Doctors Without Borders
 - American Red Cross
@@ -97,7 +93,6 @@ Check that:
 
 For production, you'll want to:
 - Run migrations through your deployment pipeline
-- Seed charities as part of deployment
 - Consider adding an admin interface to manage charities
 - Add charity impact tracking and reporting
 - Implement charity verification and approval workflow
@@ -107,7 +102,7 @@ For production, you'll want to:
 To add/update charities:
 1. Open `/admin/charities`
 2. Create or edit the charity directly in the admin catalog
-3. Use `npm run db:import-charities` only if you need a one-time bootstrap from the legacy JSON file
+3. Keep logo files in `public/logos/charities/` and set `logoUrl` to the matching root-relative path
 
 ## Rollback
 

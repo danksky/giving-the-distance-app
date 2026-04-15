@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import CharityLogo from "@/components/CharityLogo";
 import { anonymizeName } from "@/lib/activity-privacy";
 import { db } from "@/lib/db";
+import { getAbsoluteCharityLogoUrl } from "@/lib/charity-logo";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -173,7 +174,11 @@ export async function generateMetadata({
 
   const title = `${charity.name} Impact | Giving the Distance`;
   const description = `See how much Giving the Distance athletes have raised for ${charity.name}.`;
-  const logoUrl = charity.logoUrl ? `${getBaseUrl()}${charity.logoUrl}` : undefined;
+  const logoUrl = getAbsoluteCharityLogoUrl({
+    baseUrl: getBaseUrl(),
+    charityId: charity.id,
+    logoUrl: charity.logoUrl,
+  });
 
   return {
     title,
@@ -217,6 +222,7 @@ export default async function CharityImpactPage({
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               <CharityLogo
+                charityId={charity.id}
                 name={charity.name}
                 logoUrl={charity.logoUrl}
                 size="xl"

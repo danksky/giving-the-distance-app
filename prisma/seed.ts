@@ -6,10 +6,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Starting seed...");
-  console.log("\nℹ️  Charity catalog is now managed in the database.");
-  console.log(
-    "   Use `npm run db:import-charities` only for one-time legacy JSON imports."
-  );
+  console.log("\nℹ️  Charity catalog is managed directly in the database.");
 
   // ============================================
   // Seed Sponsors

@@ -43,6 +43,7 @@ interface SponsorImpact {
   activitiesSponsored: number;
   athletesSupported: number;
   charities: Array<{
+    id: string;
     name: string;
     logoUrl: string | null;
   }>;
@@ -112,11 +113,12 @@ async function getSponsorImpact(sponsorId: string): Promise<SponsorImpact> {
   // Get unique charities
   const charitiesMap = new Map<
     string,
-    { name: string; logoUrl: string | null }
+    { id: string; name: string; logoUrl: string | null }
   >();
   commitments.forEach((c) => {
     if (!charitiesMap.has(c.charityId)) {
       charitiesMap.set(c.charityId, {
+        id: c.charityId,
         name: c.charity.name,
         logoUrl: c.charity.logoUrl,
       });
@@ -402,6 +404,7 @@ export default async function SponsorProfilePage({
                         className="flex items-center gap-2 bg-base-200 rounded-lg p-3"
                       >
                         <CharityLogo
+                          charityId={charity.id}
                           name={charity.name}
                           logoUrl={charity.logoUrl}
                           size="md"

@@ -80,6 +80,7 @@ export default async function CharitySettingsPage() {
             <div className="bg-gradient-to-br from-[#B56DFF]/10 to-[#E5D4FF]/30 rounded-lg p-4 sm:p-6 border border-[#B56DFF]/20">
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <CharityLogo
+                  charityId={currentCharity.id}
                   name={currentCharity.name}
                   logoUrl={currentCharity.logoUrl}
                   size="xl"
