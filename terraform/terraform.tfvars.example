@@ -1,0 +1,20 @@
+default_data_region = "germany"
+
+# Set these via TF_VAR_backblaze_application_key_id and
+# TF_VAR_backblaze_application_key, or in an ignored terraform.tfvars file.
+# backblaze_application_key_id = "..."
+# backblaze_application_key = "..."
+
+sources = {
+  preview = {
+    name           = "giving-the-distance-app-preview"
+    platform       = "javascript"
+    logs_retention = 30
+  }
+
+  production = {
+    name           = "giving-the-distance-app-production"
+    platform       = "javascript"
+    logs_retention = 30
+  }
+}
