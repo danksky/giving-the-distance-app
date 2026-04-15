@@ -1,12 +1,13 @@
 # Backups
 
-This project backs up the production Neon Postgres database with a nightly GitHub Actions workflow and stores the dump in a private Backblaze B2 bucket.
+This project backs up the production and preview Neon Postgres databases with nightly GitHub Actions workflows and stores the dumps in a private Backblaze B2 bucket.
 
 ## What gets backed up
 
-- Production Postgres database only
+- Production Postgres database
+- Preview Postgres database
 
-## What does not get backed up by this workflow
+## What does not get backed up by these workflows
 
 - Vercel Blob GPX files
 - Vercel environment variables
@@ -15,13 +16,15 @@ This project backs up the production Neon Postgres database with a nightly GitHu
 ## Files
 
 - Workflow: [.github/workflows/production-db-backup.yml](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/.github/workflows/production-db-backup.yml)
+- Workflow: [.github/workflows/preview-db-backup.yml](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/.github/workflows/preview-db-backup.yml)
 - Script: [scripts/backup-production-db.sh](/Users/danielkawalsky/Documents/Code/GivingTheDistance/giving-the-distance-app/scripts/backup-production-db.sh)
 
 ## GitHub Actions schedule
 
-- Runs daily at `06:17 UTC`
-- Can also be run manually from the Actions tab via `workflow_dispatch`
-- Scheduled runs only fire when this workflow file exists on the default GitHub branch, which is currently `main`
+- Production runs daily at `06:17 UTC`
+- Preview runs daily at `06:47 UTC`
+- Both can also be run manually from the Actions tab via `workflow_dispatch`
+- Scheduled runs only fire when the workflow file exists on the default GitHub branch, which is currently `main`
 
 ## Required GitHub Actions secrets
 
@@ -29,6 +32,8 @@ Add these in GitHub at `Settings > Secrets and variables > Actions`:
 
 - `BACKUP_DATABASE_URL`
   Use the production direct connection string. For this repo that should come from `POSTGRES_URL_NON_POOLING` in `.env.production`, not the pooled connection.
+- `PREVIEW_BACKUP_DATABASE_URL`
+  Use the preview direct connection string. For this repo that should come from `POSTGRES_URL_NON_POOLING` in `.env.preview`, not the pooled connection.
 - `B2_APPLICATION_KEY`
   The Backblaze application key secret
 
@@ -65,6 +70,8 @@ After adding the secrets, run the workflow once manually from GitHub Actions to 
 1. The dump succeeds.
 2. The dump uploads to Backblaze B2.
 3. A `.sha256` checksum file is uploaded next to the dump.
+4. Production files land under `postgres/production/`.
+5. Preview files land under `postgres/preview/`.
 
 ## Restore
 
@@ -82,4 +89,5 @@ If you want a brand new database created as part of restore, use a workflow base
 
 - Dumps are created with `pg_dump --format=custom`.
 - The workflow keeps backups for `30` days by default.
+- Dump filenames are namespaced by environment, for example `gtd-production-...` and `gtd-preview-...`.
 - The workflow does not currently back up Vercel Blob GPX files.

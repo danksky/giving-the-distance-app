@@ -39,11 +39,12 @@ backup_database_url="${BACKUP_DATABASE_URL//$'\r'/}"
 backup_database_url="${backup_database_url//$'\n'/}"
 backup_database_url="${backup_database_url//\\n/}"
 pg_dump_image="${PG_DUMP_IMAGE:-postgres:17}"
+backup_name="${BACKUP_NAME:-production}"
 
 retention_days="${BACKUP_RETENTION_DAYS:-30}"
 backup_prefix="${BACKUP_PREFIX:-postgres/production}"
 timestamp="$(date -u +"%Y-%m-%dT%H%M%SZ")"
-filename="gtd-production-${timestamp}.dump"
+filename="gtd-${backup_name}-${timestamp}.dump"
 checksum_filename="${filename}.sha256"
 s3_uri="s3://${B2_BUCKET}/${backup_prefix}/${filename}"
 checksum_s3_uri="s3://${B2_BUCKET}/${backup_prefix}/${checksum_filename}"
@@ -62,9 +63,9 @@ export AWS_ACCESS_KEY_ID="${B2_KEY_ID}"
 export AWS_SECRET_ACCESS_KEY="${B2_APPLICATION_KEY}"
 export AWS_DEFAULT_REGION="${B2_REGION:-us-east-005}"
 export AWS_EC2_METADATA_DISABLED="true"
-export PGAPPNAME="giving-the-distance-backup"
+export PGAPPNAME="giving-the-distance-${backup_name}-backup"
 
-echo "Creating production database backup: ${filename}"
+echo "Creating ${backup_name} database backup: ${filename}"
 if command -v docker >/dev/null 2>&1; then
   docker run --rm \
     -v "${tmp_dir}:/backup" \
