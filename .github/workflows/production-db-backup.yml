@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
+      BACKUP_NAME: production
       BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
       B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
       B2_BUCKET: ${{ vars.B2_BUCKET }}

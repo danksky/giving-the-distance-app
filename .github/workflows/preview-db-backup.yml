@@ -1,0 +1,53 @@
+name: Preview DB Backup
+
+on:
+  schedule:
+    - cron: "47 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BACKUP_NAME: preview
+      BACKUP_DATABASE_URL: ${{ secrets.PREVIEW_BACKUP_DATABASE_URL }}
+      B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      B2_BUCKET: ${{ vars.B2_BUCKET }}
+      B2_KEY_ID: ${{ vars.B2_KEY_ID }}
+      B2_ENDPOINT: ${{ vars.B2_ENDPOINT }}
+      B2_REGION: ${{ vars.B2_REGION }}
+      BACKUP_RETENTION_DAYS: ${{ vars.BACKUP_RETENTION_DAYS }}
+      BACKUP_PREFIX: postgres/preview
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Install backup dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y coreutils python3-pip
+          python3 -m pip install --user awscli
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run preview backup
+        run: ./scripts/backup-production-db.sh
+
+      - name: Publish job summary
+        if: ${{ success() }}
+        run: |
+          {
+            echo "## Preview DB backup"
+            echo ""
+            echo "- Schedule: daily at 06:47 UTC"
+            echo "- Destination bucket: \`${B2_BUCKET}\`"
+            echo "- Prefix: \`${BACKUP_PREFIX}\`"
+            echo "- Retention: \`${BACKUP_RETENTION_DAYS:-30}\` days"
+          } >> "$GITHUB_STEP_SUMMARY"
