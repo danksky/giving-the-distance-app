@@ -37,12 +37,12 @@ export default async function CharitySettingsPage() {
       <Navbar />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-6">
-          <Link href="/settings" className="btn btn-ghost btn-sm mb-2">
+      <main className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <h1 className="text-3xl font-bold">Charity Selection</h1>
+          <Link href="/settings" className="btn btn-outline btn-sm w-fit">
             ← Back to Settings
           </Link>
-          <h1 className="text-3xl font-bold">Charity Selection</h1>
         </div>
 
         {/* Info Alert */}
