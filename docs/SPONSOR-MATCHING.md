@@ -205,10 +205,15 @@ npm run db:seed
 
 This will:
 
-- Load all charities from `data/charities.json`
 - Load all sponsors from `data/sponsors/*/profile.json`
 - Create a default campaign for each sponsor with $100.00 initial budget
 - Create an initial top-up record for each campaign
+
+If you need to bootstrap a database with the legacy charity catalog, run:
+
+```bash
+npm run db:import-charities
+```
 
 ### 3. Webhook Integration
 

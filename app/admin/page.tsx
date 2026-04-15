@@ -85,6 +85,25 @@ export default async function AdminPage() {
             </div>
           </Link>
 
+          {/* Charity Catalog Card */}
+          <Link
+            href="/admin/charities"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
+          >
+            <div className="card-body">
+              <div className="flex items-start justify-between">
+                <div className="badge badge-success">Catalog</div>
+              </div>
+              <h2 className="card-title text-2xl mt-4">Charity Management</h2>
+              <p className="opacity-70">
+                Add and update charities directly in the database-backed catalog
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-success">Manage Charities →</button>
+              </div>
+            </div>
+          </Link>
+
           {/* Webhooks Card */}
           <Link
             href="/admin/webhooks"
@@ -175,11 +194,20 @@ export default async function AdminPage() {
             <h2 className="card-title text-2xl">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div className="stat bg-base-200 rounded-lg">
-                <div className="stat-title">Run Seed Script</div>
+                <div className="stat-title">Seed Sponsors</div>
                 <div className="stat-desc mt-2">
-                  Add sponsors and campaigns to database
+                  Add sponsor profiles and default campaigns to database
                 </div>
                 <code className="text-xs mt-2 block">npm run db:seed</code>
+              </div>
+              <div className="stat bg-base-200 rounded-lg">
+                <div className="stat-title">Import Legacy Charities</div>
+                <div className="stat-desc mt-2">
+                  One-time import from the old JSON catalog into the database
+                </div>
+                <code className="text-xs mt-2 block">
+                  npm run db:import-charities
+                </code>
               </div>
               <div className="stat bg-base-200 rounded-lg">
                 <div className="stat-title">Run Tests</div>
@@ -188,7 +216,7 @@ export default async function AdminPage() {
                 </div>
                 <code className="text-xs mt-2 block">npm test</code>
               </div>
-              <div className="stat bg-base-200 rounded-lg">
+              <div className="stat bg-base-200 rounded-lg md:col-span-3">
                 <div className="stat-title">View Logs</div>
                 <div className="stat-desc mt-2">
                   Check application and webhook logs

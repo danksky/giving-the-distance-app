@@ -33,7 +33,17 @@ This will:
 npm run db:seed
 ```
 
-This will populate the `charities` table with the full curated roster from `data/charities.json` (currently 32 organizations), including:
+This now seeds sponsor data only.
+
+### 4. Import the Legacy Charity Catalog (One-Time)
+
+```bash
+npm run db:import-charities
+```
+
+This imports the curated roster from `data/charities.json` into the `charities` table. After import, the database is the primary source of truth and charities should be managed from the admin UI.
+
+The legacy import currently includes 32 organizations, including:
 - UNICEF (default)
 - Doctors Without Borders
 - American Red Cross
@@ -55,7 +65,7 @@ This will populate the `charities` table with the full curated roster from `data
 - Khan Academy
 - Girls Who Code
 
-### 4. Verify in Prisma Studio
+### 5. Verify in Prisma Studio
 
 ```bash
 npm run db:studio
@@ -65,6 +75,7 @@ Check that:
 - The `charities` table has 32 records
 - UNICEF has `isDefault: true`
 - Users can be linked to charities via `selectedCharityId`
+- `/admin/charities` shows the same live roster from the database
 
 ## How It Works
 
@@ -94,8 +105,9 @@ For production, you'll want to:
 ## Updating Charities
 
 To add/update charities:
-1. Edit `data/charities.json`
-2. Run `npm run db:seed` (uses upsert, safe to run multiple times)
+1. Open `/admin/charities`
+2. Create or edit the charity directly in the admin catalog
+3. Use `npm run db:import-charities` only if you need a one-time bootstrap from the legacy JSON file
 
 ## Rollback
 

@@ -211,6 +211,12 @@ await db.campaign.update({
 3. Or manually create via Prisma Studio
 4. Verify campaign appears in admin dashboard
 
+### 3a. Manage Charities
+
+1. Go to `/admin/charities`
+2. Create or edit charities directly in the database-backed catalog
+3. Use `npm run db:import-charities` only for one-time legacy JSON imports
+
 ### 4. Investigate Failed Matches
 
 1. Go to `/admin/campaigns`
