@@ -37,12 +37,12 @@ export default async function CharitySettingsPage() {
       <Navbar />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-6">
-          <Link href="/settings" className="btn btn-ghost btn-sm mb-2">
+      <main className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <h1 className="text-3xl font-bold">Charity Selection</h1>
+          <Link href="/settings" className="btn btn-outline btn-sm w-fit">
             ← Back to Settings
           </Link>
-          <h1 className="text-3xl font-bold">Charity Selection</h1>
         </div>
 
         {/* Info Alert */}
@@ -80,10 +80,11 @@ export default async function CharitySettingsPage() {
             <div className="bg-gradient-to-br from-[#B56DFF]/10 to-[#E5D4FF]/30 rounded-lg p-4 sm:p-6 border border-[#B56DFF]/20">
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <CharityLogo
+                  charityId={currentCharity.id}
                   name={currentCharity.name}
                   logoUrl={currentCharity.logoUrl}
                   size="xl"
-                  className="mx-auto sm:mx-0"
+                  className="flex-shrink-0"
                 />
                 <div className="flex-1 w-full">
                   <h3 className="text-xl sm:text-2xl font-bold text-[#8B4ACC] mb-2">
@@ -117,6 +118,15 @@ export default async function CharitySettingsPage() {
                 </div>
               </div>
             </div>
+
+            <div className="mt-4">
+              <a
+                href="#available-charities"
+                className="btn btn-outline btn-primary"
+              >
+                Change Selected Charity
+              </a>
+            </div>
           </div>
         </div>
 
@@ -146,7 +156,10 @@ export default async function CharitySettingsPage() {
         </div>
 
         {/* Available Charities */}
-        <div className="card bg-base-100">
+        <div
+          id="available-charities"
+          className="card bg-base-100 scroll-mt-24"
+        >
           <div className="card-body">
             <h3 className="card-title mb-4">Available Charities</h3>
             <p className="text-sm text-base-content/60 mb-6">

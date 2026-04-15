@@ -6,45 +6,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Starting seed...");
-
-  // ============================================
-  // Seed Charities
-  // ============================================
-  console.log("\n📋 Seeding charities...");
-  const charitiesPath = path.join(process.cwd(), "data", "charities.json");
-  const charitiesData = fs.readFileSync(charitiesPath, "utf8");
-  const charities = JSON.parse(charitiesData);
-
-  console.log(`Found ${charities.length} charities to seed`);
-
-  // Upsert charities
-  for (const charity of charities) {
-    await prisma.charity.upsert({
-      where: { id: charity.id },
-      update: {
-        name: charity.name,
-        fullName: charity.fullName,
-        description: charity.description,
-        category: charity.category,
-        logoUrl: charity.logoUrl,
-        website: charity.website,
-        charityNavigatorScore: charity.charityNavigatorScore,
-        isDefault: charity.isDefault,
-      },
-      create: {
-        id: charity.id,
-        name: charity.name,
-        fullName: charity.fullName,
-        description: charity.description,
-        category: charity.category,
-        logoUrl: charity.logoUrl,
-        website: charity.website,
-        charityNavigatorScore: charity.charityNavigatorScore,
-        isDefault: charity.isDefault,
-      },
-    });
-    console.log(`  ✅ ${charity.name}`);
-  }
+  console.log("\nℹ️  Charity catalog is managed directly in the database.");
 
   // ============================================
   // Seed Sponsors

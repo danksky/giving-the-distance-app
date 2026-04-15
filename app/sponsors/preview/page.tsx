@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import CharityLogo from "@/components/CharityLogo";
+import LocationPin from "@/components/LocationPin";
 import SponsorContactForm from "@/components/SponsorContactForm";
 import type { Metadata } from "next";
 
@@ -46,10 +47,12 @@ async function fetchPlacePhotos(
 // Mock data for preview
 const MOCK_CHARITIES = [
   {
+    id: "aspca",
     name: "ASPCA",
     logoUrl: "/logos/charities/aspca.jpeg",
   },
   {
+    id: "unicef",
     name: "UNICEF",
     logoUrl: "/logos/charities/unicef.png",
   },
@@ -232,7 +235,10 @@ async function PreviewContent({
                   DONOR
                 </span>
               </div>
-              <p className="font-medium">📍 {businessLocation}</p>
+              <p className="font-medium inline-flex items-center gap-2">
+                <LocationPin className="w-5 h-5 text-[#8B4ACC]" />
+                <span>{businessLocation}</span>
+              </p>
             </div>
           </div>
 
@@ -386,6 +392,7 @@ async function PreviewContent({
                     className="flex items-center gap-2 bg-base-200 rounded-lg p-3"
                   >
                     <CharityLogo
+                      charityId={charity.id}
                       name={charity.name}
                       logoUrl={charity.logoUrl}
                       size="md"
@@ -420,14 +427,15 @@ async function PreviewContent({
                           • {activity.activityType}
                         </span>
                       </div>
-                      <div className="text-sm text-base-content/70">
-                        <span>
+                      <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm text-base-content/70">
+                        <span className="whitespace-nowrap">
                           {activity.distance.toFixed(2)} {activity.distanceUnit}
                         </span>
-                        <span className="mx-2">•</span>
-                        <span>{activity.charity}</span>
-                        <span className="mx-2">•</span>
-                        <span>
+                        <span className="whitespace-nowrap">
+                          • {activity.charity}
+                        </span>
+                        <span className="whitespace-nowrap">
+                          •{" "}
                           {new Date(activity.date).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",

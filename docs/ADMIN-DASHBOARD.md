@@ -211,6 +211,12 @@ await db.campaign.update({
 3. Or manually create via Prisma Studio
 4. Verify campaign appears in admin dashboard
 
+### 3a. Manage Charities
+
+1. Go to `/admin/charities`
+2. Create or edit charities directly in the database-backed catalog
+3. Store logo files in `public/logos/charities/` and point `logoUrl` at the local asset path
+
 ### 4. Investigate Failed Matches
 
 1. Go to `/admin/campaigns`

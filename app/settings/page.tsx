@@ -40,8 +40,13 @@ export default async function SettingsPage() {
       <Navbar />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Settings</h1>
+      <main className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <Link href="/dashboard" className="btn btn-outline btn-sm w-fit">
+            ← Back to Dashboard
+          </Link>
+        </div>
 
         {/* Settings Cards */}
         <div className="space-y-0">
@@ -130,6 +135,7 @@ export default async function SettingsPage() {
                 <div className="flex items-start sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                     <CharityLogo
+                      charityId={currentCharity?.id}
                       name={currentCharity?.name || "Charity"}
                       logoUrl={currentCharity?.logoUrl}
                       size="md"
@@ -150,6 +156,7 @@ export default async function SettingsPage() {
                       {currentCharity && (
                         <div className="flex items-center gap-2 mt-2">
                           <CharityLogo
+                            charityId={currentCharity.id}
                             name={currentCharity.name}
                             logoUrl={currentCharity.logoUrl}
                             size="sm"
@@ -213,13 +220,6 @@ export default async function SettingsPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Back to Dashboard */}
-        <div className="text-center mt-8">
-          <Link href="/dashboard" className="btn btn-ghost">
-            ← Back to Dashboard
-          </Link>
         </div>
       </main>
     </div>

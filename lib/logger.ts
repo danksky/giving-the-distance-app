@@ -1,4 +1,5 @@
 import { Logtail } from "@logtail/node";
+import { after } from "next/server";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 type LogContext = Record<string, unknown>;
@@ -173,6 +174,12 @@ export function getLogger(component: string, baseContext: LogContext = {}) {
       return logtail?.flush() ?? Promise.resolve();
     },
   };
+}
+
+export function scheduleLogFlush(customLogger = logger) {
+  after(async () => {
+    await customLogger.flush();
+  });
 }
 
 export const logger = getLogger("app");

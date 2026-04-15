@@ -4,10 +4,14 @@ import fs from "fs";
 import path from "path";
 import { db } from "@/lib/db";
 import { anonymizeName } from "@/lib/activity-privacy";
+import { getLogger } from "@/lib/logger";
 import LightboxImage from "@/components/LightboxImage";
+import LocationPin from "@/components/LocationPin";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
 import type { Metadata } from "next";
+
+const logger = getLogger("sponsor-profile-page");
 
 // Business info from JSON file
 interface SponsorBusinessInfo {
@@ -42,6 +46,7 @@ interface SponsorImpact {
   activitiesSponsored: number;
   athletesSupported: number;
   charities: Array<{
+    id: string;
     name: string;
     logoUrl: string | null;
   }>;
@@ -55,6 +60,16 @@ interface SponsorImpact {
     charity: string;
     date: string;
   }>;
+}
+
+function emptySponsorImpact(): SponsorImpact {
+  return {
+    totalDonated: 0,
+    activitiesSponsored: 0,
+    athletesSupported: 0,
+    charities: [],
+    recentActivities: [],
+  };
 }
 
 // Get business information from JSON file
@@ -78,26 +93,36 @@ async function getSponsorBusinessInfo(
 
 // Get real impact data from database
 async function getSponsorImpact(sponsorId: string): Promise<SponsorImpact> {
-  // Query all commitments for this sponsor
-  const commitments = await db.charityCommitment.findMany({
-    where: {
-      campaign: {
-        sponsorId: sponsorId,
-      },
-    },
-    include: {
-      activity: {
-        include: {
-          user: true,
+  let commitments;
+
+  try {
+    // Query all commitments for this sponsor
+    commitments = await db.charityCommitment.findMany({
+      where: {
+        campaign: {
+          sponsorId: sponsorId,
         },
       },
-      charity: true,
-      campaign: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      include: {
+        activity: {
+          include: {
+            user: true,
+          },
+        },
+        charity: true,
+        campaign: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  } catch (error) {
+    logger.warn("Failed to load sponsor impact data; falling back to empty state", {
+      sponsorId,
+      error,
+    });
+    return emptySponsorImpact();
+  }
 
   // Calculate impact statistics
   const totalDonated = commitments.reduce(
@@ -111,11 +136,12 @@ async function getSponsorImpact(sponsorId: string): Promise<SponsorImpact> {
   // Get unique charities
   const charitiesMap = new Map<
     string,
-    { name: string; logoUrl: string | null }
+    { id: string; name: string; logoUrl: string | null }
   >();
   commitments.forEach((c) => {
     if (!charitiesMap.has(c.charityId)) {
       charitiesMap.set(c.charityId, {
+        id: c.charityId,
         name: c.charity.name,
         logoUrl: c.charity.logoUrl,
       });
@@ -264,8 +290,9 @@ export default async function SponsorProfilePage({
                   DONOR
                 </span>
               </div>
-              <p className="font-medium">
-                📍 {businessInfo.address.fullAddress}
+              <p className="font-medium inline-flex items-center gap-2">
+                <LocationPin className="w-5 h-5 text-[#8B4ACC]" />
+                <span>{businessInfo.address.fullAddress}</span>
               </p>
             </div>
           </div>
@@ -273,7 +300,7 @@ export default async function SponsorProfilePage({
           {/* Map + Photos Grid */}
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {/* Map */}
-            <div className="w-full h-64 md:h-72 rounded overflow-hidden bg-base-200">
+            <div className="w-full h-80 md:h-[26rem] rounded overflow-hidden bg-base-200">
               <iframe
                 width="100%"
                 height="100%"
@@ -289,11 +316,11 @@ export default async function SponsorProfilePage({
             {(businessInfo.images.staff ||
               (businessInfo.images.products &&
                 businessInfo.images.products.length > 0)) && (
-              <div className="grid grid-cols-2 grid-rows-3 gap-2 h-64 md:h-72">
+              <div className="grid grid-cols-2 grid-rows-3 gap-2 h-80 md:h-[26rem]">
                 {businessInfo.images.staff && (
                   <LightboxImage
                     src={businessInfo.images.staff}
-                    alt={`${businessInfo.businessName} staff`}
+                    alt={businessInfo.businessName}
                     containerClassName="relative col-span-2 row-span-2 bg-base-200 rounded-lg overflow-hidden cursor-pointer"
                     imageClassName="object-cover"
                     sizes="(max-width: 768px) 100vw, 600px"
@@ -303,13 +330,11 @@ export default async function SponsorProfilePage({
                 {businessInfo.images.products &&
                   businessInfo.images.products
                     .slice(0, 4)
-                    .map((product, index) => (
+                    .map((product) => (
                       <LightboxImage
                         key={product}
                         src={product}
-                        alt={`${businessInfo.businessName} product ${
-                          index + 1
-                        }`}
+                        alt={businessInfo.businessName}
                         containerClassName="relative bg-base-200 rounded-lg overflow-hidden cursor-pointer"
                         imageClassName="object-cover"
                         sizes="(max-width: 768px) 50vw, 300px"
@@ -333,6 +358,7 @@ export default async function SponsorProfilePage({
                 rel="noopener noreferrer"
                 className="btn btn-outline btn-sm"
               >
+                <i className="bi bi-globe2 text-base-content/60" aria-hidden="true" />
                 Website
               </Link>
             )}
@@ -343,6 +369,10 @@ export default async function SponsorProfilePage({
                 rel="noopener noreferrer"
                 className="btn btn-outline btn-sm"
               >
+                <i
+                  className="bi bi-instagram text-base-content/60"
+                  aria-hidden="true"
+                />
                 Instagram
               </Link>
             )}
@@ -400,6 +430,7 @@ export default async function SponsorProfilePage({
                         className="flex items-center gap-2 bg-base-200 rounded-lg p-3"
                       >
                         <CharityLogo
+                          charityId={charity.id}
                           name={charity.name}
                           logoUrl={charity.logoUrl}
                           size="md"
@@ -440,15 +471,16 @@ export default async function SponsorProfilePage({
                             • {activity.activityType}
                           </span>
                         </div>
-                        <div className="text-sm text-base-content/70">
-                          <span>
+                        <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm text-base-content/70">
+                          <span className="whitespace-nowrap">
                             {activity.distance.toFixed(2)}{" "}
                             {activity.distanceUnit}
                           </span>
-                          <span className="mx-2">•</span>
-                          <span>{activity.charity}</span>
-                          <span className="mx-2">•</span>
-                          <span>
+                          <span className="whitespace-nowrap">
+                            • {activity.charity}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            •{" "}
                             {new Date(activity.date).toLocaleDateString(
                               "en-US",
                               {

@@ -19,6 +19,7 @@ Minimal schema to support: **Google login → Connect Strava → Store activitie
 
 5. `strava_athletes` - Strava-specific athlete data
 6. `activities` - Strava activities from webhooks
+7. `activity_notifications` - idempotent delivery records for activity notifications
 
 ---
 
@@ -218,9 +219,40 @@ CREATE INDEX idx_activities_type ON activities(type);
 ACTIVITY table:
 - USER_ID → user_id
 - STRAVA_ACTIVITY_ID → strava_activity_id
+- NAME → name
 - TYPE → type
 - DISTANCE_METERS → distance_meters
 ```
+
+---
+
+### 7. `activity_notifications` table
+
+Tracks notification delivery per activity so downstream sends can be idempotent.
+
+```sql
+CREATE TABLE activity_notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  activity_id UUID NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+  type VARCHAR(100) NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+  sent_at TIMESTAMP,
+  last_error TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+
+  UNIQUE(activity_id, type)
+);
+
+-- Indexes
+CREATE INDEX idx_activity_notifications_activity_id ON activity_notifications(activity_id);
+CREATE INDEX idx_activity_notifications_type ON activity_notifications(type);
+CREATE INDEX idx_activity_notifications_status ON activity_notifications(status);
+```
+
+**Current use**:
+
+- `SLACK_ACTIVITY_CREATED` ensures the app sends at most one "new activity" Slack message per activity, even if Strava retries webhook delivery.
 
 **Activity Types**: Run, Ride, Swim, Walk, Hike, etc.
 

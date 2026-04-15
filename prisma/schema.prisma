@@ -122,6 +122,8 @@ model Activity {
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   sponsorMatches     SponsorMatch[]
   charityCommitments CharityCommitment[]
+  historyEntries     StravaActivityHistory[]
+  notifications      ActivityNotification[]
 
   @@index([userId])
   @@index([startDate(sort: Desc)])
@@ -129,6 +131,25 @@ model Activity {
   @@index([deletedAt]) // Index for filtering deleted activities
   @@index([shortcode]) // Index for shortcode lookups
   @@map("activities")
+}
+
+model ActivityNotification {
+  id         String   @id @default(cuid())
+  activityId String
+  type       String
+  status     String   @default("PENDING")
+  sentAt     DateTime?
+  lastError  String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, type])
+  @@index([activityId])
+  @@index([type])
+  @@index([status])
+  @@map("activity_notifications")
 }
 
 model StravaWebhookSubscription {
@@ -158,11 +179,43 @@ model StravaWebhookEvent {
   rawPayload              Json     // Full webhook payload for debugging
   createdAt               DateTime @default(now())
 
+  historyEntries StravaActivityHistory[]
+
   @@index([objectType])
   @@index([ownerId])
   @@index([processed])
   @@index([eventTime(sort: Desc)])
   @@map("strava_webhook_events")
+}
+
+model StravaActivityHistory {
+  id                    String   @id @default(cuid())
+  activityId            String?
+  stravaActivityId      BigInt
+  webhookEventId        String?
+  source                String   // "strava_webhook" or "app"
+  eventType             String   // "activity_snapshot", "activity_deleted", etc.
+  aspectType            String?
+  name                  String?
+  type                  String?
+  isPrivate             Boolean?
+  visibility            String?
+  descriptionText       String?  @db.Text
+  descriptionPresent    Boolean?
+  descriptionHasGtdMarker Boolean?
+  descriptionLength     Int?
+  updates               Json?
+  metadata              Json?
+  createdAt             DateTime @default(now())
+
+  activity    Activity?          @relation(fields: [activityId], references: [id], onDelete: SetNull)
+  webhookEvent StravaWebhookEvent? @relation(fields: [webhookEventId], references: [id], onDelete: SetNull)
+
+  @@index([activityId])
+  @@index([stravaActivityId])
+  @@index([webhookEventId])
+  @@index([createdAt(sort: Desc)])
+  @@map("strava_activity_history")
 }
 
 model Charity {

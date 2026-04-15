@@ -4,6 +4,24 @@ import Script from "next/script";
 import "./globals.css";
 import Footer from "@/components/Footer";
 
+function getMetadataBase(): URL {
+  const configured =
+    process.env.NEXTAUTH_URL?.trim() ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
+    (process.env.VERCEL_URL?.trim()
+      ? `https://${process.env.VERCEL_URL.trim()}`
+      : "");
+
+  const withProtocol = configured.startsWith("http")
+    ? configured
+    : configured
+      ? `https://${configured}`
+      : "http://localhost:3000";
+
+  return new URL(withProtocol.replace(/\/+$/, ""));
+}
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -21,6 +39,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: getMetadataBase(),
   title: "Giving the Distance - Turn Every Mile Into Meaningful Impact",
   description:
     "Connect your Strava account and create donations where donors pay per mile or kilometer you run. Giving the Distance is currently focused on the New York City community as it grows.",

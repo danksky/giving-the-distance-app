@@ -21,9 +21,11 @@ If these environment variables are not set, notifications will be skipped gracef
 
 ### 1. New Activity Created 🎉
 
-**Triggered when:** A user creates a new activity on Strava, and it's synced via the webhook.
+**Triggered when:** The app first claims delivery for a synced Strava activity.
 
-**Location:** `app/api/strava/webhook/route.ts` (create event handler)
+**Location:** `lib/activity-notifications.ts` via `app/api/strava/webhook/route.ts`
+
+**Delivery behavior:** The app stores an `activity_notifications` row with a unique `(activityId, type)` key before sending. This makes the Slack message idempotent, so repeated Strava webhook deliveries still produce at most one "new activity" Slack message per activity.
 
 **Information included:**
 
@@ -202,6 +204,8 @@ All Slack notifications are handled by functions in `lib/slack-notifications.ts`
 - `notifyStravaAuthFailure()` - Strava authorization failed
 - `notifyStravaDeauthorization()` - Strava de-authorization
 - `notifyGooglePlaceSelection()` - Google place selected by potential sponsor
+
+Activity-created Slack delivery is coordinated by `lib/activity-notifications.ts`, which claims and records notification state in the database before calling `notifyNewActivity()`.
 
 Each function:
 

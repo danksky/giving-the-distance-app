@@ -5,9 +5,11 @@ import { matchActivityWithSponsor } from "@/lib/sponsor-matching";
 import { generateUniqueShortcode } from "@/lib/shortcode";
 import { fetchAndGenerateGPX } from "@/lib/gpx-generator";
 import { uploadGPXToBlob, isBlobStorageConfigured } from "@/lib/gpx-storage";
-import { notifyNewActivity, notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
+import { notifyActivityDeleted, notifyStravaDeauthorization } from "@/lib/slack-notifications";
 import { formatSkippedDescriptionUpdateMessage } from "@/lib/strava-description-updates";
-import { getLogger } from "@/lib/logger";
+import { recordStravaActivityHistory } from "@/lib/strava-activity-history";
+import { sendNewActivitySlackNotificationOnce } from "@/lib/activity-notifications";
+import { getLogger, scheduleLogFlush } from "@/lib/logger";
 
 const routeLogger = getLogger("api/strava/webhook");
 
@@ -23,6 +25,8 @@ const routeLogger = getLogger("api/strava/webhook");
 
 // GET handler - Webhook verification
 export async function GET(request: NextRequest) {
+  scheduleLogFlush(routeLogger);
+
   const searchParams = request.nextUrl.searchParams;
   
   // Strava sends these parameters for verification
@@ -277,6 +281,8 @@ async function processSponsorMatchingForWebhook(params: {
 
 // POST handler - Webhook events
 export async function POST(request: NextRequest) {
+  scheduleLogFlush(routeLogger);
+
   let webhookEventId: string | null = null;
   
   try {
@@ -375,6 +381,19 @@ export async function POST(request: NextRequest) {
         if (result.count > 0) {
           eventLogger.info("Soft-deleted activity after webhook", {
             updatedCount: result.count,
+          });
+
+          await recordStravaActivityHistory({
+            activityId: activity?.id ?? null,
+            stravaActivityId: BigInt(object_id),
+            webhookEventId,
+            source: "strava_webhook",
+            eventType: "activity_deleted",
+            aspectType: aspect_type,
+            metadata: {
+              deletedAt: new Date().toISOString(),
+              updatedCount: result.count,
+            },
           });
           
           // Send Slack notification
@@ -554,6 +573,24 @@ export async function POST(request: NextRequest) {
         eventLogger.info("Saved activity from create webhook", {
           activityId: savedActivity.id,
         });
+
+        await recordStravaActivityHistory({
+          activityId: savedActivity.id,
+          stravaActivityId: savedActivity.stravaActivityId,
+          webhookEventId,
+          source: "strava_webhook",
+          eventType: "activity_snapshot",
+          aspectType: aspect_type,
+          name: activity.name,
+          type: activity.type,
+          isPrivate: activity.private || false,
+          visibility: activity.visibility ?? null,
+          descriptionText: activity.description ?? "",
+          updates,
+          metadata: {
+            sourceState: "fetched_after_create_webhook",
+          },
+        });
         
         // Process GPX download and storage (non-blocking - errors won't fail the webhook)
         let gpxBlobUrl: string | null = null;
@@ -601,64 +638,10 @@ export async function POST(request: NextRequest) {
         });
 
         try {
-          const activityNotificationData = await db.activity.findUnique({
-            where: { id: savedActivity.id },
-            select: {
-              id: true,
-              charityCommitments: {
-                orderBy: { createdAt: "desc" },
-                take: 1,
-                select: {
-                  charity: {
-                    select: {
-                      name: true,
-                    },
-                  },
-                  campaign: {
-                    select: {
-                      sponsor: {
-                        select: {
-                          businessName: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              sponsorMatches: {
-                orderBy: { createdAt: "desc" },
-                take: 1,
-                select: {
-                  campaign: {
-                    select: {
-                      sponsor: {
-                        select: {
-                          businessName: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          });
-
-          const latestCommitment = activityNotificationData?.charityCommitments[0];
-          const latestSponsorMatch = activityNotificationData?.sponsorMatches[0];
-
-          await notifyNewActivity({
-            id: savedActivity.id,
-            stravaActivityId: savedActivity.stravaActivityId,
-            name: savedActivity.name,
-            type: savedActivity.type,
-            distanceMeters: savedActivity.distanceMeters?.toNumber() ?? null,
+          await sendNewActivitySlackNotificationOnce({
+            activityId: savedActivity.id,
             userName: stravaAthlete.user.name ?? undefined,
             userEmail: stravaAthlete.user.email ?? undefined,
-            sponsorName:
-              latestCommitment?.campaign.sponsor.businessName ??
-              latestSponsorMatch?.campaign?.sponsor.businessName ??
-              null,
-            charityName: latestCommitment?.charity.name ?? null,
           });
         } catch (error) {
           eventLogger.error("Slack notification failed for created activity", {
@@ -763,6 +746,24 @@ export async function POST(request: NextRequest) {
           activityId: updatedActivity.id,
         });
 
+        await recordStravaActivityHistory({
+          activityId: updatedActivity.id,
+          stravaActivityId: updatedActivity.stravaActivityId,
+          webhookEventId,
+          source: "strava_webhook",
+          eventType: "activity_snapshot",
+          aspectType: aspect_type,
+          name: activity.name,
+          type: activity.type,
+          isPrivate: activity.private || false,
+          visibility: activity.visibility ?? null,
+          descriptionText: activity.description ?? "",
+          updates,
+          metadata: {
+            sourceState: "fetched_after_update_webhook",
+          },
+        });
+
         // Process GPX download and storage if we don't have it yet
         try {
           const gpxBlobUrl = await processAndStoreGPX(
@@ -806,6 +807,18 @@ export async function POST(request: NextRequest) {
           },
           webhookEventId,
         });
+
+        try {
+          await sendNewActivitySlackNotificationOnce({
+            activityId: updatedActivity.id,
+            userName: stravaAthlete.user.name ?? undefined,
+            userEmail: stravaAthlete.user.email ?? undefined,
+          });
+        } catch (error) {
+          eventLogger.error("Slack notification failed for updated activity", {
+            error,
+          });
+        }
       }
     } else if (object_type === 'athlete') {
       eventLogger.info("Handling Strava athlete webhook event");

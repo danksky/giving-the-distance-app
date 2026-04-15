@@ -33,7 +33,13 @@ This will:
 npm run db:seed
 ```
 
-This will populate the `charities` table with 10 highly-rated organizations:
+This now seeds sponsor data only.
+
+### 4. Manage the Charity Catalog
+
+Use `/admin/charities` and `/admin/charities/new` to manage the live charity roster directly in the database.
+
+The current catalog includes 32 organizations, including:
 - UNICEF (default)
 - Doctors Without Borders
 - American Red Cross
@@ -44,17 +50,28 @@ This will populate the `charities` table with 10 highly-rated organizations:
 - Save the Children
 - DAV (Disabled American Veterans)
 - ASPCA
+- Feeding America
+- Direct Relief
+- charity: water
+- Habitat for Humanity
+- Meals on Wheels America
+- Best Friends Animal Society
+- World Central Kitchen
+- The Trevor Project
+- Khan Academy
+- Girls Who Code
 
-### 4. Verify in Prisma Studio
+### 5. Verify in Prisma Studio
 
 ```bash
 npm run db:studio
 ```
 
 Check that:
-- The `charities` table has 10 records
+- The `charities` table has 32 records
 - UNICEF has `isDefault: true`
 - Users can be linked to charities via `selectedCharityId`
+- `/admin/charities` shows the same live roster from the database
 
 ## How It Works
 
@@ -76,7 +93,6 @@ Check that:
 
 For production, you'll want to:
 - Run migrations through your deployment pipeline
-- Seed charities as part of deployment
 - Consider adding an admin interface to manage charities
 - Add charity impact tracking and reporting
 - Implement charity verification and approval workflow
@@ -84,8 +100,9 @@ For production, you'll want to:
 ## Updating Charities
 
 To add/update charities:
-1. Edit `data/charities.json`
-2. Run `npm run db:seed` (uses upsert, safe to run multiple times)
+1. Open `/admin/charities`
+2. Create or edit the charity directly in the admin catalog
+3. Keep logo files in `public/logos/charities/` and set `logoUrl` to the matching root-relative path
 
 ## Rollback
 

@@ -1,6 +1,8 @@
 import Image from "next/image";
+import { getCharityLogoSrc, isRemoteLogoUrl } from "@/lib/charity-logo";
 
 interface CharityLogoProps {
+  charityId?: string | null;
   name: string;
   logoUrl?: string | null;
   size?: "sm" | "md" | "lg" | "xl";
@@ -15,12 +17,14 @@ const sizeMap = {
 };
 
 export default function CharityLogo({
+  charityId,
   name,
   logoUrl,
   size = "md",
   className = "",
 }: CharityLogoProps) {
   const { container, text, image } = sizeMap[size];
+  const resolvedLogoSrc = getCharityLogoSrc({ charityId, logoUrl });
 
   // Get initials from charity name (first letter of first two words)
   const getInitials = (name: string): string => {
@@ -31,11 +35,26 @@ export default function CharityLogo({
     return words[0]?.slice(0, 2).toUpperCase() || "??";
   };
 
-  if (logoUrl) {
+  if (resolvedLogoSrc) {
+    if (isRemoteLogoUrl(resolvedLogoSrc)) {
+      return (
+        <div className={`relative ${container} ${className}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={resolvedLogoSrc}
+            alt={`${name} logo`}
+            width={image}
+            height={image}
+            className="h-full w-full rounded-lg object-cover"
+          />
+        </div>
+      );
+    }
+
     return (
       <div className={`relative ${container} ${className}`}>
         <Image
-          src={logoUrl}
+          src={resolvedLogoSrc}
           alt={`${name} logo`}
           width={image}
           height={image}

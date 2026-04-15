@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
+
+const LAST_UPDATED = "April 14, 2026";
 
 export const metadata: Metadata = {
   title: "Terms of Service - Giving the Distance",
@@ -22,8 +23,7 @@ export default function TermsPage() {
             <div className="space-y-8">
               <section>
                 <p className="opacity-70 mb-6">
-                  <strong>Last Updated:</strong>{" "}
-                  {new Date().toLocaleDateString()}
+                  <strong>Last Updated:</strong> {LAST_UPDATED}
                 </p>
                 <p className="leading-relaxed">
                   Welcome to Giving the Distance. By accessing or using our
@@ -114,7 +114,8 @@ export default function TermsPage() {
                         Enables creation and management of donation campaigns
                       </li>
                       <li>
-                        Processes donations based on athletic achievements
+                        Displays activity, sponsor, and charity information
+                        connected to supported campaigns
                       </li>
                       <li>
                         Facilitates connections between athletes, donors, and
@@ -129,6 +130,31 @@ export default function TermsPage() {
                       but we do not guarantee uninterrupted service. We may
                       modify, suspend, or discontinue any aspect of our services
                       at any time without prior notice.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">No Guarantee of Results</h3>
+                    <p>
+                      Giving the Distance does not guarantee that any athlete,
+                      donor, sponsor, charity, or campaign will receive any
+                      minimum level of visibility, promotion, public exposure,
+                      engagement, participation, matching volume, activity
+                      volume, fundraising outcome, or other business or
+                      charitable result through the platform.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">
+                      No Guarantee for Sponsors
+                    </h3>
+                    <p>
+                      Sponsors and prospective sponsors acknowledge that the
+                      platform may feature, reference, or display sponsor names,
+                      logos, messages, profiles, or related information, but we
+                      do not guarantee that any sponsor will be promoted in any
+                      particular way, receive any particular number of matched
+                      activities, impressions, clicks, conversions, customer
+                      leads, or other commercial benefit.
                     </p>
                   </div>
                 </div>
@@ -168,28 +194,33 @@ export default function TermsPage() {
                 </h2>
                 <div className="space-y-4 leading-relaxed">
                   <div>
-                    <h3 className="font-semibold mb-2">Payment Processing</h3>
+                    <h3 className="font-semibold mb-2">Platform Status</h3>
                     <p>
-                      All payments are processed through Stripe, a third-party
-                      payment processor. By making or receiving payments, you
-                      agree to Stripe&apos;s terms of service.
+                      Giving the Distance does not currently process payments or
+                      donations directly through the platform. Any references to
+                      donation amounts, commitments, sponsorships, or campaign
+                      values reflect platform features, records, or campaign
+                      logic and do not, by themselves, mean that a payment
+                      transaction has been processed by Giving the Distance.
                     </p>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Fees</h3>
                     <p>
-                      We may charge platform fees for facilitating donations and
-                      donations. Any applicable fees will be clearly disclosed
-                      before you confirm a transaction.
+                      We may introduce paid features, platform fees, or payment
+                      processing in the future. If we do, any applicable terms
+                      and fees will be disclosed before they take effect.
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">Refund Policy</h3>
+                    <h3 className="font-semibold mb-2">No Payment Guarantee</h3>
                     <p>
-                      All donations are final and non-refundable unless required
-                      by law or in cases of fraud or technical error. Donation
-                      agreements may have specific terms that override this
-                      general policy.
+                      We make no representation or warranty that any sponsor,
+                      donor, athlete, or charity will receive, transmit, or be
+                      entitled to any particular payment, reimbursement, pledge,
+                      donation, or other financial benefit through the platform
+                      unless and until such arrangements are separately and
+                      expressly established.
                     </p>
                   </div>
                 </div>
@@ -262,6 +293,73 @@ export default function TermsPage() {
 
               <section>
                 <h2 className="text-2xl font-semibold mb-4">
+                  User Content License
+                </h2>
+                <div className="space-y-3 leading-relaxed">
+                  <p>
+                    As between you and Giving the Distance, you retain ownership
+                    of the content and information you submit, upload, connect,
+                    post, or otherwise make available through the platform,
+                    subject to any rights granted to us under these Terms.
+                  </p>
+                  <p>
+                    You grant Giving the Distance a worldwide, non-exclusive,
+                    royalty-free, transferable, sublicensable license to host,
+                    store, reproduce, use, modify, adapt, publish, translate,
+                    create derivative works from, distribute, perform, and
+                    display such content as reasonably necessary to operate,
+                    improve, promote, and provide the platform and related
+                    services.
+                  </p>
+                  <p>
+                    You are solely responsible for your content and represent
+                    that you have all rights, permissions, and consents needed
+                    to provide it and to grant the rights described in these
+                    Terms.
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">
+                  Publicity and Promotional Use
+                </h2>
+                <div className="space-y-3 leading-relaxed">
+                  <p>
+                    By using Giving the Distance and participating in campaigns,
+                    activities, or other platform features, you grant Giving
+                    the Distance and its partners, affiliates, and service
+                    providers the right to use your name, username, profile
+                    information, photograph, avatar, image, likeness, voice,
+                    biographical information, and submitted or connected
+                    content, including activity details and campaign
+                    participation, for promotional, advertising, publicity,
+                    editorial, marketing, and other media-related purposes.
+                  </p>
+                  <p>
+                    This permission includes use in digital, print, social
+                    media, press materials, fundraising materials, website
+                    content, and other communications now known or later
+                    developed, without further notice to you or additional
+                    compensation to the extent permitted by law.
+                  </p>
+                  <p>
+                    Unless we expressly agree otherwise in writing, nothing in
+                    these Terms obligates Giving the Distance to use, publish,
+                    promote, or continue to display any particular name, image,
+                    likeness, sponsor profile, campaign, activity, or other
+                    content for any period of time or in any specific format.
+                  </p>
+                  <p>
+                    You represent that you have the rights necessary to grant
+                    this permission for any content, images, or materials you
+                    provide or make available through the platform.
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">
                   Data Accuracy and Liability
                 </h2>
                 <div className="space-y-3 leading-relaxed">
@@ -273,10 +371,18 @@ export default function TermsPage() {
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Inaccuracies in activity data from Strava</li>
                     <li>GPS or tracking errors in athletic activities</li>
-                    <li>Delays or failures in payment processing</li>
                     <li>
-                      Disputes between donors and athletes regarding donation
-                      terms
+                      Delays, failures, or omissions in matching, display, or
+                      campaign logic
+                    </li>
+                    <li>
+                      Disputes between sponsors, athletes, donors, charities, or
+                      other participants
+                    </li>
+                    <li>
+                      Any expectation that a sponsor, athlete, donor, or charity
+                      will receive publicity, exposure, promotion, or financial
+                      results
                     </li>
                   </ul>
                 </div>
@@ -306,6 +412,18 @@ export default function TermsPage() {
                     or revenues, whether incurred directly or indirectly, or any
                     loss of data, use, goodwill, or other intangible losses.
                   </p>
+                  <p>
+                    To the maximum extent permitted by law, you agree that your
+                    use of the platform is at your own risk and that you will
+                    not bring claims against Giving the Distance or its officers,
+                    directors, employees, contractors, agents, sponsors,
+                    partners, licensors, or service providers for dissatisfaction
+                    with platform availability, matching outcomes, sponsor
+                    visibility, publicity decisions, campaign performance,
+                    business results, fundraising outcomes, or reliance on
+                    third-party data or services, except to the extent such
+                    limitation is prohibited by applicable law.
+                  </p>
                 </div>
               </section>
 
@@ -318,7 +436,12 @@ export default function TermsPage() {
                   including reasonable attorney fees, arising out of or in any
                   way connected with your access to or use of the platform, your
                   violation of these Terms, or your violation of any rights of
-                  another person or entity.
+                  another person or entity. This includes claims arising from
+                  content you provide, statements you make, your relationship or
+                  dispute with any sponsor, athlete, donor, charity, or third
+                  party, and any allegation that Giving the Distance failed to
+                  deliver promotion, visibility, commercial results, or other
+                  expected outcomes on your behalf.
                 </p>
               </section>
 
@@ -364,14 +487,18 @@ export default function TermsPage() {
                 <div className="space-y-3 leading-relaxed">
                   <p>
                     These Terms shall be governed by and construed in accordance
-                    with the laws of the United States and the State of [Your
-                    State], without regard to its conflict of law provisions.
+                    with the laws of the United States and the State of New
+                    York, without regard to its conflict of law provisions.
                   </p>
                   <p>
                     Any disputes arising from these Terms or your use of the
                     platform shall be resolved through binding arbitration in
                     accordance with the rules of the American Arbitration
-                    Association, except where prohibited by law.
+                    Association in New York, New York, except where prohibited
+                    by law. To the maximum extent permitted by law, you and
+                    Giving the Distance agree to bring claims only in an
+                    individual capacity and not as a plaintiff or class member
+                    in any purported class or representative proceeding.
                   </p>
                 </div>
               </section>

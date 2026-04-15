@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
+
+const LAST_UPDATED = "April 14, 2026";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - Giving the Distance",
@@ -22,8 +23,7 @@ export default function PrivacyPage() {
             <div className="space-y-8">
               <section>
                 <p className="opacity-70 mb-6">
-                  <strong>Last Updated:</strong>{" "}
-                  {new Date().toLocaleDateString()}
+                  <strong>Last Updated:</strong> {LAST_UPDATED}
                 </p>
                 <p className="leading-relaxed">
                   At Giving the Distance, we are committed to protecting your
@@ -67,6 +67,17 @@ export default function PrivacyPage() {
                       with our services.
                     </p>
                   </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Sponsor Inquiry Information
+                    </h3>
+                    <p>
+                      If you submit a sponsor interest or contact form, we may
+                      collect details such as your phone number, email address,
+                      and business-related information that you choose to
+                      provide.
+                    </p>
+                  </div>
                 </div>
               </section>
 
@@ -80,11 +91,20 @@ export default function PrivacyPage() {
                     To track your athletic activities for donation purposes
                   </li>
                   <li>
-                    To process donations and connect donors with your
-                    achievements
+                    To operate activity, sponsor, and charity features connected
+                    to your achievements
                   </li>
                   <li>
                     To communicate with you about your account and activities
+                  </li>
+                  <li>
+                    To display, promote, and publicize platform activities,
+                    sponsors, campaigns, charities, and related community
+                    content
+                  </li>
+                  <li>
+                    To review and respond to sponsor interest submissions and
+                    business inquiries
                   </li>
                   <li>To improve and optimize our platform</li>
                   <li>To ensure the security and integrity of our services</li>
@@ -110,8 +130,9 @@ export default function PrivacyPage() {
                       activity data
                     </li>
                     <li>
-                      <strong>Stripe:</strong> For processing payments and
-                      donations (when implemented)
+                      <strong>Slack and similar communications tools:</strong>{" "}
+                      For receiving internal notifications about sponsor
+                      inquiries and operational events
                     </li>
                     <li>
                       <strong>Vercel:</strong> For hosting and infrastructure
@@ -121,6 +142,14 @@ export default function PrivacyPage() {
                     We do not sell your personal information to third parties.
                     We only share data necessary to provide our services and
                     comply with legal obligations.
+                  </p>
+                  <p>
+                    We may also use and share information, including names,
+                    profile details, images, likenesses, activity details,
+                    campaign participation, sponsor information, and other
+                    submitted or connected content, for promotional, publicity,
+                    editorial, marketing, fundraising, and media-related
+                    purposes as described in our Terms of Service.
                   </p>
                 </div>
               </section>
@@ -151,6 +180,13 @@ export default function PrivacyPage() {
                     <li>Disconnect your Strava account at any time</li>
                     <li>Opt out of non-essential communications</li>
                   </ul>
+                  <p>
+                    We may retain or continue to use certain information where
+                    necessary for legal compliance, internal records, legitimate
+                    business purposes, or materials already created, published,
+                    or distributed before your request, to the extent permitted
+                    by law.
+                  </p>
                 </div>
               </section>
 

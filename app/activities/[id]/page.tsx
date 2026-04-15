@@ -273,7 +273,13 @@ export default async function ActivityPage({
       <Navbar />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-6 flex justify-end">
+          <Link href="/dashboard" className="btn btn-outline btn-sm w-fit">
+            ← Back to Dashboard
+          </Link>
+        </div>
+
         {/* Activity Header Card with Stats */}
         <div className="card bg-base-100  mb-6">
           <div className="card-body">
@@ -360,6 +366,7 @@ export default async function ActivityPage({
                   </div>
                   <div className="flex items-center gap-3 mb-4">
                     <CharityLogo
+                      charityId={activityCharity?.id}
                       name={activityCharity?.name || "Charity"}
                       logoUrl={activityCharity?.logoUrl}
                       size="lg"
@@ -446,6 +453,7 @@ export default async function ActivityPage({
                   </div>
                   <div className="flex items-center gap-3">
                     <CharityLogo
+                      charityId={activityCharity.id}
                       name={activityCharity.name}
                       logoUrl={activityCharity.logoUrl}
                       size="md"
@@ -554,13 +562,6 @@ export default async function ActivityPage({
             initialIsPublic={activity.isPublicProfile}
           />
         )}
-
-        {/* Back to Dashboard */}
-        <div className="text-center">
-          <Link href="/dashboard" className="btn btn-ghost">
-            ← Back to Dashboard
-          </Link>
-        </div>
       </main>
     </div>
   );

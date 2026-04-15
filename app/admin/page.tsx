@@ -46,21 +46,51 @@ export default async function AdminPage() {
       <main className="container mx-auto max-w-7xl px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Activities Card */}
+          <Link
+            href="/admin/activities"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
+          >
+            <div className="card-body">
+              <h2 className="card-title text-2xl">Activity Table</h2>
+              <p className="opacity-70">
+                Browse all synced activities, sponsorship outcomes, and history
+                coverage
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-primary">View Activities →</button>
+              </div>
+            </div>
+          </Link>
+
           {/* Campaigns Card */}
           <Link
             href="/admin/campaigns"
             className="card bg-base-100 hover:border-gray-300 transition-colors"
           >
             <div className="card-body">
-              <div className="flex items-start justify-between">
-                <div className="badge badge-primary">Primary</div>
-              </div>
-              <h2 className="card-title text-2xl mt-4">Campaign Management</h2>
+              <h2 className="card-title text-2xl">Campaign Management</h2>
               <p className="opacity-70">
                 View and manage sponsor campaigns, budgets, and placement logs
               </p>
               <div className="card-actions justify-end mt-4">
                 <button className="btn btn-primary">View Campaigns →</button>
+              </div>
+            </div>
+          </Link>
+
+          {/* Charity Catalog Card */}
+          <Link
+            href="/admin/charities"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
+          >
+            <div className="card-body">
+              <h2 className="card-title text-2xl">Charity Management</h2>
+              <p className="opacity-70">
+                Add and update charities directly in the database-backed catalog
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-primary">Manage Charities →</button>
               </div>
             </div>
           </Link>
@@ -71,15 +101,12 @@ export default async function AdminPage() {
             className="card bg-base-100 hover:border-gray-300 transition-colors"
           >
             <div className="card-body">
-              <div className="flex items-start justify-between">
-                <div className="badge badge-secondary">Monitoring</div>
-              </div>
-              <h2 className="card-title text-2xl mt-4">Webhook Events</h2>
+              <h2 className="card-title text-2xl">Webhook Events</h2>
               <p className="opacity-70">
                 Monitor Strava webhook events and activity processing status
               </p>
               <div className="card-actions justify-end mt-4">
-                <button className="btn btn-secondary">View Events →</button>
+                <button className="btn btn-primary">View Events →</button>
               </div>
             </div>
           </Link>
@@ -90,15 +117,12 @@ export default async function AdminPage() {
             className="card bg-base-100 hover:border-gray-300 transition-colors"
           >
             <div className="card-body">
-              <div className="flex items-start justify-between">
-                <div className="badge badge-warning">Maintenance</div>
-              </div>
-              <h2 className="card-title text-2xl mt-4">GPX Management</h2>
+              <h2 className="card-title text-2xl">GPX Management</h2>
               <p className="opacity-70">
                 View GPX statistics and backfill missing route files
               </p>
               <div className="card-actions justify-end mt-4">
-                <button className="btn btn-warning">Manage GPX →</button>
+                <button className="btn btn-primary">Manage GPX →</button>
               </div>
             </div>
           </Link>
@@ -111,15 +135,12 @@ export default async function AdminPage() {
             className="card bg-base-100 hover:border-gray-300 transition-colors"
           >
             <div className="card-body">
-              <div className="flex items-start justify-between">
-                <div className="badge badge-info">External</div>
-              </div>
-              <h2 className="card-title text-2xl mt-4">Prisma Studio</h2>
+              <h2 className="card-title text-2xl">Prisma Studio</h2>
               <p className="opacity-70">
                 Direct database access and management interface
               </p>
               <div className="card-actions justify-end mt-4">
-                <button className="btn btn-info">Open Studio ↗</button>
+                <button className="btn btn-primary">Open Studio ↗</button>
               </div>
             </div>
           </a>
@@ -127,10 +148,7 @@ export default async function AdminPage() {
           {/* System Info Card */}
           <div className="card bg-base-100">
             <div className="card-body">
-              <div className="flex items-start justify-between">
-                <div className="badge badge-success">Info</div>
-              </div>
-              <h2 className="card-title text-2xl mt-4">System Information</h2>
+              <h2 className="card-title text-2xl">System Information</h2>
               <div className="space-y-2 mt-4">
                 <div className="flex justify-between">
                   <span className="opacity-70">Admin User:</span>
@@ -145,47 +163,6 @@ export default async function AdminPage() {
                   <span className="badge badge-success">Operational</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="card bg-base-100  mt-8">
-          <div className="card-body">
-            <h2 className="card-title text-2xl">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <div className="stat bg-base-200 rounded-lg">
-                <div className="stat-title">Run Seed Script</div>
-                <div className="stat-desc mt-2">
-                  Add sponsors and campaigns to database
-                </div>
-                <code className="text-xs mt-2 block">npm run db:seed</code>
-              </div>
-              <div className="stat bg-base-200 rounded-lg">
-                <div className="stat-title">Run Tests</div>
-                <div className="stat-desc mt-2">
-                  Execute unit tests for sponsor matching
-                </div>
-                <code className="text-xs mt-2 block">npm test</code>
-              </div>
-              <div className="stat bg-base-200 rounded-lg">
-                <div className="stat-title">View Logs</div>
-                <div className="stat-desc mt-2">
-                  Check application and webhook logs
-                </div>
-                <code className="text-xs mt-2 block">npm run dev</code>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Documentation */}
-        <div className="card bg-base-100  mt-8">
-          <div className="card-body">
-            <h2 className="card-title text-2xl">Documentation</h2>
-            <div className="mt-4 text-sm text-base-content/80">
-              Internal docs are stored in the repository under <code>docs/</code>
-              and are not publicly served by the app.
             </div>
           </div>
         </div>

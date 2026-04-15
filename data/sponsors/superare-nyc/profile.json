@@ -1,0 +1,36 @@
+{
+  "id": "superare-nyc",
+  "businessName": "Superare",
+  "address": {
+    "street": "84 Orchard St",
+    "city": "New York",
+    "state": "NY",
+    "zipCode": "10002",
+    "fullAddress": "84 Orchard St, New York, NY 10002"
+  },
+  "map": {
+    "embedUrl": "https://www.google.com/maps?q=84+Orchard+St,+New+York,+NY+10002&output=embed"
+  },
+  "blurb": "Supporting NYC athletes with a fight-shop spirit, premium gear, and a strong connection to the local training community.",
+  "links": {
+    "instagram": "https://www.instagram.com/superareshop/?hl=en",
+    "website": "https://superareshop.com/pages/nyc"
+  },
+  "images": {
+    "logo": "/sponsors/superare-nyc/logo.png",
+    "cover": "/sponsors/superare-nyc/cover.jpg",
+    "staff": "/sponsors/superare-nyc/staff.jpg",
+    "products": [
+      "/sponsors/superare-nyc/product1.jpg",
+      "/sponsors/superare-nyc/product2.jpg",
+      "/sponsors/superare-nyc/product3.jpg"
+    ]
+  },
+  "impact": {
+    "totalDonated": 0,
+    "activitiesSponsored": 0,
+    "athletesSupported": 0,
+    "charities": []
+  },
+  "recentActivities": []
+}

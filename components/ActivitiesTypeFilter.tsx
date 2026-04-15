@@ -20,7 +20,7 @@ export default function ActivitiesTypeFilter({
         <select
           name="type"
           defaultValue={typeFilter}
-          className="select select-bordered select-sm w-full"
+          className="h-9 w-full rounded-md border border-base-300 bg-base-100 px-3 text-sm shadow-sm outline-none transition-colors focus:border-base-content/30 focus:ring-2 focus:ring-base-300/60"
           onChange={(event) => event.currentTarget.form?.requestSubmit()}
         >
           <option value="all">All types</option>
