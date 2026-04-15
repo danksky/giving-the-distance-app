@@ -1,0 +1,59 @@
+name: GPX Blob Backup
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gpx-blob-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      B2_BUCKET: ${{ vars.B2_BUCKET }}
+      B2_KEY_ID: ${{ vars.B2_KEY_ID }}
+      B2_ENDPOINT: ${{ vars.B2_ENDPOINT }}
+      B2_REGION: ${{ vars.B2_REGION }}
+      BLOB_BACKUP_PREFIX: ${{ vars.BLOB_BACKUP_PREFIX }}
+      GPX_BLOB_PREFIX: gpx/
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install backup dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          python3 -m pip install --user awscli
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          npm ci --ignore-scripts
+
+      - name: Run GPX blob backup
+        run: node scripts/backup-gpx-blobs.mjs
+
+      - name: Publish job summary
+        if: ${{ success() }}
+        run: |
+          {
+            echo "## GPX blob backup"
+            echo ""
+            echo "- Schedule: daily at 07:17 UTC"
+            echo "- Destination bucket: \`${B2_BUCKET}\`"
+            echo "- Destination prefix: \`${BLOB_BACKUP_PREFIX:-vercel-blob}\`"
+            echo "- Source prefix: \`gpx/\`"
+          } >> "$GITHUB_STEP_SUMMARY"
