@@ -1,0 +1,35 @@
+{
+  "id": "kings-combat-williamsburg",
+  "businessName": "Kings Combat Williamsburg",
+  "address": {
+    "street": "219 South 3rd Street",
+    "city": "Brooklyn",
+    "state": "NY",
+    "zipCode": "11211",
+    "fullAddress": "219 South 3rd Street, Brooklyn, NY 11211"
+  },
+  "map": {
+    "embedUrl": "https://www.google.com/maps?q=219+South+3rd+Street,+Brooklyn,+NY+11211&output=embed"
+  },
+  "blurb": "A Williamsburg training center for Muay Thai, kickboxing, jiu-jitsu, and strength work with a strong neighborhood community around movement and discipline.",
+  "links": {
+    "instagram": "https://www.instagram.com/kingscombatwillyb/",
+    "website": "https://kingscombatwillyb.com/"
+  },
+  "images": {
+    "logo": "/sponsors/kings-combat-williamsburg/logo.jpg",
+    "cover": "/sponsors/kings-combat-williamsburg/cover.png",
+    "staff": "/sponsors/kings-combat-williamsburg/staff.jpg",
+    "products": [
+      "/sponsors/kings-combat-williamsburg/product1.jpg",
+      "/sponsors/kings-combat-williamsburg/product2.jpeg"
+    ]
+  },
+  "impact": {
+    "totalDonated": 0,
+    "activitiesSponsored": 0,
+    "athletesSupported": 0,
+    "charities": []
+  },
+  "recentActivities": []
+}
