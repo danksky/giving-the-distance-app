@@ -83,7 +83,7 @@ export default async function CharitySettingsPage() {
                   name={currentCharity.name}
                   logoUrl={currentCharity.logoUrl}
                   size="xl"
-                  className="mx-auto sm:mx-0"
+                  className="flex-shrink-0"
                 />
                 <div className="flex-1 w-full">
                   <h3 className="text-xl sm:text-2xl font-bold text-[#8B4ACC] mb-2">

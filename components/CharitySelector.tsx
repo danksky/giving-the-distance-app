@@ -315,7 +315,22 @@ export default function CharitySelector({
 
                       <div className="flex-shrink-0 sm:hidden ml-auto">
                         {isSelected ? (
-                          <button className="btn btn-success btn-sm" disabled>
+                          <button
+                            className="btn btn-success btn-sm gap-1.5"
+                            disabled
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
                             Selected
                           </button>
                         ) : (
@@ -392,7 +407,22 @@ export default function CharitySelector({
                     {/* Select Button - desktop only */}
                     <div className="hidden sm:block flex-shrink-0">
                       {isSelected ? (
-                        <button className="btn btn-success btn-sm" disabled>
+                        <button
+                          className="btn btn-success btn-sm gap-1.5"
+                          disabled
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
                           Selected
                         </button>
                       ) : (
