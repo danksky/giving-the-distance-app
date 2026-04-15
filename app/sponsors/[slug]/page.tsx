@@ -442,15 +442,16 @@ export default async function SponsorProfilePage({
                             • {activity.activityType}
                           </span>
                         </div>
-                        <div className="text-sm text-base-content/70">
-                          <span>
+                        <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm text-base-content/70">
+                          <span className="whitespace-nowrap">
                             {activity.distance.toFixed(2)}{" "}
                             {activity.distanceUnit}
                           </span>
-                          <span className="mx-2">•</span>
-                          <span>{activity.charity}</span>
-                          <span className="mx-2">•</span>
-                          <span>
+                          <span className="whitespace-nowrap">
+                            • {activity.charity}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            •{" "}
                             {new Date(activity.date).toLocaleDateString(
                               "en-US",
                               {
