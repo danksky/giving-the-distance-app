@@ -35,6 +35,10 @@ for var_name in "${required_vars[@]}"; do
   fi
 done
 
+backup_database_url="${BACKUP_DATABASE_URL//$'\r'/}"
+backup_database_url="${backup_database_url//$'\n'/}"
+backup_database_url="${backup_database_url//\\n/}"
+
 retention_days="${BACKUP_RETENTION_DAYS:-30}"
 backup_prefix="${BACKUP_PREFIX:-postgres/production}"
 timestamp="$(date -u +"%Y-%m-%dT%H%M%SZ")"
@@ -61,7 +65,7 @@ export PGAPPNAME="giving-the-distance-backup"
 
 echo "Creating production database backup: ${filename}"
 pg_dump \
-  --dbname="${BACKUP_DATABASE_URL}" \
+  --dbname="${backup_database_url}" \
   --format=custom \
   --no-owner \
   --no-privileges \
