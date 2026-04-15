@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import Navbar from "@/components/Navbar";
+import PaginationNav from "@/components/PaginationNav";
 import { isAdmin } from "@/lib/auth-helpers";
 import { db } from "@/lib/db";
 import Link from "next/link";
@@ -148,8 +149,6 @@ export default async function AdminActivitiesPage({
 
   const totalPages = Math.max(1, Math.ceil(totalActivities / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const hasPreviousPage = currentPage > 1;
-  const hasNextPage = currentPage < totalPages;
 
   const activities = await db.activity.findMany({
     include: {
@@ -432,48 +431,11 @@ export default async function AdminActivitiesPage({
                   </table>
                 </div>
 
-                <div className="mt-6 flex flex-col gap-3 border-t border-base-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-sm opacity-70">
-                    Page {currentPage} of {totalPages}
-                  </div>
-                  {totalPages > 1 && (
-                    <div className="join">
-                      {hasPreviousPage ? (
-                        <Link
-                          href={buildPageHref(currentPage - 1)}
-                          className="join-item btn btn-sm"
-                        >
-                          Previous
-                        </Link>
-                      ) : (
-                        <button
-                          type="button"
-                          className="join-item btn btn-sm"
-                          disabled
-                        >
-                          Previous
-                        </button>
-                      )}
-
-                      {hasNextPage ? (
-                        <Link
-                          href={buildPageHref(currentPage + 1)}
-                          className="join-item btn btn-sm"
-                        >
-                          Next
-                        </Link>
-                      ) : (
-                        <button
-                          type="button"
-                          className="join-item btn btn-sm"
-                          disabled
-                        >
-                          Next
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <PaginationNav
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  getPageHref={buildPageHref}
+                />
               </>
             )}
           </div>

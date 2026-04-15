@@ -151,9 +151,9 @@ describe("ActivitiesPage", () => {
       })
     );
 
-    expect(screen.getByRole("link", { name: /distance/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /date/i })).toHaveAttribute(
       "href",
-      "/activities?page=1&sort=distance&dir=desc&type=Run"
+      "/activities?page=1&sort=date&dir=asc&type=Run"
     );
   });
 });

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import Navbar from "@/components/Navbar";
 import ActivitiesTypeFilter from "@/components/ActivitiesTypeFilter";
+import PaginationNav from "@/components/PaginationNav";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
@@ -135,8 +136,6 @@ export default async function ActivitiesPage({
   const totalActivities = await db.activity.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalActivities / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const hasPreviousPage = currentPage > 1;
-  const hasNextPage = currentPage < totalPages;
 
   const activities = await db.activity.findMany({
     where,
@@ -275,7 +274,8 @@ export default async function ActivitiesPage({
                         <tbody>
                           {activities.map((activity) => {
                             const isDeleted = !!activity.deletedAt;
-                            const commitment = activity.charityCommitments[0];
+                            const commitment =
+                              activity.charityCommitments?.[0];
                             const commitmentAmount = commitment
                               ? `$${(commitment.amountCents / 100).toFixed(2)}`
                               : "—";
@@ -325,58 +325,18 @@ export default async function ActivitiesPage({
                       </table>
                     </div>
 
-                    <div className="mt-6 flex flex-col gap-3 border-t border-base-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="text-sm opacity-70">
-                        Page {currentPage} of {totalPages}
-                      </div>
-                      {totalPages > 1 && (
-                        <div className="join">
-                          {hasPreviousPage ? (
-                            <Link
-                              href={buildPageHref({
-                                page: currentPage - 1,
-                                sort: sortField,
-                                dir: sortDirection,
-                                type: typeFilter,
-                              })}
-                              className="join-item btn btn-sm"
-                            >
-                              Previous
-                            </Link>
-                          ) : (
-                            <button
-                              type="button"
-                              className="join-item btn btn-sm"
-                              disabled
-                            >
-                              Previous
-                            </button>
-                          )}
-
-                          {hasNextPage ? (
-                            <Link
-                              href={buildPageHref({
-                                page: currentPage + 1,
-                                sort: sortField,
-                                dir: sortDirection,
-                                type: typeFilter,
-                              })}
-                              className="join-item btn btn-sm"
-                            >
-                              Next
-                            </Link>
-                          ) : (
-                            <button
-                              type="button"
-                              className="join-item btn btn-sm"
-                              disabled
-                            >
-                              Next
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <PaginationNav
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      getPageHref={(nextPage) =>
+                        buildPageHref({
+                          page: nextPage,
+                          sort: sortField,
+                          dir: sortDirection,
+                          type: typeFilter,
+                        })
+                      }
+                    />
                   </>
                 )}
               </div>
