@@ -32,7 +32,7 @@ jobs:
       - name: Install backup dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client coreutils python3-pip
+          sudo apt-get install -y postgresql-client-17 coreutils python3-pip
           python3 -m pip install --user awscli
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
