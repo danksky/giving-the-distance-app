@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CharityLogo from "@/components/CharityLogo";
+import { getVisiblePages } from "@/lib/pagination";
 import { searchCharities } from "@/lib/charity-search";
 
 interface Charity {
@@ -21,6 +22,136 @@ interface Charity {
 interface CharitySelectorProps {
   charities: Charity[];
   currentCharityId: string;
+}
+
+function CharityPaginationButtons({
+  currentPage,
+  totalPages,
+  onPageChange,
+  fullPaginationThreshold,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  fullPaginationThreshold: number;
+}) {
+  const visiblePages = getVisiblePages(
+    currentPage,
+    totalPages,
+    fullPaginationThreshold
+  );
+
+  return (
+    <div className="join whitespace-nowrap">
+      <button
+        className="btn btn-sm btn-outline join-item"
+        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </button>
+
+      {visiblePages.map((page, index) => {
+        const previousPage = visiblePages[index - 1];
+        const needsGap = previousPage !== undefined && page - previousPage > 1;
+
+        return (
+          <span key={page} className="contents">
+            {needsGap && (
+              <span
+                aria-hidden="true"
+                className="btn btn-sm join-item btn-disabled pointer-events-none"
+              >
+                ...
+              </span>
+            )}
+
+            <button
+              className={`btn btn-sm join-item ${
+                currentPage === page ? "btn-primary" : "btn-ghost"
+              }`}
+              onClick={() => onPageChange(page)}
+              disabled={currentPage === page}
+            >
+              {page}
+            </button>
+          </span>
+        );
+      })}
+
+      <button
+        className="btn btn-sm btn-outline join-item"
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </button>
+    </div>
+  );
+}
+
+function CharityMobilePagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  const visiblePages = getVisiblePages(currentPage, totalPages, 4);
+
+  return (
+    <div className="flex w-full flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {visiblePages.map((page, index) => {
+          const previousPage = visiblePages[index - 1];
+          const needsGap = previousPage !== undefined && page - previousPage > 1;
+
+          return (
+            <span key={page} className="contents">
+              {needsGap && (
+                <span
+                  aria-hidden="true"
+                  className="btn btn-sm btn-disabled pointer-events-none"
+                >
+                  ...
+                </span>
+              )}
+
+              <button
+                className={`btn btn-sm ${
+                  currentPage === page ? "btn-primary" : "btn-ghost"
+                }`}
+                onClick={() => onPageChange(page)}
+                disabled={currentPage === page}
+              >
+                {page}
+              </button>
+            </span>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center justify-start gap-3">
+        <button
+          className="btn btn-sm btn-outline"
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+
+        <button
+          className="btn btn-sm btn-outline"
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function CharitySelector({
@@ -173,11 +304,8 @@ export default function CharitySelector({
                 }`}
               >
                 <div className="card-body">
-                  {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
                   <div className="flex flex-col sm:flex-row items-start gap-4">
-                    {/* Header row on mobile: Logo + Title + Button */}
-                    <div className="flex items-start gap-4 w-full sm:w-auto">
-                      {/* Charity Logo */}
+                    <div className="flex items-start justify-between gap-4 w-full sm:w-auto">
                       <CharityLogo
                         name={charity.name}
                         logoUrl={charity.logoUrl}
@@ -185,31 +313,7 @@ export default function CharitySelector({
                         className="flex-shrink-0"
                       />
 
-                      {/* Title and button on mobile */}
-                      <div className="flex-1 min-w-0 sm:hidden">
-                        <h3 className="text-lg font-bold flex items-center gap-2">
-                          {charity.name}
-                          {isSelected && (
-                            <span className="text-[#8B4ACC]">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 inline-block"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </span>
-                          )}
-                        </h3>
-                      </div>
-
-                      {/* Select Button - mobile top right */}
-                      <div className="flex-shrink-0 sm:hidden">
+                      <div className="flex-shrink-0 sm:hidden ml-auto">
                         {isSelected ? (
                           <button className="btn btn-success btn-sm" disabled>
                             Selected
@@ -233,27 +337,7 @@ export default function CharitySelector({
                     {/* Charity Info */}
                     <div className="flex-1 min-w-0 w-full sm:w-auto">
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <div>
-                          {/* Desktop title */}
-                          <h3 className="hidden sm:block text-xl font-bold">
-                            {charity.name}
-                            {isSelected && (
-                              <span className="ml-2 text-[#8B4ACC]">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 inline-block"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              </span>
-                            )}
-                          </h3>
+                        <div className="min-w-0">
                           <div className="text-sm font-semibold text-base-content/70">
                             {charity.fullName}
                           </div>
@@ -338,37 +422,22 @@ export default function CharitySelector({
           <div className="text-sm text-base-content/60">
             Page {currentPage} of {totalPages}
           </div>
-          <div className="join self-start sm:self-auto">
-            <button
-              className="btn btn-sm join-item"
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-            {Array.from({ length: totalPages }, (_, index) => {
-              const page = index + 1;
-              return (
-                <button
-                  key={page}
-                  className={`btn btn-sm join-item ${
-                    currentPage === page ? "btn-primary" : "btn-ghost"
-                  }`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              );
-            })}
-            <button
-              className="btn btn-sm join-item"
-              onClick={() =>
-                setCurrentPage((page) => Math.min(totalPages, page + 1))
-              }
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
+          <div className="max-w-full overflow-x-auto pb-1 self-start sm:self-auto">
+            <div className="sm:hidden">
+              <CharityMobilePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+            <div className="hidden sm:block">
+              <CharityPaginationButtons
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                fullPaginationThreshold={5}
+              />
+            </div>
           </div>
         </div>
       )}
