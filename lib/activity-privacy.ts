@@ -16,6 +16,20 @@ export function anonymizeName(name: string | null | undefined): string {
 }
 
 /**
+ * Anonymizes an activity title to show only the first initial + bullets
+ * Example: "Morning Run in Central Park" -> "M•••••"
+ */
+export function anonymizeActivityTitle(
+  title: string | null | undefined
+): string {
+  if (!title || title.trim() === "") {
+    return "A•••••";
+  }
+  const firstInitial = title.trim().charAt(0).toUpperCase();
+  return `${firstInitial}${"•".repeat(5)}`;
+}
+
+/**
  * Checks if viewer can see the real profile details for an activity
  * Returns true if:
  * - Viewer is the activity owner
