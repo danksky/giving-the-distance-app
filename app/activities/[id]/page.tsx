@@ -509,29 +509,8 @@ export default async function ActivityPage({
         {isOwner && activity.gpxBlobUrl && (
           <div className="card bg-base-100 mb-6">
             <div className="card-body">
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4">
                 <h3 className="text-2xl font-bold">Route Map</h3>
-                <a
-                  href={activity.gpxBlobUrl}
-                  download={`${activity.name || "activity"}.gpx`}
-                  className="btn btn-sm btn-outline btn-primary"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                    />
-                  </svg>
-                  Download GPX
-                </a>
               </div>
               <ActivityMap
                 gpxBlobUrl={activity.gpxBlobUrl}

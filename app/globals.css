@@ -416,6 +416,36 @@ body {
   font-size: 0.875rem;
 }
 
+/* Activity Map */
+.activity-route-map {
+  box-shadow:
+    0 16px 40px rgb(15 23 42 / 0.08),
+    0 2px 8px rgb(15 23 42 / 0.06);
+}
+
+.activity-route-map .leaflet-control-zoom a {
+  color: #1f2937;
+  background: rgb(255 255 255 / 0.96);
+  border-bottom-color: rgb(229 231 235 / 0.9);
+}
+
+.activity-route-map .leaflet-control-zoom a:hover {
+  background: #ffffff;
+}
+
+.activity-route-map .leaflet-control-attribution {
+  background: rgb(255 255 255 / 0.86);
+  color: rgb(55 65 81 / 0.88);
+  backdrop-filter: blur(8px);
+}
+
+.activity-route-map .leaflet-popup-content-wrapper,
+.activity-route-map .leaflet-popup-tip {
+  background: rgb(255 255 255 / 0.96);
+  color: #111827;
+  box-shadow: 0 14px 30px rgb(15 23 42 / 0.14);
+}
+
 /* Avatar Styles */
 .avatar {
   display: inline-flex;

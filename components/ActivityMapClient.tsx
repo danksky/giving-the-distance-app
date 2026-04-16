@@ -52,70 +52,81 @@ export default function ActivityMapClient({
     const map = L.map(mapRef.current, {
       attributionControl: true,
       zoomControl: true,
+      scrollWheelZoom: false,
     });
 
     mapInstanceRef.current = map;
 
-    // Add OpenStreetMap tiles
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
+    // Use a cleaner street basemap that feels closer to Google Maps.
+    L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 20,
+        subdomains: "abcd",
+      }
+    ).addTo(map);
+
+    // Add a soft white casing so the route stands out on busier streets.
+    L.polyline(coordinates, {
+      color: "#ffffff",
+      weight: 9,
+      opacity: 0.9,
+      smoothFactor: 1,
+      lineCap: "round",
+      lineJoin: "round",
     }).addTo(map);
 
-    // Create polyline for the route
+    // Main route line in the product's purple brand color.
     const polyline = L.polyline(coordinates, {
-      color: "#8B4ACC", // Brand purple color
-      weight: 4,
-      opacity: 0.8,
+      color: "#8B4ACC",
+      weight: 5,
+      opacity: 0.95,
       smoothFactor: 1,
+      lineCap: "round",
+      lineJoin: "round",
     }).addTo(map);
+
+    const createMarkerIcon = (fillColor: string) =>
+      L.divIcon({
+        className: "activity-map-marker",
+        html: `
+          <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 9999px;
+            background: ${fillColor};
+            border: 3px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.22);
+          "></div>
+        `,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+      });
 
     // Add start marker
-    const startIcon = L.divIcon({
-      className: "custom-div-icon",
-      html: `
-        <div style="
-          background-color: #10b981;
-          border: 3px solid white;
-          border-radius: 50%;
-          width: 20px;
-          height: 20px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        "></div>
-      `,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-    });
-
-    L.marker(coordinates[0], { icon: startIcon })
+    L.marker(coordinates[0], { icon: createMarkerIcon("#22c55e") })
       .addTo(map)
       .bindPopup("<b>Start</b>");
 
     // Add finish marker
-    const finishIcon = L.divIcon({
-      className: "custom-div-icon",
-      html: `
-        <div style="
-          background-color: #ef4444;
-          border: 3px solid white;
-          border-radius: 50%;
-          width: 20px;
-          height: 20px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        "></div>
-      `,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-    });
-
-    L.marker(coordinates[coordinates.length - 1], { icon: finishIcon })
+    L.marker(coordinates[coordinates.length - 1], {
+      icon: createMarkerIcon("#f97316"),
+    })
       .addTo(map)
       .bindPopup("<b>Finish</b>");
 
+    map.on("popupopen", () => {
+      mapRef.current?.focus();
+    });
+
     // Fit map to show entire route
     map.fitBounds(polyline.getBounds(), {
-      padding: [50, 50],
+      padding: [36, 36],
     });
 
     // Cleanup on unmount
@@ -130,8 +141,10 @@ export default function ActivityMapClient({
   return (
     <div
       ref={mapRef}
-      className="w-full h-96 rounded-lg overflow-hidden border border-base-300"
+      className="activity-route-map w-full h-96 overflow-hidden rounded-lg border border-base-300"
       style={{ zIndex: 0 }}
+      aria-label={`${activityName} route map`}
+      tabIndex={-1}
     />
   );
 }
