@@ -150,6 +150,12 @@ export default async function ActivityPage({
     viewerUserId
   );
   const isOwner = viewerUserId === activity.userId;
+  const isPrivateActivityProfile = !showRealProfile;
+  const shouldShowPrivateActivityAlert = isPrivateActivityProfile && !isOwner;
+  const shouldShowJoinCta = shouldShowPrivateActivityAlert && !viewerUserId;
+  const privateActivityLabel = activity.type
+    ? activity.type.toLowerCase()
+    : "activity";
 
   // Debug logging (remove in production)
   if (process.env.NODE_ENV === "development") {
@@ -280,6 +286,25 @@ export default async function ActivityPage({
           </Link>
         </div>
 
+        {shouldShowPrivateActivityAlert && (
+          <div
+            role="alert"
+            className="alert mb-6 items-start border border-base-300 bg-base-300/40"
+          >
+            <div className="space-y-3">
+              <p className="text-sm sm:text-base">
+                This athlete has chosen to keep their {privateActivityLabel}{" "}
+                private.
+              </p>
+              {shouldShowJoinCta && (
+                <Link href="/" className="btn btn-primary btn-sm w-fit">
+                  Join the NYC movement
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Activity Header Card with Stats */}
         <div className="card bg-base-100  mb-6">
           <div className="card-body">
@@ -306,11 +331,6 @@ export default async function ActivityPage({
                   <p className="text-sm text-base-content/60">
                     Imported from Strava™ • {activityTime}
                   </p>
-                  {!showRealProfile && (
-                    <span className="badge badge-ghost badge-sm">
-                      Private Profile
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
