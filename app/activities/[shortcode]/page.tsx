@@ -8,7 +8,8 @@ import {
   getDisplayName,
   getDisplayAvatar,
   canViewRealProfile,
-  anonymizeActivityTitle,
+  getGenericActivityTitle,
+  getGenericActivityType,
 } from "@/lib/activity-privacy";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
@@ -100,9 +101,10 @@ export async function generateMetadata({
     activity.isPublicProfile,
     viewerUserId
   );
+  const genericActivityType = getGenericActivityType(activity.type);
   const activityLabel = showRealProfile
     ? activity.name || activity.type || "Activity"
-    : anonymizeActivityTitle(activity.name);
+    : getGenericActivityTitle(activity.type, activity.startDateLocal);
   const distanceText = activity.distanceMeters
     ? `${(Number(activity.distanceMeters) / 1000).toFixed(2)} km`
     : null;
@@ -115,7 +117,7 @@ export async function generateMetadata({
     ? `${activity.user.name || "An athlete"} ${activity.type || "activity"} for charity${
         distanceText ? ` - ${distanceText}` : ""
       }`
-    : `${activity.type || "Activity"} supporting charity${
+    : `${genericActivityType} supporting charity${
         distanceText ? ` - ${distanceText}` : ""
       }`;
 
@@ -167,9 +169,9 @@ export default async function ActivityPage({
   const isPrivateActivityProfile = !showRealProfile;
   const shouldShowPrivateActivityAlert = isPrivateActivityProfile && !isOwner;
   const shouldShowJoinCta = shouldShowPrivateActivityAlert && !viewerUserId;
-  const privateActivityLabel = activity.type
-    ? activity.type.toLowerCase()
-    : "activity";
+  const privateActivityLabel = getGenericActivityType(
+    activity.type
+  ).toLowerCase();
 
   // Debug logging (remove in production)
   if (process.env.NODE_ENV === "development") {
@@ -197,7 +199,7 @@ export default async function ActivityPage({
   );
   const displayActivityTitle = showRealProfile
     ? activity.name || "Untitled Activity"
-    : anonymizeActivityTitle(activity.name);
+    : getGenericActivityTitle(activity.type, activity.startDateLocal);
 
   // Calculate distances
   const distanceKm = activity.distanceMeters
@@ -311,7 +313,8 @@ export default async function ActivityPage({
             <div className="space-y-3">
               <p className="text-sm sm:text-base">
                 This athlete has chosen to keep their {privateActivityLabel}{" "}
-                private.
+                private. The {privateActivityLabel} name has been generalized to
+                protect their privacy.
               </p>
               {shouldShowJoinCta && (
                 <Link href="/" className="btn btn-primary btn-sm w-fit">

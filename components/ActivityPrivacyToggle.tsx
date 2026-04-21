@@ -47,9 +47,10 @@ export default function ActivityPrivacyToggle({
       <div className="card-body">
         <h3 className="card-title mb-2">Privacy Settings</h3>
         <p className="text-sm text-base-content/70 mb-4">
-          Control who can see your name and profile picture on this activity.
-          When private, visitors will see an anonymized name (like &quot;
-          {anonymized}&quot;) and a generic avatar.
+          Control who can see your name, profile picture, and activity title on
+          this activity. When private, visitors will see an anonymized name
+          (like &quot;{anonymized}&quot;), a generic activity title, and a generic
+          avatar.
         </p>
         <div className="form-control">
           <label className="label cursor-pointer justify-start gap-4">
