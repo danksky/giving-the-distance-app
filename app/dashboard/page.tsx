@@ -212,7 +212,8 @@ export default async function DashboardPage({
                       Connect Strava
                     </h2>
                     <p className="text-sm text-base-content/70">
-                      Link your account to sync your activities here.
+                      Sync with Strava so each new activity can generate
+                      donations for your cause.
                     </p>
                   </div>
                 </div>
