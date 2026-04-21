@@ -16,6 +16,7 @@ vi.mock('@/lib/db', () => ({
     sponsorMatch: {
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
     campaign: {
       findMany: vi.fn(),
@@ -83,6 +84,7 @@ describe('Sponsor Matching Service', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
     if (originalEnableDescriptionUpdates === undefined) {
       delete process.env.ENABLE_STRAVA_DESCRIPTION_UPDATES;
     } else {
@@ -111,6 +113,129 @@ describe('Sponsor Matching Service', () => {
       });
       // Verify that Strava API was never called (already sponsored = no re-update)
       expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('should retry a private skip when the activity becomes public within 24 hours', async () => {
+      const now = new Date('2026-04-21T12:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+
+      const existingMatch = {
+        id: 'match-private-retry',
+        activityId: mockActivity.id,
+        result: SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY,
+        createdAt: new Date('2026-04-21T10:30:00.000Z'),
+      };
+
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(existingMatch as any);
+      vi.mocked(db.campaign.findMany).mockResolvedValue([mockCampaign as any]);
+
+      vi.mocked(ensureUserHasSelectedCharity).mockResolvedValue({
+        id: 'charity-unicef',
+        name: 'UNICEF',
+      } as any);
+
+      vi.mocked(db.stravaAthlete.findUnique).mockResolvedValue({
+        id: mockActivity.athleteId,
+        firstname: 'John',
+      } as any);
+
+      vi.mocked(db.activity.findUnique).mockResolvedValue({
+        id: mockActivity.id,
+        shortcode: 'test4',
+      } as any);
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: mockActivity.stravaActivityId,
+            start_latlng: [40.75, -73.99],
+            end_latlng: [40.76, -73.98],
+            description: 'Existing description',
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ id: mockActivity.stravaActivityId }),
+        });
+
+      const mockSponsorMatch = {
+        id: existingMatch.id,
+        result: SponsorMatchResult.MATCHED,
+      };
+      const mockCharityCommitment = {
+        id: 'commitment-private-retry',
+      };
+      const txSponsorMatchUpdate = vi.fn().mockResolvedValue(mockSponsorMatch);
+      const txSponsorMatchCreate = vi.fn();
+
+      vi.mocked(db.$transaction).mockImplementation(async (callback: any) => {
+        return callback({
+          campaign: {
+            update: vi.fn().mockResolvedValue({}),
+          },
+          sponsorMatch: {
+            update: txSponsorMatchUpdate,
+            create: txSponsorMatchCreate,
+          },
+          charityCommitment: {
+            create: vi.fn().mockResolvedValue(mockCharityCommitment),
+          },
+        });
+      });
+
+      const result = await matchActivityWithSponsor(
+        {
+          ...mockActivity,
+          isPrivate: false,
+          createdAt: new Date('2026-04-21T10:00:00.000Z'),
+        },
+        mockAccessToken
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.result).toBe(SponsorMatchResult.MATCHED);
+      expect(result.sponsorMatchId).toBe(existingMatch.id);
+      expect(txSponsorMatchUpdate).toHaveBeenCalledWith({
+        where: { id: existingMatch.id },
+        data: expect.objectContaining({
+          result: SponsorMatchResult.MATCHED,
+          campaignId: mockCampaign.id,
+          decrementCents: COMMITMENT_AMOUNT_CENTS,
+          notes: expect.stringContaining('became public within 24 hours'),
+        }),
+      });
+      expect(txSponsorMatchCreate).not.toHaveBeenCalled();
+    });
+
+    it('should not retry a private skip after the 24 hour public-match window', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-22T12:00:00.000Z'));
+
+      const existingMatch = {
+        id: 'match-private-too-old',
+        activityId: mockActivity.id,
+        result: SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY,
+        createdAt: new Date('2026-04-21T10:30:00.000Z'),
+      };
+
+      vi.mocked(db.sponsorMatch.findUnique).mockResolvedValue(existingMatch as any);
+
+      const result = await matchActivityWithSponsor(
+        {
+          ...mockActivity,
+          isPrivate: false,
+          createdAt: new Date('2026-04-21T10:00:00.000Z'),
+        },
+        mockAccessToken
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.result).toBe(SponsorMatchResult.SKIPPED_ALREADY_SPONSORED);
+      expect(result.sponsorMatchId).toBe(existingMatch.id);
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(db.campaign.findMany).not.toHaveBeenCalled();
     });
 
     it('should skip if no active campaign available', async () => {

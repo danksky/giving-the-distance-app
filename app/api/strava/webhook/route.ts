@@ -166,6 +166,7 @@ async function processSponsorMatchingForWebhook(params: {
     stravaActivityId: bigint;
     userId: string;
     isPrivate: boolean;
+    createdAt?: Date | null;
     name: string | null;
     type: string;
   };
@@ -180,31 +181,12 @@ async function processSponsorMatchingForWebhook(params: {
   const { activity, activityDescription, accessToken, stravaAthlete, webhookEventId } =
     params;
 
-  const existingMatch = await db.sponsorMatch.findUnique({
-    where: { activityId: activity.id },
-  });
-
   const webhookLogger = routeLogger.child({
     activityId: activity.id,
     stravaActivityId: activity.stravaActivityId,
     userId: activity.userId,
     webhookEventId,
   });
-
-  if (existingMatch) {
-    webhookLogger.info("Skipping sponsor matching because a match already exists", {
-      existingResult: existingMatch.result,
-    });
-
-    if (webhookEventId) {
-      await db.stravaWebhookEvent.update({
-        where: { id: webhookEventId },
-        data: { processed: true },
-      });
-    }
-
-    return;
-  }
 
   let descriptionUpdated = false;
   let descriptionUpdateError: string | null = null;
@@ -220,6 +202,7 @@ async function processSponsorMatchingForWebhook(params: {
         athleteId: stravaAthlete.id,
         stravaAthleteId: stravaAthlete.stravaAthleteId,
         isPrivate: activity.isPrivate,
+        createdAt: activity.createdAt,
         name: activity.name,
         type: activity.type,
         description: activityDescription,

@@ -11,7 +11,7 @@ export function getUnmatchedImpactMessage({
 }: ImpactMessageInput): string {
   switch (result) {
     case SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY:
-      return "This activity was not eligible for donor matching because it is private on Strava.";
+      return "This activity was not eligible for donor matching because it was private on Strava when donor matching ran.";
 
     case SponsorMatchResult.SKIPPED_OUTSIDE_NYC:
       if (notes?.includes("GPS start and end coordinates")) {
