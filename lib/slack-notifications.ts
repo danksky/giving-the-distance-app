@@ -1,3 +1,5 @@
+import { getActivityPath } from "@/lib/activity-url";
+
 /**
  * Slack Notifications Helper
  * 
@@ -132,6 +134,7 @@ async function sendSlackMessage(message: SlackMessage): Promise<boolean> {
  */
 export async function notifyNewActivity(activity: {
   id: string;
+  shortcode?: string | null;
   stravaActivityId: bigint;
   name: string | null;
   type: string | null;
@@ -147,7 +150,7 @@ export async function notifyNewActivity(activity: {
   const distanceMiles = activity.distanceMeters
     ? (activity.distanceMeters / 1609.34).toFixed(2)
     : "N/A";
-  const gtdActivityUrl = `${getAppBaseUrl()}/activities/${activity.id}`;
+  const gtdActivityUrl = `${getAppBaseUrl()}${getActivityPath(activity)}`;
   const stravaActivityUrl = `https://www.strava.com/activities/${activity.stravaActivityId.toString()}`;
 
   const message: SlackMessage = {

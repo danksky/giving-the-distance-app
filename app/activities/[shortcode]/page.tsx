@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
@@ -15,6 +15,8 @@ import Navbar from "@/components/Navbar";
 import ActivityPrivacyToggle from "@/components/ActivityPrivacyToggle";
 import ActivityMap from "@/components/ActivityMap";
 import { getUnmatchedImpactMessage } from "@/lib/activity-impact";
+import { getActivityPath } from "@/lib/activity-url";
+import { isValidShortcode } from "@/lib/shortcode";
 import type { Metadata } from "next";
 
 // Helper function to format duration in seconds to HH:MM:SS
@@ -31,10 +33,12 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
 
-async function getActivity(id: string) {
+async function getActivity(shortcodeOrId: string) {
   try {
     const activity = await db.activity.findUnique({
-      where: { id },
+      where: isValidShortcode(shortcodeOrId)
+        ? { shortcode: shortcodeOrId }
+        : { id: shortcodeOrId },
       include: {
         user: true,
         sponsorMatches: {
@@ -79,10 +83,10 @@ async function getViewerUserId() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ shortcode: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const activity = await getActivity(id);
+  const { shortcode } = await params;
+  const activity = await getActivity(shortcode);
 
   if (!activity) {
     return {
@@ -118,6 +122,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: getActivityPath(activity),
+    },
     openGraph: {
       title,
       description,
@@ -134,13 +141,17 @@ export async function generateMetadata({
 export default async function ActivityPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ shortcode: string }>;
 }) {
-  const { id } = await params;
-  const activity = await getActivity(id);
+  const { shortcode } = await params;
+  const activity = await getActivity(shortcode);
 
   if (!activity || activity.deletedAt) {
     notFound();
+  }
+
+  if (activity.shortcode && shortcode !== activity.shortcode) {
+    redirect(getActivityPath(activity));
   }
 
   // Get current session to check if viewer is owner
