@@ -1,0 +1,34 @@
+{
+  "id": "andrews-honey-upper-west-side-nyc",
+  "businessName": "Andrew's Honey",
+  "address": {
+    "street": "315 Columbus Ave",
+    "city": "New York",
+    "state": "NY",
+    "zipCode": "10023",
+    "fullAddress": "315 Columbus Ave, New York, NY 10023"
+  },
+  "blurb": "Andrew's Honey brings hyperlocal raw honey from rooftops, community gardens, balconies, and other unexpected corners of New York City to its Upper West Side flagship, with neighborhood-specific jars, pollen, honeycomb, and a fourth-generation beekeeping story behind the counter.",
+  "links": {
+    "instagram": "https://www.instagram.com/andrewshoney/",
+    "website": "https://www.andrewshoney.com/"
+  },
+  "images": {
+    "logo": "",
+    "cover": "/sponsors/andrews-honey-upper-west-side-nyc/cover.jpg",
+    "staff": "/sponsors/andrews-honey-upper-west-side-nyc/staff.jpg",
+    "products": [
+      "/sponsors/andrews-honey-upper-west-side-nyc/product1.jpg",
+      "/sponsors/andrews-honey-upper-west-side-nyc/product2.jpg",
+      "/sponsors/andrews-honey-upper-west-side-nyc/product3.jpg",
+      "/sponsors/andrews-honey-upper-west-side-nyc/product4.jpg"
+    ]
+  },
+  "impact": {
+    "totalDonated": 0,
+    "activitiesSponsored": 0,
+    "athletesSupported": 0,
+    "charities": []
+  },
+  "recentActivities": []
+}
