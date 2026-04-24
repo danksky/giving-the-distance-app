@@ -8,7 +8,7 @@
 import { db } from '@/lib/db';
 import { recordStravaActivityHistory } from '@/lib/strava-activity-history';
 import { getLogger } from '@/lib/logger';
-import { SponsorMatchResult } from '@prisma/client';
+import { Prisma, SponsorMatchResult } from '@prisma/client';
 import { ensureUserHasSelectedCharity } from '@/lib/charity-helpers';
 import {
   getStravaDescriptionSkipReason,
@@ -22,6 +22,7 @@ import type { CampaignCandidate } from '@/lib/matching/types';
 
 // Constants
 export const COMMITMENT_AMOUNT_CENTS = 10; // $0.10
+export const PRIVATE_ACTIVITY_PUBLIC_MATCH_WINDOW_MS = 24 * 60 * 60 * 1000;
 const GTD_MARKER = '#GTD';
 const DESCRIPTION_ERROR_SNIPPET_LENGTH = 300;
 const NYC_BOUNDS = {
@@ -67,6 +68,7 @@ export interface ActivityData {
   athleteId: string;
   stravaAthleteId: bigint;
   isPrivate: boolean;
+  createdAt?: Date | null;
   name?: string | null;
   type: string;
   description?: string | null;
@@ -98,6 +100,62 @@ type DescriptionUpdateResult =
       error: string;
     };
 
+type ExistingSponsorMatch = {
+  id: string;
+  result: SponsorMatchResult;
+  createdAt: Date;
+};
+
+function getPrivateActivityPublicMatchDeadline(
+  activity: ActivityData,
+  existingMatch: ExistingSponsorMatch
+): Date {
+  const creationDate = activity.createdAt ?? existingMatch.createdAt;
+  return new Date(
+    creationDate.getTime() + PRIVATE_ACTIVITY_PUBLIC_MATCH_WINDOW_MS
+  );
+}
+
+function canRetryPrivateActivityMatch(
+  activity: ActivityData,
+  existingMatch: ExistingSponsorMatch | null,
+  now = new Date()
+): existingMatch is ExistingSponsorMatch {
+  if (!existingMatch) return false;
+  if (existingMatch.result !== SponsorMatchResult.SKIPPED_PRIVATE_ACTIVITY) {
+    return false;
+  }
+  if (activity.isPrivate) return false;
+
+  return now <= getPrivateActivityPublicMatchDeadline(activity, existingMatch);
+}
+
+async function writeSponsorMatchDecision(
+  data: Prisma.SponsorMatchUncheckedCreateInput,
+  retryablePrivateMatch: ExistingSponsorMatch | null
+) {
+  if (!retryablePrivateMatch) {
+    return db.sponsorMatch.create({ data });
+  }
+
+  return db.sponsorMatch.update({
+    where: { id: retryablePrivateMatch.id },
+    data: {
+      stravaActivityId: data.stravaActivityId,
+      athleteId: data.athleteId,
+      stravaAthleteId: data.stravaAthleteId,
+      campaignId: data.campaignId,
+      result: data.result,
+      matchingVersion: data.matchingVersion,
+      decisionReason: data.decisionReason,
+      decisionContext: data.decisionContext,
+      decrementCents: data.decrementCents,
+      notes: data.notes,
+      matchedAt: new Date(),
+    },
+  });
+}
+
 /**
  * Main entry point for sponsor matching
  * Checks idempotency, finds a campaign, and processes the match
@@ -124,7 +182,14 @@ export async function matchActivityWithSponsor(
       where: { activityId: activity.id },
     });
 
-    if (existingMatch) {
+    const retryablePrivateMatch = canRetryPrivateActivityMatch(
+      activity,
+      existingMatch
+    )
+      ? existingMatch
+      : null;
+
+    if (existingMatch && !retryablePrivateMatch) {
       activityLogger.info('Skipping sponsor matching because a match already exists', {
         existingResult: existingMatch.result,
       });
@@ -136,12 +201,25 @@ export async function matchActivityWithSponsor(
       };
     }
 
+    if (retryablePrivateMatch) {
+      activityLogger.info(
+        'Retrying sponsor matching because private activity became public within the matching window',
+        {
+          existingResult: retryablePrivateMatch.result,
+          publicMatchDeadline: getPrivateActivityPublicMatchDeadline(
+            activity,
+            retryablePrivateMatch
+          ),
+        }
+      );
+    }
+
     // Step 2: Skip Strava-private activities in v0
     if (activity.isPrivate) {
       activityLogger.info('Skipping sponsor matching because activity is private on Strava');
       const decision = buildDecisionMetadataV0('private_activity');
-      const sponsorMatch = await db.sponsorMatch.create({
-        data: {
+      const sponsorMatch = await writeSponsorMatchDecision(
+        {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
@@ -153,7 +231,8 @@ export async function matchActivityWithSponsor(
           decrementCents: 0,
           notes: 'Activity is not eligible for sponsor matching because it is private on Strava.',
         },
-      });
+        retryablePrivateMatch
+      );
 
       return {
         success: false,
@@ -177,8 +256,8 @@ export async function matchActivityWithSponsor(
       const decision = buildDecisionMetadataV0('outside_nyc', {
         locationCheck: eligibility.locationCheck,
       });
-      const sponsorMatch = await db.sponsorMatch.create({
-        data: {
+      const sponsorMatch = await writeSponsorMatchDecision(
+        {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
@@ -191,7 +270,8 @@ export async function matchActivityWithSponsor(
           decrementCents: 0,
           notes: eligibility.reason,
         },
-      });
+        retryablePrivateMatch
+      );
 
       return {
         success: false,
@@ -208,8 +288,8 @@ export async function matchActivityWithSponsor(
       activityLogger.info('Skipping sponsor matching because no active campaign is available');
       const decision = buildDecisionMetadataV0('no_active_campaign');
       // Log as SKIPPED_NO_ACTIVE_CAMPAIGN
-      const sponsorMatch = await db.sponsorMatch.create({
-        data: {
+      const sponsorMatch = await writeSponsorMatchDecision(
+        {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
@@ -221,7 +301,8 @@ export async function matchActivityWithSponsor(
           decrementCents: 0,
           notes: 'No active campaign with budget available',
         },
-      });
+        retryablePrivateMatch
+      );
 
       return {
         success: false,
@@ -243,8 +324,8 @@ export async function matchActivityWithSponsor(
         requiredCommitmentCents: COMMITMENT_AMOUNT_CENTS,
       });
       // Log as SKIPPED_NO_BUDGET
-      const sponsorMatch = await db.sponsorMatch.create({
-        data: {
+      const sponsorMatch = await writeSponsorMatchDecision(
+        {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
@@ -257,7 +338,8 @@ export async function matchActivityWithSponsor(
           decrementCents: 0,
           notes: `Campaign budget (${campaign.budgetRemainingCents} cents) insufficient for commitment (${COMMITMENT_AMOUNT_CENTS} cents)`,
         },
-      });
+        retryablePrivateMatch
+      );
 
       return {
         success: false,
@@ -279,8 +361,8 @@ export async function matchActivityWithSponsor(
         campaignId: campaign.id,
       });
       // Log as SKIPPED_NO_SELECTED_CHARITY
-      const sponsorMatch = await db.sponsorMatch.create({
-        data: {
+      const sponsorMatch = await writeSponsorMatchDecision(
+        {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
@@ -293,7 +375,8 @@ export async function matchActivityWithSponsor(
           decrementCents: 0,
           notes: 'User has no selected charity and no default charity is configured',
         },
-      });
+        retryablePrivateMatch
+      );
 
       return {
         success: false,
@@ -335,8 +418,8 @@ export async function matchActivityWithSponsor(
         campaignId: campaign.id,
       });
       // Log as SKIPPED_UPDATE_FAILED
-      const sponsorMatch = await db.sponsorMatch.create({
-        data: {
+      const sponsorMatch = await writeSponsorMatchDecision(
+        {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
@@ -349,7 +432,8 @@ export async function matchActivityWithSponsor(
           decrementCents: 0,
           notes: `Failed to update Strava description: ${updateResult.error}`,
         },
-      });
+        retryablePrivateMatch
+      );
 
       return {
         success: false,
@@ -382,9 +466,7 @@ export async function matchActivityWithSponsor(
         },
       });
 
-      // Create sponsor match
-      const sponsorMatch = await tx.sponsorMatch.create({
-        data: {
+      const sponsorMatchData = {
           activityId: activity.id,
           stravaActivityId: activity.stravaActivityId,
           athleteId: activity.athleteId,
@@ -395,9 +477,28 @@ export async function matchActivityWithSponsor(
           decisionReason: decision.decisionReason,
           decisionContext: decision.decisionContext,
           decrementCents: COMMITMENT_AMOUNT_CENTS,
-          notes: successNote,
-        },
-      });
+          notes: retryablePrivateMatch
+            ? `${successNote}. Activity was originally skipped as private, then became public within 24 hours.`
+            : successNote,
+      };
+
+      const sponsorMatch = retryablePrivateMatch
+        ? await tx.sponsorMatch.update({
+            where: { id: retryablePrivateMatch.id },
+            data: {
+              campaignId: sponsorMatchData.campaignId,
+              result: sponsorMatchData.result,
+              matchingVersion: sponsorMatchData.matchingVersion,
+              decisionReason: sponsorMatchData.decisionReason,
+              decisionContext: sponsorMatchData.decisionContext,
+              decrementCents: sponsorMatchData.decrementCents,
+              notes: sponsorMatchData.notes,
+              matchedAt: new Date(),
+            },
+          })
+        : await tx.sponsorMatch.create({
+            data: sponsorMatchData,
+          });
 
       // Create charity commitment
       const charityCommitment = await tx.charityCommitment.create({

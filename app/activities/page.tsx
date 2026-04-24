@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import ActivitiesTypeFilter from "@/components/ActivitiesTypeFilter";
 import PaginationNav from "@/components/PaginationNav";
 import { db } from "@/lib/db";
+import { getActivityPath } from "@/lib/activity-url";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -307,7 +308,7 @@ export default async function ActivitiesPage({
                                     </span>
                                   ) : (
                                     <Link
-                                      href={`/activities/${activity.id}`}
+                                      href={getActivityPath(activity)}
                                       className="link link-hover font-bold underline"
                                     >
                                       {activity.name || "Untitled"}

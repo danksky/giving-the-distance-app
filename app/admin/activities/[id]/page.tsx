@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import Navbar from "@/components/Navbar";
 import { isAdmin } from "@/lib/auth-helpers";
+import { getActivityPath } from "@/lib/activity-url";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -316,7 +317,7 @@ export default async function AdminActivityDetailPage({
             </Link>
             {!activity.deletedAt && (
               <Link
-                href={`/activities/${activity.id}`}
+                href={getActivityPath(activity)}
                 className="btn btn-outline btn-sm"
               >
                 Open public page

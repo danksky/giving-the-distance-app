@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
@@ -8,12 +8,16 @@ import {
   getDisplayName,
   getDisplayAvatar,
   canViewRealProfile,
+  getGenericActivityTitle,
+  getGenericActivityType,
 } from "@/lib/activity-privacy";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
 import ActivityPrivacyToggle from "@/components/ActivityPrivacyToggle";
 import ActivityMap from "@/components/ActivityMap";
 import { getUnmatchedImpactMessage } from "@/lib/activity-impact";
+import { getActivityPath } from "@/lib/activity-url";
+import { isValidShortcode } from "@/lib/shortcode";
 import type { Metadata } from "next";
 
 // Helper function to format duration in seconds to HH:MM:SS
@@ -30,10 +34,12 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
 
-async function getActivity(id: string) {
+async function getActivity(shortcodeOrId: string) {
   try {
     const activity = await db.activity.findUnique({
-      where: { id },
+      where: isValidShortcode(shortcodeOrId)
+        ? { shortcode: shortcodeOrId }
+        : { id: shortcodeOrId },
       include: {
         user: true,
         sponsorMatches: {
@@ -78,10 +84,10 @@ async function getViewerUserId() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ shortcode: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const activity = await getActivity(id);
+  const { shortcode } = await params;
+  const activity = await getActivity(shortcode);
 
   if (!activity) {
     return {
@@ -95,7 +101,10 @@ export async function generateMetadata({
     activity.isPublicProfile,
     viewerUserId
   );
-  const activityLabel = activity.name || activity.type || "Activity";
+  const genericActivityType = getGenericActivityType(activity.type);
+  const activityLabel = showRealProfile
+    ? activity.name || activity.type || "Activity"
+    : getGenericActivityTitle(activity.type, activity.startDateLocal);
   const distanceText = activity.distanceMeters
     ? `${(Number(activity.distanceMeters) / 1000).toFixed(2)} km`
     : null;
@@ -108,13 +117,16 @@ export async function generateMetadata({
     ? `${activity.user.name || "An athlete"} ${activity.type || "activity"} for charity${
         distanceText ? ` - ${distanceText}` : ""
       }`
-    : `${activity.type || "Activity"} supporting charity${
+    : `${genericActivityType} supporting charity${
         distanceText ? ` - ${distanceText}` : ""
       }`;
 
   return {
     title,
     description,
+    alternates: {
+      canonical: getActivityPath(activity),
+    },
     openGraph: {
       title,
       description,
@@ -131,13 +143,17 @@ export async function generateMetadata({
 export default async function ActivityPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ shortcode: string }>;
 }) {
-  const { id } = await params;
-  const activity = await getActivity(id);
+  const { shortcode } = await params;
+  const activity = await getActivity(shortcode);
 
   if (!activity || activity.deletedAt) {
     notFound();
+  }
+
+  if (activity.shortcode && shortcode !== activity.shortcode) {
+    redirect(getActivityPath(activity));
   }
 
   // Get current session to check if viewer is owner
@@ -150,6 +166,12 @@ export default async function ActivityPage({
     viewerUserId
   );
   const isOwner = viewerUserId === activity.userId;
+  const isPrivateActivityProfile = !showRealProfile;
+  const shouldShowPrivateActivityAlert = isPrivateActivityProfile && !isOwner;
+  const shouldShowJoinCta = shouldShowPrivateActivityAlert && !viewerUserId;
+  const privateActivityLabel = getGenericActivityType(
+    activity.type
+  ).toLowerCase();
 
   // Debug logging (remove in production)
   if (process.env.NODE_ENV === "development") {
@@ -175,6 +197,9 @@ export default async function ActivityPage({
     activity.isPublicProfile,
     viewerUserId
   );
+  const displayActivityTitle = showRealProfile
+    ? activity.name || "Untitled Activity"
+    : getGenericActivityTitle(activity.type, activity.startDateLocal);
 
   // Calculate distances
   const distanceKm = activity.distanceMeters
@@ -280,11 +305,31 @@ export default async function ActivityPage({
           </Link>
         </div>
 
-        {/* Activity Header Card with Stats */}
+        {shouldShowPrivateActivityAlert && (
+          <div
+            role="alert"
+            className="alert mb-6 items-start border border-base-300 bg-base-300/40"
+          >
+            <div className="space-y-3">
+              <p className="text-sm sm:text-base">
+                This athlete has chosen to keep their {privateActivityLabel}{" "}
+                private. The {privateActivityLabel} name has been generalized to
+                protect their privacy.
+              </p>
+              {shouldShowJoinCta && (
+                <Link href="/" className="btn btn-primary btn-sm w-fit">
+                  Join the NYC movement
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Activity Header Card */}
         <div className="card bg-base-100  mb-6">
           <div className="card-body">
             {/* Activity Header */}
-            <div className="flex items-start gap-4 mb-6">
+            <div className="flex items-start gap-4">
               <div className="avatar">
                 <div className="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
                   <Image
@@ -299,54 +344,12 @@ export default async function ActivityPage({
                 <h1 className="text-2xl font-bold mb-1">
                   {firstName}&apos;s {activity.type} on {activityDateShort}
                 </h1>
-                <h2 className="text-xl mb-2">
-                  {activity.name || "Untitled Activity"}
-                </h2>
+                <h2 className="text-xl mb-2">{displayActivityTitle}</h2>
                 <div className="flex items-center gap-3">
                   <p className="text-sm text-base-content/60">
                     Imported from Strava™ • {activityTime}
                   </p>
-                  {!showRealProfile && (
-                    <span className="badge badge-ghost badge-sm">
-                      Private Profile
-                    </span>
-                  )}
                 </div>
-              </div>
-            </div>
-
-            {/* Activity Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Distance */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Distance</div>
-                <div className="stat-value text-2xl">{distanceKm}</div>
-                <div className="stat-desc">km ({distanceMi} mi)</div>
-              </div>
-
-              {/* Time */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Time</div>
-                <div className="stat-value text-2xl">{movingTime}</div>
-                <div className="stat-desc">moving time</div>
-              </div>
-
-              {/* Pace */}
-              {paceMinPerKm && (
-                <div className="stat bg-base-200 rounded-lg p-4">
-                  <div className="stat-title">Pace</div>
-                  <div className="stat-value text-2xl">{paceMinPerKm}</div>
-                  <div className="stat-desc">
-                    min/km ({paceMinPerMi} min/mi)
-                  </div>
-                </div>
-              )}
-
-              {/* Elevation */}
-              <div className="stat bg-base-200 rounded-lg p-4">
-                <div className="stat-title">Elevation Gain</div>
-                <div className="stat-value text-2xl">{elevationM}</div>
-                <div className="stat-desc">m ({elevationFt} ft)</div>
               </div>
             </div>
           </div>
@@ -481,66 +484,47 @@ export default async function ActivityPage({
           </div>
         )}
 
-        {/* Additional Activity Info */}
-        {(activity.timezone || activity.isManual || activity.isPrivate) && (
-          <div className="card bg-base-100  mb-6">
-            <div className="card-body">
-              <h3 className="card-title mb-2">Additional Information</h3>
-              <div className="space-y-2 text-sm">
-                {activity.timezone && (
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">Timezone:</span>
-                    <span className="text-base-content/70">
-                      {activity.timezone}
-                    </span>
+        <div className="card bg-base-100 mb-6">
+          <div className="card-body">
+            <h3 className="text-xl font-bold mb-4">Activity Stats</h3>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              <div className="stat rounded-lg bg-base-200 p-4">
+                <div className="stat-title">Distance</div>
+                <div className="stat-value text-2xl">{distanceKm}</div>
+                <div className="stat-desc">km ({distanceMi} mi)</div>
+              </div>
+
+              <div className="stat rounded-lg bg-base-200 p-4">
+                <div className="stat-title">Time</div>
+                <div className="stat-value text-2xl">{movingTime}</div>
+                <div className="stat-desc">moving time</div>
+              </div>
+
+              {paceMinPerKm && (
+                <div className="stat rounded-lg bg-base-200 p-4">
+                  <div className="stat-title">Pace</div>
+                  <div className="stat-value text-2xl">{paceMinPerKm}</div>
+                  <div className="stat-desc">
+                    min/km ({paceMinPerMi} min/mi)
                   </div>
-                )}
-                {(activity.isManual || activity.isPrivate) && (
-                  <div className="flex items-center gap-2">
-                    {activity.isManual && (
-                      <div className="badge badge-outline">
-                        Manually Entered
-                      </div>
-                    )}
-                    {activity.isPrivate && (
-                      <div className="badge badge-outline">
-                        Private Activity
-                      </div>
-                    )}
-                  </div>
-                )}
+                </div>
+              )}
+
+              <div className="stat rounded-lg bg-base-200 p-4">
+                <div className="stat-title">Elevation Gain</div>
+                <div className="stat-value text-2xl">{elevationM}</div>
+                <div className="stat-desc">m ({elevationFt} ft)</div>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Route Map - Only visible to owner */}
         {isOwner && activity.gpxBlobUrl && (
           <div className="card bg-base-100 mb-6">
             <div className="card-body">
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4">
                 <h3 className="text-2xl font-bold">Route Map</h3>
-                <a
-                  href={activity.gpxBlobUrl}
-                  download={`${activity.name || "activity"}.gpx`}
-                  className="btn btn-sm btn-outline btn-primary"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                    />
-                  </svg>
-                  Download GPX
-                </a>
               </div>
               <ActivityMap
                 gpxBlobUrl={activity.gpxBlobUrl}

@@ -66,6 +66,7 @@ import ActivitiesPage from "./page";
 function createActivity(index: number, overrides: Record<string, unknown> = {}) {
   return {
     id: `activity-${index}`,
+    shortcode: `A${String(index).padStart(4, "0")}`,
     name: `Activity ${index}`,
     type: "Run",
     distanceMeters: 5000,
@@ -162,6 +163,24 @@ describe("ActivitiesPage", () => {
     expect(screen.getByRole("link", { name: /date/i })).toHaveAttribute(
       "href",
       "/activities?page=1&sort=date&dir=asc&type=Run"
+    );
+  });
+
+  it("uses the activity shortcode for detail links", async () => {
+    mockActivityFindMany
+      .mockResolvedValueOnce([{ type: "Run" }])
+      .mockResolvedValueOnce([createActivity(1)]);
+    mockActivityCount.mockResolvedValue(1);
+
+    render(
+      await ActivitiesPage({
+        searchParams: Promise.resolve({}),
+      })
+    );
+
+    expect(screen.getByRole("link", { name: "Activity 1" })).toHaveAttribute(
+      "href",
+      "/activities/A0001"
     );
   });
 });

@@ -137,6 +137,7 @@ export async function sendNewActivitySlackNotificationOnce(input: {
       where: { id: input.activityId },
       select: {
         id: true,
+        shortcode: true,
         stravaActivityId: true,
         name: true,
         type: true,
@@ -188,6 +189,7 @@ export async function sendNewActivitySlackNotificationOnce(input: {
 
     await notifyNewActivity({
       id: activity.id,
+      shortcode: activity.shortcode,
       stravaActivityId: activity.stravaActivityId,
       name: activity.name,
       type: activity.type,

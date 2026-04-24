@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { db } from "@/lib/db";
 import { anonymizeName } from "@/lib/activity-privacy";
+import { getActivityPath } from "@/lib/activity-url";
 import { getLogger } from "@/lib/logger";
 import LightboxImage from "@/components/LightboxImage";
 import LocationPin from "@/components/LocationPin";
@@ -52,6 +53,7 @@ interface SponsorImpact {
   }>;
   recentActivities: Array<{
     id: string;
+    shortcode: string | null;
     athleteName: string;
     activityType: string;
     distance: number;
@@ -152,6 +154,7 @@ async function getSponsorImpact(sponsorId: string): Promise<SponsorImpact> {
   // Map recent activities with anonymization
   const recentActivities = commitments.slice(0, 10).map((c) => ({
     id: c.activityId,
+    shortcode: c.activity.shortcode,
     athleteName: anonymizeName(c.activity.user.name),
     activityType: c.activity.type,
     distance: Number(c.activity.distanceMeters || 0) / 1000,
@@ -462,7 +465,7 @@ export default async function SponsorProfilePage({
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <Link
-                            href={`/activities/${activity.id}`}
+                            href={getActivityPath(activity)}
                             className="font-semibold link link-hover"
                           >
                             {activity.athleteName}

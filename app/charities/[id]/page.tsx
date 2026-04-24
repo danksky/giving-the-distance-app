@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import CharityLogo from "@/components/CharityLogo";
 import { anonymizeName } from "@/lib/activity-privacy";
+import { getActivityPath } from "@/lib/activity-url";
 import { db } from "@/lib/db";
 import { getAbsoluteCharityLogoUrl } from "@/lib/charity-logo";
 
@@ -27,6 +28,7 @@ interface CharityImpact {
   }>;
   recentActivities: Array<{
     id: string;
+    shortcode: string | null;
     athleteName: string;
     activityName: string;
     activityType: string;
@@ -61,6 +63,7 @@ async function getCharityImpact(charityId: string): Promise<CharityImpact> {
       activity: {
         select: {
           id: true,
+          shortcode: true,
           name: true,
           type: true,
           distanceMeters: true,
@@ -127,6 +130,7 @@ async function getCharityImpact(charityId: string): Promise<CharityImpact> {
 
   const recentActivities = commitments.slice(0, 10).map((commitment) => ({
     id: commitment.activityId,
+    shortcode: commitment.activity.shortcode,
     athleteName: anonymizeName(commitment.activity.user.name),
     activityName:
       commitment.activity.name || `${commitment.activity.type} activity`,
@@ -382,7 +386,7 @@ export default async function CharityImpactPage({
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1">
                         <Link
-                          href={`/activities/${activity.id}`}
+                          href={getActivityPath(activity)}
                           className="font-semibold link link-hover"
                         >
                           {activity.activityName}

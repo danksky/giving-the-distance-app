@@ -1,9 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { getActivityPath } from "@/lib/activity-url";
 
 /**
  * Shortcode redirect page
- * Redirects /a/[shortcode] to /activities/[id]
+ * Redirects /a/[shortcode] to the canonical /activities/[shortcode] URL
  */
 export default async function ShortcodePage({
   params,
@@ -15,7 +16,7 @@ export default async function ShortcodePage({
   // Find activity by shortcode
   const activity = await db.activity.findUnique({
     where: { shortcode },
-    select: { id: true, deletedAt: true },
+    select: { id: true, shortcode: true, deletedAt: true },
   });
 
   // If activity not found or deleted, show 404
@@ -24,5 +25,5 @@ export default async function ShortcodePage({
   }
 
   // Redirect to full activity page
-  redirect(`/activities/${activity.id}`);
+  redirect(getActivityPath(activity));
 }

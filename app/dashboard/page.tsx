@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { getActivityPath } from "@/lib/activity-url";
 import Navbar from "@/components/Navbar";
 import RaisedOverTimeChart from "@/components/RaisedOverTimeChart";
 
@@ -211,7 +212,8 @@ export default async function DashboardPage({
                       Connect Strava
                     </h2>
                     <p className="text-sm text-base-content/70">
-                      Link your account to sync your activities here.
+                      Sync with Strava so each new activity can generate
+                      donations for your cause.
                     </p>
                   </div>
                 </div>
@@ -321,7 +323,7 @@ export default async function DashboardPage({
                                 <td className="whitespace-nowrap">{date}</td>
                                 <td className="max-w-[12rem] truncate">
                                   <Link
-                                    href={`/activities/${activity.id}`}
+                                    href={getActivityPath(activity)}
                                     className="link link-hover font-bold underline"
                                   >
                                     {activity.name || "Untitled"}
