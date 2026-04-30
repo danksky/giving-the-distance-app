@@ -64,7 +64,15 @@ export async function POST(
 
     const activity = await db.activity.findUnique({
       where: { id },
-      include: { user: true },
+      select: {
+        id: true,
+        user: {
+          select: {
+            email: true,
+            defaultActivityMapIsPublic: true,
+          },
+        },
+      },
     });
 
     if (!activity) {
@@ -85,22 +93,51 @@ export async function POST(
       );
     }
 
-    const [updatedActivity] = await db.$queryRaw<ActivityVisibilityRow[]>`
-      UPDATE "activities"
-      SET
-        "isPublicProfile" = CASE
-          WHEN ${"isPublicProfile" in updates} THEN ${updates.isPublicProfile ?? false}
-          ELSE "isPublicProfile"
-        END,
-        "isPublicRouteMap" = CASE
-          WHEN ${"isPublicRouteMap" in updates} THEN ${updates.isPublicRouteMap ?? false}
-          ELSE "isPublicRouteMap"
-        END
-      WHERE "id" = ${id}
-      RETURNING
-        "isPublicProfile",
-        "isPublicRouteMap"
-    `;
+    let updatedActivity: ActivityVisibilityRow;
+
+    if ("isPublicRouteMap" in updates) {
+      try {
+        const [row] = await db.$queryRaw<ActivityVisibilityRow[]>`
+          UPDATE "activities"
+          SET
+            "isPublicProfile" = CASE
+              WHEN ${"isPublicProfile" in updates} THEN ${updates.isPublicProfile ?? false}
+              ELSE "isPublicProfile"
+            END,
+            "isPublicRouteMap" = ${updates.isPublicRouteMap ?? false}
+          WHERE "id" = ${id}
+          RETURNING
+            "isPublicProfile",
+            "isPublicRouteMap"
+        `;
+
+        updatedActivity = row;
+      } catch (error) {
+        requestLogger.error("Route map visibility update failed", {
+          updates,
+          error,
+        });
+        return NextResponse.json(
+          { error: "Route map visibility is not available right now" },
+          { status: 503 }
+        );
+      }
+    } else {
+      const row = await db.activity.update({
+        where: { id },
+        data: {
+          isPublicProfile: updates.isPublicProfile ?? false,
+        },
+        select: {
+          isPublicProfile: true,
+        },
+      });
+
+      updatedActivity = {
+        isPublicProfile: row.isPublicProfile,
+        isPublicRouteMap: activity.user.defaultActivityMapIsPublic,
+      };
+    }
 
     requestLogger.info("Activity visibility updated", {
       updates,

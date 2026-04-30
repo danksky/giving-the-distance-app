@@ -35,35 +35,96 @@ function formatDuration(seconds: number): string {
 }
 
 async function getActivity(shortcodeOrId: string) {
-  try {
-    const activity = await db.activity.findUnique({
-      where: isValidShortcode(shortcodeOrId)
-        ? { shortcode: shortcodeOrId }
-        : { id: shortcodeOrId },
-      include: {
-        user: true,
-        sponsorMatches: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
+  const activity = await db.activity.findUnique({
+    where: isValidShortcode(shortcodeOrId)
+      ? { shortcode: shortcodeOrId }
+      : { id: shortcodeOrId },
+    select: {
+      id: true,
+      userId: true,
+      shortcode: true,
+      name: true,
+      type: true,
+      distanceMeters: true,
+      movingTimeSeconds: true,
+      elapsedTimeSeconds: true,
+      totalElevationGain: true,
+      startDate: true,
+      startDateLocal: true,
+      timezone: true,
+      isManual: true,
+      isPrivate: true,
+      isPublicProfile: true,
+      gpxBlobUrl: true,
+      deletedAt: true,
+      createdAt: true,
+      updatedAt: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          defaultActivityMapIsPublic: true,
         },
-        charityCommitments: {
-          include: {
-            charity: true,
-            campaign: {
-              include: {
-                sponsor: true,
+      },
+      sponsorMatches: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          result: true,
+          notes: true,
+        },
+      },
+      charityCommitments: {
+        take: 1, // Should only be one commitment per activity
+        select: {
+          amountCents: true,
+          charity: true,
+          campaign: {
+            select: {
+              sponsor: {
+                select: {
+                  businessName: true,
+                  slug: true,
+                },
               },
             },
           },
-          take: 1, // Should only be one commitment per activity
         },
       },
-    });
+    },
+  });
 
-    return activity;
-  } catch {
+  if (!activity) {
     return null;
   }
+
+  let isPublicRouteMap = activity.user.defaultActivityMapIsPublic;
+
+  try {
+    const [routeMapVisibility] = await db.$queryRaw<
+      Array<{ isPublicRouteMap: boolean }>
+    >`
+      SELECT "isPublicRouteMap"
+      FROM "activities"
+      WHERE "id" = ${activity.id}
+      LIMIT 1
+    `;
+
+    if (routeMapVisibility) {
+      isPublicRouteMap = routeMapVisibility.isPublicRouteMap;
+    }
+  } catch (error) {
+    console.error("Failed to load per-activity route map visibility", {
+      activityId: activity.id,
+      error,
+    });
+  }
+
+  return {
+    ...activity,
+    isPublicRouteMap,
+  };
 }
 
 async function getViewerUserId() {
