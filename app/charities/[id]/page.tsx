@@ -7,7 +7,7 @@ import CharityLogo from "@/components/CharityLogo";
 import GiveYourDistanceButton from "@/components/GiveYourDistanceButton";
 import {
   getDisplayActivityTitle,
-  getDisplayName,
+  getFeedDisplayName,
 } from "@/lib/activity-privacy";
 import { getActivityPath } from "@/lib/activity-url";
 import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers";
@@ -139,11 +139,10 @@ async function getCharityImpact(charityId: string): Promise<CharityImpact> {
   const recentActivities = commitments.slice(0, 10).map((commitment) => ({
     id: commitment.activityId,
     shortcode: commitment.activity.shortcode,
-    athleteName: getDisplayName(
+    athleteName: getFeedDisplayName(
       commitment.activity.user.name,
       commitment.activity.userId,
-      commitment.activity.isPublicProfile,
-      undefined
+      commitment.activity.isPublicProfile
     ),
     activityName: getDisplayActivityTitle(
       commitment.activity.name,

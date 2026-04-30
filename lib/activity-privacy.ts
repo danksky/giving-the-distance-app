@@ -122,6 +122,16 @@ function toTitleCase(value: string): string {
     .join(" ");
 }
 
+function getFirstName(name: string | null | undefined): string {
+  const trimmedName = name?.trim();
+
+  if (!trimmedName) {
+    return "Athlete";
+  }
+
+  return trimmedName.split(/\s+/)[0] || "Athlete";
+}
+
 /**
  * Checks if viewer can see the real profile details for an activity
  * Returns true if:
@@ -159,6 +169,22 @@ export function getDisplayName(
   if (canViewRealProfile(activityUserId, activityIsPublicProfile, viewerUserId)) {
     return realName || "Athlete";
   }
+  return anonymizeName(realName);
+}
+
+/**
+ * Gets the athlete name for public-facing aggregate feeds.
+ * Public activities show first name only; private activities stay anonymized.
+ */
+export function getFeedDisplayName(
+  realName: string | null | undefined,
+  activityUserId: string,
+  activityIsPublicProfile: boolean
+): string {
+  if (canViewRealProfile(activityUserId, activityIsPublicProfile, undefined)) {
+    return getFirstName(realName);
+  }
+
   return anonymizeName(realName);
 }
 
