@@ -531,6 +531,7 @@ export async function POST(request: NextRequest) {
             isManual: activity.manual || false,
             isPrivate: activity.private || false,
             isPublicProfile: stravaAthlete.user.defaultActivityIsPublic,
+            isPublicRouteMap: stravaAthlete.user.defaultActivityMapIsPublic,
             deletedAt: null, // Ensure new activities are not marked as deleted
           },
           update: {
@@ -705,6 +706,7 @@ export async function POST(request: NextRequest) {
             isManual: activity.manual || false,
             isPrivate: activity.private || false,
             isPublicProfile: stravaAthlete.user.defaultActivityIsPublic,
+            isPublicRouteMap: stravaAthlete.user.defaultActivityMapIsPublic,
             deletedAt: null,
           },
           update: {

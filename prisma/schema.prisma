@@ -116,6 +116,7 @@ model Activity {
   isManual             Boolean   @default(false)
   isPrivate            Boolean   @default(false)
   isPublicProfile      Boolean   @default(false) // User can make their profile public on this activity
+  isPublicRouteMap     Boolean   @default(false) // User can share this activity's route map on its public page
   gpxBlobUrl           String?   // URL to GPX file in Vercel Blob Storage
   deletedAt            DateTime? // Soft delete - null means not deleted
   createdAt            DateTime  @default(now())

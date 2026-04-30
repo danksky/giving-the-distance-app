@@ -202,13 +202,7 @@ export default async function ActivityPage({
     : getGenericActivityTitle(activity.type, activity.startDateLocal);
   const canShowRouteMap =
     !!activity.gpxBlobUrl &&
-    (isOwner ||
-      (showRealProfile && activity.user.defaultActivityMapIsPublic));
-  const routeMapNote = isOwner
-    ? activity.user.defaultActivityMapIsPublic
-      ? "This route map appears on public activity pages when the activity is public. Change that in Privacy Settings."
-      : "Your route map is only visible to you. Change that in Privacy Settings."
-    : "This athlete has chosen to share their route map on public activity pages.";
+    (isOwner || (showRealProfile && activity.isPublicRouteMap));
 
   // Calculate distances
   const distanceKm = activity.distanceMeters
@@ -368,7 +362,7 @@ export default async function ActivityPage({
         {hasSponsorship ? (
           <div className="card bg-base-100 mb-6">
             <div className="card-body">
-              <h3 className="text-2xl font-bold mb-4">Impact</h3>
+              <h3 className="card-title mb-4">Impact</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Charity Section */}
@@ -454,7 +448,7 @@ export default async function ActivityPage({
           /* No Sponsorship Card */
           <div className="card bg-base-100  mb-6">
             <div className="card-body">
-              <h3 className="text-xl font-bold mb-2">Impact</h3>
+              <h3 className="card-title mb-4">Impact</h3>
               <p className="text-base-content/70">
                 {unmatchedImpactMessage}
               </p>
@@ -495,7 +489,7 @@ export default async function ActivityPage({
 
         <div className="card bg-base-100 mb-6">
           <div className="card-body">
-            <h3 className="text-xl font-bold mb-4">Activity Stats</h3>
+            <h3 className="card-title mb-4">Activity Stats</h3>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <div className="stat rounded-lg bg-base-200 p-4">
                 <div className="stat-title">Distance</div>
@@ -532,31 +526,22 @@ export default async function ActivityPage({
         {canShowRouteMap && activity.gpxBlobUrl && (
           <div className="card bg-base-100 mb-6">
             <div className="card-body">
-              <div className="mb-4">
-                <h3 className="text-2xl font-bold">Route Map</h3>
-              </div>
+              <h3 className="card-title mb-4">Route Map</h3>
               <ActivityMap
                 gpxBlobUrl={activity.gpxBlobUrl}
                 activityName={activity.name || "Activity"}
               />
-              <p className="text-sm text-base-content/60 mt-2">
-                {routeMapNote}{" "}
-                {isOwner && (
-                  <Link href="/settings/privacy" className="link link-hover">
-                    Open Privacy Settings
-                  </Link>
-                )}
-              </p>
             </div>
           </div>
         )}
 
-        {/* Privacy Settings - Only visible to owner */}
+        {/* Visibility Settings - Only visible to owner */}
         {isOwner && (
           <ActivityPrivacyToggle
             activityId={activity.id}
-            userName={activity.user.name}
             initialIsPublic={activity.isPublicProfile}
+            initialIsPublicRouteMap={activity.isPublicRouteMap}
+            hasRouteMap={Boolean(activity.gpxBlobUrl)}
           />
         )}
       </main>

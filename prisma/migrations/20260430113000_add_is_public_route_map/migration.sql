@@ -1,0 +1,2 @@
+ALTER TABLE "activities"
+ADD COLUMN IF NOT EXISTS "isPublicRouteMap" BOOLEAN NOT NULL DEFAULT false;

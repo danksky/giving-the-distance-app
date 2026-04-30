@@ -60,11 +60,11 @@ export default function PrivacySettingsForm({
             override a specific activity on its detail page.
           </p>
 
-          <div className="mt-4 space-y-4">
-            <label className="flex cursor-pointer items-start gap-4 rounded-xl border border-base-300 bg-base-50 p-4">
+          <div className="mt-4 divide-y divide-base-300">
+            <label className="flex cursor-pointer items-start gap-4 py-4">
               <input
                 type="checkbox"
-                className="checkbox checkbox-primary mt-1 flex-shrink-0"
+                className="checkbox checkbox-primary mt-1.5 flex-shrink-0"
                 checked={defaultActivityIsPublic}
                 onChange={(e) => setDefaultActivityIsPublic(e.target.checked)}
                 disabled={isSaving}
@@ -80,10 +80,10 @@ export default function PrivacySettingsForm({
               </div>
             </label>
 
-            <label className="flex cursor-pointer items-start gap-4 rounded-xl border border-base-300 bg-base-50 p-4">
+            <label className="flex cursor-pointer items-start gap-4 py-4">
               <input
                 type="checkbox"
-                className="checkbox checkbox-primary mt-1 flex-shrink-0"
+                className="checkbox checkbox-primary mt-1.5 flex-shrink-0"
                 checked={defaultActivityMapIsPublic}
                 onChange={(e) =>
                   setDefaultActivityMapIsPublic(e.target.checked)
@@ -91,7 +91,7 @@ export default function PrivacySettingsForm({
                 disabled={isSaving}
               />
               <div className="min-w-0">
-                <div className="text-lg font-semibold">
+                <div className="font-semibold">
                   Share route maps on public activity pages
                 </div>
                 <p className="mt-1 text-sm text-base-content/60">

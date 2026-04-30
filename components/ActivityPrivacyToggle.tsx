@@ -2,81 +2,123 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { anonymizeName } from "@/lib/activity-privacy";
 
 interface ActivityPrivacyToggleProps {
   activityId: string;
-  userName: string | null;
   initialIsPublic: boolean;
+  initialIsPublicRouteMap: boolean;
+  hasRouteMap: boolean;
 }
+
+type VisibilityField = "isPublicProfile" | "isPublicRouteMap";
 
 export default function ActivityPrivacyToggle({
   activityId,
-  userName,
   initialIsPublic,
+  initialIsPublicRouteMap,
+  hasRouteMap,
 }: ActivityPrivacyToggleProps) {
   const [isPublic, setIsPublic] = useState(initialIsPublic);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const anonymized = anonymizeName(userName);
+  const [isPublicRouteMap, setIsPublicRouteMap] = useState(
+    initialIsPublicRouteMap
+  );
+  const [updatingField, setUpdatingField] = useState<VisibilityField | null>(
+    null
+  );
 
-  const handleToggle = async (checked: boolean) => {
-    setIsUpdating(true);
+  const handleToggle = async (field: VisibilityField, checked: boolean) => {
+    setUpdatingField(field);
+
     try {
-      const response = await fetch(`/api/activities/${activityId}/public`, {
+      const response = await fetch(`/api/activities/${activityId}/visibility`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublic: checked }),
+        body: JSON.stringify({ [field]: checked }),
       });
 
-      if (response.ok) {
+      if (!response.ok) {
+        throw new Error("Failed to update visibility");
+      }
+
+      if (field === "isPublicProfile") {
         setIsPublic(checked);
-        // Reload to update the UI
-        window.location.reload();
       } else {
-        alert("Failed to update privacy setting");
+        setIsPublicRouteMap(checked);
       }
     } catch (error) {
-      console.error("Error updating privacy:", error);
-      alert("Failed to update privacy setting");
+      console.error("Error updating activity visibility:", error);
+      alert("Failed to update visibility setting");
     } finally {
-      setIsUpdating(false);
+      setUpdatingField(null);
     }
   };
 
   return (
     <div className="card bg-base-100 mb-6">
       <div className="card-body">
-        <h3 className="card-title mb-2">Privacy Settings</h3>
-        <p className="text-sm text-base-content/70 mb-4">
-          Control who can see your name, profile picture, and activity title on
-          this activity. When private, visitors will see an anonymized name
-          (like &quot;{anonymized}&quot;), a generic activity title, and a generic
-          avatar. Your account defaults for new activities and route-map
-          sharing live in{" "}
-          <Link href="/settings/privacy" className="link link-hover">
-            Privacy Settings
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="card-title">Visibility</h3>
+            <p className="text-sm text-base-content/60">
+              These controls affect this activity only.
+            </p>
+          </div>
+          <Link href="/settings/privacy" className="link link-hover text-sm">
+            Manage defaults
           </Link>
-          .
-        </p>
-        <div className="form-control">
-          <label className="label cursor-pointer justify-start gap-4">
-            <input
-              type="checkbox"
-              className="toggle toggle-primary"
-              checked={isPublic}
-              onChange={(e) => handleToggle(e.target.checked)}
-              disabled={isUpdating}
-            />
-            <div>
-              <span className="label-text font-semibold">
-                Public activity details
-              </span>
-              <p className="text-xs text-base-content/60 mt-1">
-                {isPublic
-                  ? "Currently, visitors can see your name and the real activity title."
-                  : "Currently, this activity shows an anonymized athlete name and a generalized title."}
+        </div>
+
+        <div className="divide-y divide-base-300">
+          <label className="flex cursor-pointer items-start justify-between gap-4 py-4">
+            <div className="min-w-0 pr-4">
+              <div className="font-semibold">Activity page</div>
+              <p className="mt-1 text-sm text-base-content/60">
+                Controls your name and activity title on this page.
+              </p>
+              <p className="mt-2 text-xs font-medium text-base-content/50">
+                {isPublic ? "Public" : "Private"}
               </p>
             </div>
+            <input
+              type="checkbox"
+              className="toggle toggle-primary mt-1 flex-shrink-0"
+              checked={isPublic}
+              onChange={(e) =>
+                handleToggle("isPublicProfile", e.target.checked)
+              }
+              disabled={updatingField !== null}
+              aria-label="Toggle activity page visibility"
+            />
+          </label>
+
+          <label
+            className={`flex items-start justify-between gap-4 py-4 ${
+              hasRouteMap ? "cursor-pointer" : "opacity-60"
+            }`}
+          >
+            <div className="min-w-0 pr-4">
+              <div className="font-semibold">Route map</div>
+              <p className="mt-1 text-sm text-base-content/60">
+                {hasRouteMap
+                  ? "Controls whether the route map appears on the public activity page."
+                  : "No route map is available for this activity yet."}
+              </p>
+              {hasRouteMap && (
+                <p className="mt-2 text-xs font-medium text-base-content/50">
+                  {isPublicRouteMap ? "Shared" : "Only you"}
+                </p>
+              )}
+            </div>
+            <input
+              type="checkbox"
+              className="toggle toggle-primary mt-1 flex-shrink-0"
+              checked={isPublicRouteMap}
+              onChange={(e) =>
+                handleToggle("isPublicRouteMap", e.target.checked)
+              }
+              disabled={!hasRouteMap || updatingField !== null}
+              aria-label="Toggle route map visibility"
+            />
           </label>
         </div>
       </div>
