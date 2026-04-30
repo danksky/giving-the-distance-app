@@ -64,7 +64,6 @@ async function getActivity(shortcodeOrId: string) {
           id: true,
           name: true,
           image: true,
-          defaultActivityMapIsPublic: true,
         },
       },
       sponsorMatches: {
@@ -99,7 +98,7 @@ async function getActivity(shortcodeOrId: string) {
     return null;
   }
 
-  let isPublicRouteMap = activity.user.defaultActivityMapIsPublic;
+  let isPublicRouteMap = false;
 
   try {
     const [routeMapVisibility] = await db.$queryRaw<

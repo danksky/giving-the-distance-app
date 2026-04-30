@@ -69,7 +69,6 @@ export async function POST(
         user: {
           select: {
             email: true,
-            defaultActivityMapIsPublic: true,
           },
         },
       },
@@ -135,7 +134,7 @@ export async function POST(
 
       updatedActivity = {
         isPublicProfile: row.isPublicProfile,
-        isPublicRouteMap: activity.user.defaultActivityMapIsPublic,
+        isPublicRouteMap: false,
       };
     }
 
