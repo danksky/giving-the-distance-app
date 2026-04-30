@@ -290,10 +290,10 @@ export default async function SponsorProfilePage({
 
             {/* Title + Badge + Address */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold mb-2">
-                {businessInfo.businessName}
-              </h1>
-              <div className="mb-2">
+              <div className="mb-2 flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-bold">
+                  {businessInfo.businessName}
+                </h1>
                 <span className="badge badge-lg bg-[#B56DFF]/10 text-[#8B4ACC] border border-[#B56DFF]/20 font-semibold">
                   DONOR
                 </span>
@@ -433,9 +433,10 @@ export default async function SponsorProfilePage({
                   </h3>
                   <div className="flex flex-wrap gap-4">
                     {impact.charities.map((charity, index) => (
-                      <div
+                      <Link
                         key={index}
-                        className="flex items-center gap-2 bg-base-200 rounded-lg p-3"
+                        href={`/charities/${charity.id}`}
+                        className="flex items-center gap-2 rounded-lg bg-base-200 p-3 transition-opacity hover:opacity-80 cursor-pointer"
                       >
                         <CharityLogo
                           charityId={charity.id}
@@ -444,7 +445,7 @@ export default async function SponsorProfilePage({
                           size="md"
                         />
                         <span className="font-medium">{charity.name}</span>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
