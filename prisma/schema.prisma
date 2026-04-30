@@ -15,14 +15,16 @@ datasource db {
 // ============================================
 
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  name              String?
-  image             String?
-  emailVerified     DateTime?
-  selectedCharityId String?   // User's current selected charity (for quick access)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                         String    @id @default(cuid())
+  email                      String    @unique
+  name                       String?
+  image                      String?
+  emailVerified              DateTime?
+  selectedCharityId          String?   // User's current selected charity (for quick access)
+  defaultActivityIsPublic    Boolean   @default(true) // Default visibility for newly imported activity titles/profile
+  defaultActivityMapIsPublic Boolean   @default(false) // Default visibility for route maps on public activity pages
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
 
   accounts           Account[]
   sessions           Session[]

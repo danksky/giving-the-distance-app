@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { anonymizeName } from "@/lib/activity-privacy";
 
 interface ActivityPrivacyToggleProps {
@@ -50,7 +51,12 @@ export default function ActivityPrivacyToggle({
           Control who can see your name, profile picture, and activity title on
           this activity. When private, visitors will see an anonymized name
           (like &quot;{anonymized}&quot;), a generic activity title, and a generic
-          avatar.
+          avatar. Your account defaults for new activities and route-map
+          sharing live in{" "}
+          <Link href="/settings/privacy" className="link link-hover">
+            Privacy Settings
+          </Link>
+          .
         </p>
         <div className="form-control">
           <label className="label cursor-pointer justify-start gap-4">
@@ -63,12 +69,12 @@ export default function ActivityPrivacyToggle({
             />
             <div>
               <span className="label-text font-semibold">
-                De-Anonymize This Activity
+                Public activity details
               </span>
               <p className="text-xs text-base-content/60 mt-1">
                 {isPublic
-                  ? "Currently, everyone can see your name and photo"
-                  : "Currently, your profile is anonymized on this activity."}
+                  ? "Currently, visitors can see your name and the real activity title."
+                  : "Currently, this activity shows an anonymized athlete name and a generalized title."}
               </p>
             </div>
           </label>

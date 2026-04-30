@@ -200,6 +200,15 @@ export default async function ActivityPage({
   const displayActivityTitle = showRealProfile
     ? activity.name || "Untitled Activity"
     : getGenericActivityTitle(activity.type, activity.startDateLocal);
+  const canShowRouteMap =
+    !!activity.gpxBlobUrl &&
+    (isOwner ||
+      (showRealProfile && activity.user.defaultActivityMapIsPublic));
+  const routeMapNote = isOwner
+    ? activity.user.defaultActivityMapIsPublic
+      ? "This route map appears on public activity pages when the activity is public. Change that in Privacy Settings."
+      : "Your route map is only visible to you. Change that in Privacy Settings."
+    : "This athlete has chosen to share their route map on public activity pages.";
 
   // Calculate distances
   const distanceKm = activity.distanceMeters
@@ -519,8 +528,8 @@ export default async function ActivityPage({
           </div>
         </div>
 
-        {/* Route Map - Only visible to owner */}
-        {isOwner && activity.gpxBlobUrl && (
+        {/* Route Map */}
+        {canShowRouteMap && activity.gpxBlobUrl && (
           <div className="card bg-base-100 mb-6">
             <div className="card-body">
               <div className="mb-4">
@@ -531,8 +540,12 @@ export default async function ActivityPage({
                 activityName={activity.name || "Activity"}
               />
               <p className="text-sm text-base-content/60 mt-2">
-                Your route is only visible to you. Use the privacy toggle below
-                to control who can see your profile information.
+                {routeMapNote}{" "}
+                {isOwner && (
+                  <Link href="/settings/privacy" className="link link-hover">
+                    Open Privacy Settings
+                  </Link>
+                )}
               </p>
             </div>
           </div>

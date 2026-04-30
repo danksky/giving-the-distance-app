@@ -530,6 +530,7 @@ export async function POST(request: NextRequest) {
             timezone: activity.timezone,
             isManual: activity.manual || false,
             isPrivate: activity.private || false,
+            isPublicProfile: stravaAthlete.user.defaultActivityIsPublic,
             deletedAt: null, // Ensure new activities are not marked as deleted
           },
           update: {
@@ -703,6 +704,7 @@ export async function POST(request: NextRequest) {
             timezone: activity.timezone,
             isManual: activity.manual || false,
             isPrivate: activity.private || false,
+            isPublicProfile: stravaAthlete.user.defaultActivityIsPublic,
             deletedAt: null,
           },
           update: {

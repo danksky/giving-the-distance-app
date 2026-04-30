@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers";
 import CharityLogo from "@/components/CharityLogo";
 import Navbar from "@/components/Navbar";
+import { getUserPrivacyDefaultsByEmail } from "@/lib/user-privacy";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -33,6 +34,15 @@ export default async function SettingsPage() {
   const currentCharity = user
     ? await ensureUserHasSelectedCharity(user.id)
     : null;
+  const privacyDefaults = session.user.email
+    ? await getUserPrivacyDefaultsByEmail(session.user.email)
+    : {
+        defaultActivityIsPublic: true,
+        defaultActivityMapIsPublic: false,
+      };
+  const defaultActivityIsPublic = privacyDefaults.defaultActivityIsPublic;
+  const defaultActivityMapIsPublic =
+    privacyDefaults.defaultActivityMapIsPublic;
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -167,6 +177,78 @@ export default async function SettingsPage() {
                           </span>
                         </div>
                       )}
+                    </div>
+                  </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-5 h-5 sm:w-6 sm:h-6 opacity-50 flex-shrink-0 mt-1"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Divider */}
+          <div className="py-6">
+            <div className="border-t border-base-300"></div>
+          </div>
+
+          {/* Privacy Settings */}
+          <Link href="/settings/privacy">
+            <div className="card bg-base-100 hover:border-gray-300 transition-colors cursor-pointer">
+              <div className="card-body">
+                <div className="flex items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="h-6 w-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 0h10.5A2.25 2.25 0 0119.5 12.75v6A2.25 2.25 0 0117.25 21h-10.5A2.25 2.25 0 014.5 18.75v-6A2.25 2.25 0 016.75 10.5z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h2 className="card-title text-lg sm:text-xl">
+                          Privacy
+                        </h2>
+                        <div className="badge badge-sm sm:badge-lg badge-primary flex-shrink-0">
+                          {defaultActivityIsPublic ? "Public Default" : "Private Default"}
+                        </div>
+                      </div>
+                      <p className="text-sm sm:text-base text-base-content/60">
+                        Choose the default visibility for activity details and
+                        route maps
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs sm:text-sm font-semibold">
+                        <span className="text-primary">
+                          Activity pages:{" "}
+                          {defaultActivityIsPublic ? "Public" : "Private"}
+                        </span>
+                        <span className="text-base-content/40">•</span>
+                        <span className="text-secondary">
+                          Route maps:{" "}
+                          {defaultActivityMapIsPublic ? "Shared" : "Owner only"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <svg
