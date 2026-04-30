@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import CharityLogo from "@/components/CharityLogo";
+import GiveYourDistanceButton from "@/components/GiveYourDistanceButton";
 import { getVisiblePages } from "@/lib/pagination";
 import { searchCharities } from "@/lib/charity-search";
 
@@ -161,34 +161,7 @@ export default function CharitySelector({
   const charitiesPerPage = 5;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCharityId, setSelectedCharityId] = useState(currentCharityId);
-  const [isUpdating, setIsUpdating] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const router = useRouter();
-
-  const handleSelectCharity = async (charityId: string) => {
-    setIsUpdating(true);
-    try {
-      const response = await fetch("/api/user/charity", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ charityId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update charity selection");
-      }
-
-      setSelectedCharityId(charityId);
-      router.refresh(); // Refresh server components to show updated data
-    } catch (error) {
-      console.error("Error selecting charity:", error);
-      alert("Failed to update charity selection. Please try again.");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
 
   const filteredCharities = searchCharities(charities, searchQuery);
 
@@ -315,38 +288,13 @@ export default function CharitySelector({
                       />
 
                       <div className="flex-shrink-0 sm:hidden ml-auto">
-                        {isSelected ? (
-                          <button
-                            className="btn btn-success btn-sm gap-1.5"
-                            disabled
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                            Selected
-                          </button>
-                        ) : (
-                          <button
-                            className="btn btn-outline btn-primary btn-sm"
-                            onClick={() => handleSelectCharity(charity.id)}
-                            disabled={isUpdating}
-                          >
-                            {isUpdating ? (
-                              <span className="loading loading-spinner loading-xs"></span>
-                            ) : (
-                              "Select"
-                            )}
-                          </button>
-                        )}
+                        <GiveYourDistanceButton
+                          charityId={charity.id}
+                          isAuthenticated
+                          isSelected={isSelected}
+                          label="Give Your Distance"
+                          onSelected={setSelectedCharityId}
+                        />
                       </div>
                     </div>
 
@@ -410,38 +358,13 @@ export default function CharitySelector({
 
                     {/* Select Button - desktop only */}
                     <div className="hidden sm:block flex-shrink-0">
-                      {isSelected ? (
-                        <button
-                          className="btn btn-success btn-sm gap-1.5"
-                          disabled
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          Selected
-                        </button>
-                      ) : (
-                        <button
-                          className="btn btn-outline btn-primary btn-sm"
-                          onClick={() => handleSelectCharity(charity.id)}
-                          disabled={isUpdating}
-                        >
-                          {isUpdating ? (
-                            <span className="loading loading-spinner loading-xs"></span>
-                          ) : (
-                            "Select"
-                          )}
-                        </button>
-                      )}
+                      <GiveYourDistanceButton
+                        charityId={charity.id}
+                        isAuthenticated
+                        isSelected={isSelected}
+                        label="Give Your Distance"
+                        onSelected={setSelectedCharityId}
+                      />
                     </div>
                   </div>
                 </div>

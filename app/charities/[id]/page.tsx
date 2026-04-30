@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import Navbar from "@/components/Navbar";
 import CharityLogo from "@/components/CharityLogo";
-import { anonymizeName } from "@/lib/activity-privacy";
+import GiveYourDistanceButton from "@/components/GiveYourDistanceButton";
+import {
+  anonymizeName,
+  getGenericActivityTitle,
+} from "@/lib/activity-privacy";
 import { getActivityPath } from "@/lib/activity-url";
+import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers";
 import { db } from "@/lib/db";
 import { getAbsoluteCharityLogoUrl } from "@/lib/charity-logo";
 
@@ -132,8 +138,10 @@ async function getCharityImpact(charityId: string): Promise<CharityImpact> {
     id: commitment.activityId,
     shortcode: commitment.activity.shortcode,
     athleteName: anonymizeName(commitment.activity.user.name),
-    activityName:
-      commitment.activity.name || `${commitment.activity.type} activity`,
+    activityName: getGenericActivityTitle(
+      commitment.activity.type,
+      commitment.activity.startDateLocal
+    ),
     activityType: commitment.activity.type,
     distanceKm: Number(commitment.activity.distanceMeters || 0) / 1000,
     donationAmount: commitment.amountCents / 100,
@@ -207,6 +215,7 @@ export default async function CharityImpactPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await auth();
   const { id } = await params;
   const charity = await getCharity(id);
 
@@ -214,6 +223,15 @@ export default async function CharityImpactPage({
     notFound();
   }
 
+  const user = session?.user?.email
+    ? await db.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true },
+      })
+    : null;
+  const currentCharity = user
+    ? await ensureUserHasSelectedCharity(user.id)
+    : null;
   const impact = await getCharityImpact(charity.id);
   const hasImpact = impact.activitiesSupported > 0;
 
@@ -240,6 +258,11 @@ export default async function CharityImpactPage({
                   <span className="badge badge-outline badge-lg">
                     {charity.category}
                   </span>
+                  {charity.charityNavigatorScore > 0 && (
+                    <span className="badge badge-outline badge-lg">
+                      Charity Navigator {charity.charityNavigatorScore}%
+                    </span>
+                  )}
                   {charity.isDefault && (
                     <span className="badge badge-primary badge-lg">
                       Default Charity
@@ -259,25 +282,26 @@ export default async function CharityImpactPage({
             </div>
 
             <div className="flex min-w-fit flex-col gap-3">
-              {charity.charityNavigatorScore > 0 && (
-                <div className="rounded-2xl bg-base-100/80 px-5 py-4 shadow-sm ring-1 ring-base-300">
-                  <div className="text-xs font-semibold tracking-[0.2em] text-base-content/50">
-                    CHARITY NAVIGATOR
-                  </div>
-                  <div className="mt-2 text-3xl font-bold text-[#8B4ACC]">
-                    {charity.charityNavigatorScore}%
-                  </div>
-                </div>
-              )}
-
-              <Link
-                href={charity.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary"
-              >
-                Visit Website
-              </Link>
+              <div className="flex w-full flex-col gap-3 sm:w-auto">
+                <GiveYourDistanceButton
+                  charityId={charity.id}
+                  isAuthenticated={Boolean(session?.user)}
+                  isSelected={currentCharity?.id === charity.id}
+                  className="btn btn-primary"
+                />
+                <Link
+                  href={charity.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn border-base-300 bg-white text-base-content hover:border-base-300 hover:bg-base-100"
+                >
+                  Visit Website
+                  <i
+                    className="bi bi-box-arrow-up-right text-sm"
+                    aria-hidden="true"
+                  />
+                </Link>
+              </div>
             </div>
           </div>
         </section>
