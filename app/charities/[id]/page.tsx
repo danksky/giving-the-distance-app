@@ -6,8 +6,8 @@ import Navbar from "@/components/Navbar";
 import CharityLogo from "@/components/CharityLogo";
 import GiveYourDistanceButton from "@/components/GiveYourDistanceButton";
 import {
-  anonymizeName,
-  getGenericActivityTitle,
+  getDisplayActivityTitle,
+  getDisplayName,
 } from "@/lib/activity-privacy";
 import { getActivityPath } from "@/lib/activity-url";
 import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers";
@@ -70,10 +70,12 @@ async function getCharityImpact(charityId: string): Promise<CharityImpact> {
         select: {
           id: true,
           shortcode: true,
+          userId: true,
           name: true,
           type: true,
           distanceMeters: true,
           startDateLocal: true,
+          isPublicProfile: true,
           user: {
             select: {
               name: true,
@@ -137,10 +139,19 @@ async function getCharityImpact(charityId: string): Promise<CharityImpact> {
   const recentActivities = commitments.slice(0, 10).map((commitment) => ({
     id: commitment.activityId,
     shortcode: commitment.activity.shortcode,
-    athleteName: anonymizeName(commitment.activity.user.name),
-    activityName: getGenericActivityTitle(
+    athleteName: getDisplayName(
+      commitment.activity.user.name,
+      commitment.activity.userId,
+      commitment.activity.isPublicProfile,
+      undefined
+    ),
+    activityName: getDisplayActivityTitle(
+      commitment.activity.name,
       commitment.activity.type,
-      commitment.activity.startDateLocal
+      commitment.activity.startDateLocal,
+      commitment.activity.userId,
+      commitment.activity.isPublicProfile,
+      undefined
     ),
     activityType: commitment.activity.type,
     distanceKm: Number(commitment.activity.distanceMeters || 0) / 1000,

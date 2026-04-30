@@ -163,6 +163,24 @@ export function getDisplayName(
 }
 
 /**
+ * Gets the activity title based on privacy settings
+ */
+export function getDisplayActivityTitle(
+  realActivityTitle: string | null | undefined,
+  activityType: string | null | undefined,
+  startDateLocal: Date | string | null | undefined,
+  activityUserId: string,
+  activityIsPublicProfile: boolean,
+  viewerUserId: string | undefined
+): string {
+  if (canViewRealProfile(activityUserId, activityIsPublicProfile, viewerUserId)) {
+    return realActivityTitle || activityType || "Activity";
+  }
+
+  return getGenericActivityTitle(activityType, startDateLocal);
+}
+
+/**
  * Gets the avatar URL based on privacy settings
  */
 export function getDisplayAvatar(

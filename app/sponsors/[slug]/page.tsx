@@ -3,7 +3,7 @@ import Link from "next/link";
 import fs from "fs";
 import path from "path";
 import { db } from "@/lib/db";
-import { anonymizeName } from "@/lib/activity-privacy";
+import { getDisplayName } from "@/lib/activity-privacy";
 import { getActivityPath } from "@/lib/activity-url";
 import { getLogger } from "@/lib/logger";
 import LightboxImage from "@/components/LightboxImage";
@@ -155,7 +155,12 @@ async function getSponsorImpact(sponsorId: string): Promise<SponsorImpact> {
   const recentActivities = commitments.slice(0, 10).map((c) => ({
     id: c.activityId,
     shortcode: c.activity.shortcode,
-    athleteName: anonymizeName(c.activity.user.name),
+    athleteName: getDisplayName(
+      c.activity.user.name,
+      c.activity.userId,
+      c.activity.isPublicProfile,
+      undefined
+    ),
     activityType: c.activity.type,
     distance: Number(c.activity.distanceMeters || 0) / 1000,
     distanceUnit: "km",
