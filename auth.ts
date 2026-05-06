@@ -5,6 +5,11 @@ import { authConfig } from "./auth.config"
 import { notifyNewUser, notifyStravaAuthSuccess, notifyStravaAuthFailure } from "@/lib/slack-notifications"
 import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers"
 import { getLogger } from "@/lib/logger"
+import {
+  getStoredCallbackScope,
+  normalizeScopeString,
+  validateStravaScope,
+} from "@/lib/strava-scope"
 
 const hasDatabaseConfigured = Boolean(
   process.env.DATABASE_URL?.trim() ||
@@ -51,12 +56,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         })
         
         // Get scope from account object or from our stored callback scope
-        let scope = account.scope as string | undefined
+        let scope = normalizeScopeString(account.scope) ?? undefined
         
         // If not in account, check the stored scope from callback URL
         if (!scope) {
-          // Import and check the stored scope
-          const { getStoredCallbackScope } = await import('@/lib/custom-prisma-adapter')
           scope = getStoredCallbackScope() ?? undefined
           authLogger.debug("Retrieved Strava scope from callback storage", {
             hasScope: Boolean(scope),
@@ -80,18 +83,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
         
         // Validate scopes
-        const requiredScopes = ['activity:read_all', 'profile:read_all', 'activity:write']
-        const grantedScopes = scope.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
+        const { grantedScopes, missingScopes } = validateStravaScope(scope)
         
         authLogger.debug("Resolved Strava scopes for sign-in", {
           grantedScopes,
-          requiredScopes,
           userEmail: user?.email,
         })
-        
-        const missingScopes = requiredScopes.filter(
-          reqScope => !grantedScopes.includes(reqScope)
-        )
         
         if (missingScopes.length > 0) {
           authLogger.error("Missing required Strava permissions", {
@@ -190,19 +187,24 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             const athlete = await response.json()
             
             // Get the scope - it might be in account.scope or we need to look it up
-            let scopeString = account.scope || ''
+            let scopeString = normalizeScopeString(account.scope) || ''
             
             // If scope is not in account object, fetch it from the database
             // (This is a workaround for NextAuth not saving scope to Account)
             if (!scopeString) {
-              const dbAccount = await db.account.findFirst({
-                where: {
-                  provider: 'strava',
-                  providerAccountId: account.providerAccountId,
-                },
-                select: { scope: true },
-              })
-              scopeString = dbAccount?.scope || ''
+              const callbackScope = getStoredCallbackScope()
+              if (callbackScope) {
+                scopeString = callbackScope
+              } else {
+                const dbAccount = await db.account.findFirst({
+                  where: {
+                    provider: 'strava',
+                    providerAccountId: account.providerAccountId,
+                  },
+                  select: { scope: true },
+                })
+                scopeString = dbAccount?.scope || ''
+              }
             }
             
             authLogger.debug("Saving Strava athlete data with resolved scope", {

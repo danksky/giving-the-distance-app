@@ -1,29 +1,12 @@
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { PrismaClient } from "@prisma/client"
 import type { Adapter } from "next-auth/adapters"
+import { getStoredCallbackScope, normalizeScopeString } from "@/lib/strava-scope"
 
 /**
- * Custom Prisma Adapter that ensures the scope field is saved
- * 
- * The default PrismaAdapter doesn't save the scope field from OAuth providers,
- * even if it exists in the schema. This custom adapter overrides the linkAccount
- * method to ensure scope is persisted.
+ * Custom Prisma Adapter that upserts OAuth accounts so reconnecting an
+ * existing Strava account updates tokens instead of failing on duplicates.
  */
-/**
- * Temporary storage for scope from callback URL
- * This is a workaround because NextAuth doesn't pass callback URL params to the account object
- */
-let callbackScope: string | null = null
-
-export function setCallbackScope(scope: string) {
-  console.log('📝 Storing callback scope:', scope)
-  callbackScope = scope
-}
-
-export function getStoredCallbackScope(): string | null {
-  return callbackScope
-}
-
 export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
   const adapter = PrismaAdapter(prisma)
 
@@ -31,10 +14,11 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
     ...adapter,
     async linkAccount(account) {
       console.log('🔗 CustomAdapter linkAccount called with:', JSON.stringify(account, null, 2))
-      console.log('🔗 callbackScope from storage:', callbackScope)
+      console.log('🔗 callbackScope from storage:', getStoredCallbackScope())
       
-      // Use the scope from callback URL if account.scope is missing
-      const scopeToSave = account.scope || callbackScope
+      // Strava sometimes returns scope on the callback URL but not the token response.
+      const scopeToSave =
+        normalizeScopeString(account.scope) ?? getStoredCallbackScope()
       
       // Use upsert to handle both new accounts and re-authorization
       // This is critical: when a user deauthorizes and re-authorizes,
@@ -72,10 +56,7 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
       })
       
       console.log('✅ Account linked/updated with scope:', scopeToSave)
-      
-      // Clear the temporary scope storage
-      callbackScope = null
-      
+
       // Return undefined as expected by the Adapter interface
       return undefined
     },

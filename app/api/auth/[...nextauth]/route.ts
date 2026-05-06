@@ -1,5 +1,5 @@
 import { handlers } from "@/auth"
-import { setCallbackScope } from "@/lib/custom-prisma-adapter"
+import { withCallbackScope } from "@/lib/strava-scope"
 import { NextRequest } from "next/server"
 
 // Wrap GET handler to capture scope from callback URL
@@ -11,7 +11,7 @@ async function GET_WithScopeCapture(req: NextRequest) {
   
   if (provider && scope) {
     console.log('🎯 Captured scope from callback URL:', scope)
-    setCallbackScope(scope)
+    return withCallbackScope(scope, () => handlers.GET(req))
   }
   
   return handlers.GET(req)
@@ -20,4 +20,3 @@ async function GET_WithScopeCapture(req: NextRequest) {
 const POST = handlers.POST
 
 export { GET_WithScopeCapture as GET, POST }
-
