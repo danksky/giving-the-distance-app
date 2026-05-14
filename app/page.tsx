@@ -8,10 +8,24 @@ import { redirect } from "next/navigation";
 const featuredCharities = [
   { name: "UNICEF", src: "/logos/charities/unicef.png" },
   { name: "ASPCA", src: "/logos/charities/aspca.jpeg" },
+  { name: "Red Cross", src: "/logos/charities/american-red-cross.png" },
+  { name: "St. Jude", src: "/logos/charities/st-jude.png" },
+  {
+    name: "Doctors Without Borders",
+    src: "/logos/charities/doctors-without-borders.jpg",
+  },
+  { name: "Feeding America", src: "/logos/charities/feeding-america.png" },
+  {
+    name: "Save the Children",
+    src: "/logos/charities/save-the-children.png",
+  },
   { name: "CARE", src: "/logos/charities/care-usa.png" },
-  { name: "WHO", src: null },
-  { name: "WWF", src: null },
+  { name: "WHO", src: "/logos/charities/who.png" },
+  { name: "WWF", src: "/logos/charities/wwf.jpg" },
+  { name: "Robin Hood", src: "/logos/charities/robin-hood.svg" },
 ] as const;
+
+const featuredCharityCarousel = [...featuredCharities, ...featuredCharities];
 
 const FUNDRAISING_START_DATE = "2026-05-14";
 const FUNDRAISING_START_AMOUNT = 5400;
@@ -183,27 +197,26 @@ export default async function Home() {
               </h2>
             </div>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {featuredCharities.map((charity) => (
-                <div
-                  key={charity.name}
-                  className="flex min-h-28 items-center justify-center rounded-[1.5rem] border border-[#f1ecf7] bg-[#fafafa] px-5 py-6"
-                >
-                  {charity.src ? (
-                    <Image
-                      src={charity.src}
-                      alt={`${charity.name} logo`}
-                      width={140}
-                      height={60}
-                      className="h-auto max-h-12 w-auto grayscale opacity-50"
-                    />
-                  ) : (
-                    <span className="text-2xl font-medium tracking-[0.18em] text-[#a0a0a8]">
-                      {charity.name}
-                    </span>
-                  )}
-                </div>
-              ))}
+            <div className="featured-charity-marquee mt-12">
+              <div className="featured-charity-track">
+                {featuredCharityCarousel.map((charity, index) => (
+                  <div
+                    key={`${charity.name}-${index}`}
+                    className="featured-charity-item"
+                  >
+                    <div className="featured-charity-logo-wrap">
+                      <Image
+                        src={charity.src}
+                        alt={`${charity.name} logo`}
+                        width={160}
+                        height={72}
+                        className="featured-charity-logo"
+                      />
+                    </div>
+                    <span className="featured-charity-label">{charity.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>

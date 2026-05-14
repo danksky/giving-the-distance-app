@@ -258,6 +258,119 @@ body {
   grid-auto-columns: 1fr;
 }
 
+.featured-charity-marquee {
+  position: relative;
+  overflow: hidden;
+  padding-block: 1rem 0.25rem;
+}
+
+.featured-charity-marquee::before,
+.featured-charity-marquee::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.featured-charity-marquee::before {
+  left: 0;
+  background: linear-gradient(90deg, white 15%, rgb(255 255 255 / 0));
+}
+
+.featured-charity-marquee::after {
+  right: 0;
+  background: linear-gradient(270deg, white 15%, rgb(255 255 255 / 0));
+}
+
+.featured-charity-track {
+  display: flex;
+  width: max-content;
+  align-items: flex-start;
+  gap: 1.5rem;
+  animation: featured-charity-scroll 32s linear infinite;
+  will-change: transform;
+}
+
+.featured-charity-item {
+  flex: 0 0 auto;
+  width: 10.5rem;
+  text-align: center;
+}
+
+.featured-charity-logo-wrap {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.featured-charity-logo {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 3.5rem;
+  filter: grayscale(1);
+  opacity: 0.62;
+}
+
+.featured-charity-label {
+  display: -webkit-box;
+  margin-top: 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8e89a3;
+  white-space: normal;
+  text-wrap: balance;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@keyframes featured-charity-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 0.75rem));
+  }
+}
+
+@media (max-width: 640px) {
+  .featured-charity-marquee::before,
+  .featured-charity-marquee::after {
+    width: 2.5rem;
+  }
+
+  .featured-charity-track {
+    gap: 1.25rem;
+    animation-duration: 24s;
+  }
+
+  .featured-charity-item {
+    width: 8rem;
+  }
+
+  .featured-charity-logo-wrap {
+    min-height: 3.75rem;
+  }
+
+  .featured-charity-logo {
+    max-height: 3rem;
+  }
+
+  .featured-charity-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+  }
+}
+
 @media (min-width: 1024px) {
   .lg\:stats-horizontal {
     grid-auto-flow: column;
