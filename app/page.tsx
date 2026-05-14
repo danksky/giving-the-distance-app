@@ -222,26 +222,24 @@ export default async function Home() {
         </section>
 
         <section className="px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-          <div className="mx-auto max-w-6xl rounded-[2.25rem] bg-[linear-gradient(135deg,#1f1330_0%,#352047_38%,#B56DFF_100%)] p-8 text-white shadow-[0_28px_80px_rgba(82,37,135,0.26)] sm:p-10 lg:p-12">
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.32em] text-white/72">
-                Start here
-              </p>
-              <h2 className="mt-5 max-w-4xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
-                Move for the city.
-              </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/80">
-                Connect Strava and start turning your activity into support.
-              </p>
+          <div className="mx-auto max-w-4xl rounded-[2rem] border border-[#e7dcf7] bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] p-8 text-center shadow-[0_22px_60px_rgba(17,24,39,0.06)] sm:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#9c88bb]">
+              Ready when you are
+            </p>
+            <h2 className="mt-5 text-4xl font-black tracking-tight text-[#171717] sm:text-5xl">
+              Start turning miles into support.
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#64607a]">
+              Connect Strava and make each run, ride, or walk part of
+              something bigger.
+            </p>
 
-              <div className="mt-8 flex w-full max-w-xl flex-col gap-4 sm:flex-row sm:justify-center">
-                <GoogleSignInButton
-                  label="Get Going"
-                  className="w-full justify-center"
-                  variant="light"
-                />
-                {/* Sponsor CTA can be restored here when the sponsor flow is ready again. */}
-              </div>
+            <div className="mt-8 flex justify-center">
+              <GoogleSignInButton
+                label="Get Going"
+                className="w-full justify-center sm:w-auto sm:min-w-[220px]"
+              />
+              {/* Sponsor CTA can be restored here when the sponsor flow is ready again. */}
             </div>
           </div>
         </section>
