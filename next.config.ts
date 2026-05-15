@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "nevertoolate.com",
+      },
+      {
+        protocol: "https",
         hostname: "dgalywyr863hv.cloudfront.net",
       },
       {
