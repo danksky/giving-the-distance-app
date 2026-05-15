@@ -154,7 +154,7 @@ export default async function Home() {
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
                   Pace
                 </p>
-                <p className="mt-2 text-2xl font-semibold text-[#171717]">
+                <p className="mt-2 whitespace-nowrap text-2xl font-semibold text-[#171717]">
                   8:12 /mi
                 </p>
               </div>

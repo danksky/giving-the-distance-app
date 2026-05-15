@@ -227,6 +227,73 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.navbar-shell {
+  transition:
+    padding 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.navbar-brand,
+.navbar-logo,
+.navbar-action,
+.navbar-avatar-frame {
+  transition:
+    min-height 180ms ease,
+    height 180ms ease,
+    width 180ms ease,
+    padding 180ms ease,
+    font-size 180ms ease,
+    transform 180ms ease;
+}
+
+.navbar-brand {
+  min-height: 3rem;
+}
+
+.navbar-logo {
+  height: 2.5rem;
+}
+
+.navbar-action {
+  min-height: 3rem;
+}
+
+.navbar-avatar-frame {
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.navbar-condensed {
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+.navbar-condensed .navbar-brand {
+  min-height: 2.625rem;
+}
+
+.navbar-condensed .navbar-logo {
+  height: 2rem;
+}
+
+.navbar-condensed .navbar-action {
+  min-height: 2.625rem;
+  font-size: 0.95rem;
+}
+
+.navbar-condensed .navbar-avatar-frame {
+  width: 2.2rem;
+  height: 2.2rem;
+  min-width: 2.2rem;
+  min-height: 2.2rem;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }

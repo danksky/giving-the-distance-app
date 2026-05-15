@@ -2,6 +2,7 @@ import { auth, signOut, signIn } from "@/auth";
 import { isAdmin } from "@/lib/auth-helpers";
 import Link from "next/link";
 import Image from "next/image";
+import NavbarFrame from "@/components/NavbarFrame";
 
 export default async function Navbar({
   sticky = true,
@@ -14,20 +15,18 @@ export default async function Navbar({
     : false;
 
   return (
-    <div
-      className={`navbar ${sticky ? "sticky top-0 z-50 border-b border-black/5 !bg-white/70 shadow-[0_10px_30px_rgba(17,24,39,0.08)] backdrop-blur-md supports-[backdrop-filter]:!bg-white/55" : "bg-base-100"}`}
-    >
+    <NavbarFrame sticky={sticky}>
       <div className="flex-1">
         <Link
           href={session?.user ? "/dashboard" : "/"}
-          className="btn btn-ghost px-2"
+          className="btn btn-ghost px-2 navbar-brand"
         >
           <Image
             src="/logos/giving-the-distance-full.png"
             alt="Giving the Distance Logo"
             width={220}
             height={48}
-            className="h-10 w-auto"
+            className="navbar-logo h-10 w-auto"
             priority
           />
         </Link>
@@ -35,9 +34,12 @@ export default async function Navbar({
       {session?.user ? (
         <div className="flex-none gap-2">
           <div className="dropdown dropdown-end">
-            <button tabIndex={0} className="btn btn-ghost btn-circle avatar">
+            <button
+              tabIndex={0}
+              className="btn btn-ghost btn-circle avatar navbar-action"
+            >
               {session.user.image ? (
-                <div className="w-10 rounded-full">
+                <div className="navbar-avatar-frame w-10 rounded-full">
                   <Image
                     src={session.user.image}
                     alt={session.user.name || "User"}
@@ -48,7 +50,7 @@ export default async function Navbar({
                 </div>
               ) : (
                 <div className="avatar placeholder">
-                  <div className="bg-neutral text-neutral-content w-10 rounded-full">
+                  <div className="navbar-avatar-frame bg-neutral text-neutral-content w-10 rounded-full">
                     <span className="text-lg">
                       {session.user.name?.charAt(0) || "U"}
                     </span>
@@ -95,12 +97,12 @@ export default async function Navbar({
               await signIn("google", { redirectTo: "/dashboard" });
             }}
           >
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary navbar-action">
               Sign Up
             </button>
           </form>
         </div>
       )}
-    </div>
+    </NavbarFrame>
   );
 }
