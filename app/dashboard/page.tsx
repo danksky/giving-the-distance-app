@@ -231,32 +231,42 @@ export default async function DashboardPage({
         {hasStrava && (
           <div className="space-y-8">
             <div
-              className="card"
+              className="card relative overflow-hidden rounded-[2rem] border-[#e5d6f6] shadow-[0_24px_60px_rgba(78,42,17,0.10)]"
               style={{
-                backgroundColor: "#FFF8E1",
-                borderColor: "#D9B44A",
+                background:
+                  "radial-gradient(circle at top right, rgba(255, 219, 107, 0.2), transparent 30%), radial-gradient(circle at bottom left, rgba(181, 109, 255, 0.14), transparent 36%), linear-gradient(135deg, #fff9ee 0%, #fff4dc 42%, #faf4ff 100%)",
               }}
             >
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.22),rgba(255,255,255,0)_38%,rgba(181,109,255,0.06)_100%)]"
+              />
               <div className="card-body">
-                <div className="flex items-start justify-between gap-6">
-                  <div>
-                    <h3 className="mb-4 text-2xl font-bold text-[#6B4E16]">
+                <div className="relative flex items-start justify-between gap-6">
+                  <div className="max-w-xl">
+                    <h3 className="mb-4 text-3xl font-black tracking-tight text-[#171717] sm:text-4xl">
                       Impact
                     </h3>
-                    <div className="text-sm font-semibold text-[#8C6A1D]/80 mb-2">
+                    <div className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-black/65 sm:text-sm">
                       TOTAL RAISED
                     </div>
-                    <div className="mb-2 text-5xl font-bold text-[#8B4ACC]">
+                    <div className="mb-3 text-5xl font-black tracking-tight text-[#8b4acc] sm:text-6xl">
                       ${totalRaised.toFixed(2)}
                     </div>
-                    <div className="text-sm text-[#8C6A1D]/80">
+                    <div className="max-w-md text-sm leading-7 text-black/70 sm:text-base">
                       Generated across your activities
                     </div>
                   </div>
-                  <div className="pt-1 text-[#B8860B]">
+                  <div className="relative hidden shrink-0 sm:block">
                     <i
                       aria-hidden="true"
-                      className="bi bi-coin text-5xl sm:text-6xl"
+                      className="relative bi bi-coin text-6xl text-[#b8860b]"
+                    />
+                  </div>
+                  <div className="relative shrink-0 sm:hidden">
+                    <i
+                      aria-hidden="true"
+                      className="relative bi bi-coin text-4xl text-[#b8860b]"
                     />
                   </div>
                 </div>
