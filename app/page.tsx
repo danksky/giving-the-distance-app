@@ -53,7 +53,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-[#f7f4fb]">
-      <Navbar />
+      <Navbar sticky />
 
       <main>
         <section className="border-b border-black/5 bg-[radial-gradient(circle_at_top_left,_rgba(181,109,255,0.16),_transparent_30%),linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)]">

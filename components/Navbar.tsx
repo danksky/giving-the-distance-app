@@ -3,14 +3,20 @@ import { isAdmin } from "@/lib/auth-helpers";
 import Link from "next/link";
 import Image from "next/image";
 
-export default async function Navbar() {
+export default async function Navbar({
+  sticky = false,
+}: {
+  sticky?: boolean;
+}) {
   const session = await auth();
   const userIsAdmin = session?.user?.email
     ? isAdmin(session.user.email)
     : false;
 
   return (
-    <div className="navbar bg-base-100">
+    <div
+      className={`navbar ${sticky ? "sticky top-0 z-50 border-b border-black/5 !bg-white/70 shadow-[0_10px_30px_rgba(17,24,39,0.08)] backdrop-blur-md supports-[backdrop-filter]:!bg-white/55" : "bg-base-100"}`}
+    >
       <div className="flex-1">
         <Link
           href={session?.user ? "/dashboard" : "/"}
