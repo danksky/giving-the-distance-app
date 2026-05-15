@@ -32,9 +32,7 @@ const FUNDRAISING_START_AMOUNT = 5400;
 const FUNDRAISING_STEP_DAYS = 8;
 const FUNDRAISING_STEP_AMOUNT = 50;
 const FUNDRAISING_MAX_AMOUNT = 7000;
-const WEEKLY_REVALIDATE_SECONDS = 60 * 60 * 24 * 7;
-
-export const revalidate = WEEKLY_REVALIDATE_SECONDS;
+export const revalidate = 604800;
 
 export const metadata: Metadata = {
   title: "Giving the Distance | Turn Athletic Activity Into Charitable Giving",
