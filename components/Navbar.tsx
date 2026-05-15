@@ -14,16 +14,16 @@ export default async function Navbar() {
       <div className="flex-1">
         <Link
           href={session?.user ? "/dashboard" : "/"}
-          className="btn btn-ghost text-xl font-[family-name:var(--font-outfit)] gap-2"
+          className="btn btn-ghost px-2"
         >
           <Image
-            src="/icon.png"
+            src="/logos/giving-the-distance-full.png"
             alt="Giving the Distance Logo"
-            width={32}
-            height={32}
-            className="w-8 h-8"
+            width={220}
+            height={48}
+            className="h-10 w-auto"
+            priority
           />
-          Giving the Distance
         </Link>
       </div>
       {session?.user ? (
