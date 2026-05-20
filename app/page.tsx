@@ -154,68 +154,151 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="mt-10 rounded-[2rem] border border-[#e5d9f8] bg-white p-6 shadow-[0_22px_60px_rgba(17,24,39,0.07)] sm:p-8">
-            <div className="flex items-center gap-4">
-              <div className="relative h-14 w-14 overflow-hidden rounded-full border border-[#ece4f8]">
-                <Image
-                  src="/fake-people/fake-person-1.png"
-                  alt="Katie Swift"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <p className="text-xl font-semibold text-[#171717]">
-                  Katie Swift
-                </p>
-                <p className="text-sm text-[#64607a]">
-                  Yesterday at 5:42 PM • Brooklyn, NY
-                </p>
+          <div className="mt-10 space-y-8">
+            <div>
+              <p className="text-center text-sm font-semibold uppercase tracking-[0.3em] text-[#8e89a3]">
+                The Strava view
+              </p>
+
+              <div className="mt-4 rounded-[2rem] border border-[#e5d9f8] bg-white p-6 shadow-[0_22px_60px_rgba(17,24,39,0.07)] sm:p-8">
+                <div className="flex items-center gap-4">
+                  <div className="relative h-14 w-14 overflow-hidden rounded-full border border-[#ece4f8]">
+                    <Image
+                      src="/fake-people/fake-person-1.png"
+                      alt="Katie Swift"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xl font-semibold text-[#171717]">
+                      Katie Swift
+                    </p>
+                    <p className="text-sm text-[#64607a]">
+                      Yesterday at 5:42 PM • Brooklyn, NY
+                    </p>
+                  </div>
+                </div>
+
+                <h3 className="mt-8 text-3xl font-semibold tracking-tight text-[#171717]">
+                  Sunset Prospect Park Loop
+                </h3>
+
+                <div className="mt-8 grid grid-cols-3 gap-4 border-y border-[#eee7f7] py-6">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
+                      Distance
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[#171717]">
+                      6.21 mi
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
+                      Pace
+                    </p>
+                    <p className="mt-2 whitespace-nowrap text-2xl font-semibold text-[#171717]">
+                      8:12 /mi
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
+                      Time
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-[#171717]">
+                      50:56
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-[1.5rem] border border-[#e7d4ff] bg-[#faf5ff] p-5">
+                  <div className="flex items-start">
+                    <p className="text-lg leading-8 text-[#231f30]">
+                      <span className="font-semibold">Katie&apos;s run</span>{" "}
+                      inspired{" "}
+                      <span className="font-semibold text-[#B56DFF]">
+                        Northside Stride Running Co.
+                      </span>{" "}
+                      to donate to Katie&apos;s chosen charity,{" "}
+                      <span className="font-semibold">NYC Youth Sports</span>.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <h3 className="mt-8 text-3xl font-semibold tracking-tight text-[#171717]">
-              Sunset Prospect Park Loop
-            </h3>
+            <div>
+              <p className="text-center text-sm font-semibold uppercase tracking-[0.3em] text-[#8e89a3]">
+                The donation page view
+              </p>
 
-            <div className="mt-8 grid grid-cols-3 gap-4 border-y border-[#eee7f7] py-6">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
-                  Distance
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-[#171717]">
-                  6.21 mi
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
-                  Pace
-                </p>
-                <p className="mt-2 whitespace-nowrap text-2xl font-semibold text-[#171717]">
-                  8:12 /mi
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
-                  Time
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-[#171717]">
-                  50:56
-                </p>
-              </div>
-            </div>
+              <div className="mt-4 rounded-[2rem] border border-[#e5d9f8] bg-white p-6 shadow-[0_22px_60px_rgba(17,24,39,0.07)] sm:p-8">
+                <div className="flex flex-col gap-4 border-b border-[#eee7f7] pb-6 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
+                      Impact
+                    </p>
+                    <h3 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-[#171717]">
+                      Katie&apos;s activity generated a donation for NYC Youth
+                      Sports.
+                    </h3>
+                  </div>
+                  <div className="w-fit rounded-full border border-[#e7d4ff] bg-[#faf5ff] px-4 py-2 text-sm font-semibold text-[#8b4acc]">
+                    Public donation page
+                  </div>
+                </div>
 
-            <div className="mt-6 rounded-[1.5rem] border border-[#e7d4ff] bg-[#faf5ff] p-5">
-              <div className="flex items-start">
-                <p className="text-lg leading-8 text-[#231f30]">
-                  <span className="font-semibold">Katie&apos;s run</span>{" "}
-                  inspired{" "}
-                  <span className="font-semibold text-[#B56DFF]">
-                    Northside Stride Running Co.
-                  </span>{" "}
-                  to donate to Katie&apos;s chosen charity,{" "}
-                  <span className="font-semibold">NYC Youth Sports</span>.
-                </p>
+                <div className="grid gap-6 py-6 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
+                      Benefiting charity
+                    </p>
+                    <div className="mt-4 flex items-center gap-4">
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#e7d4ff] bg-[#faf5ff] text-lg font-black text-[#8b4acc]">
+                        NYS
+                      </div>
+                      <div>
+                        <p className="text-2xl font-semibold text-[#171717]">
+                          NYC Youth Sports
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-[#64607a]">
+                          Helping kids across the city get moving.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
+                      Commitment amount
+                    </p>
+                    <p className="mt-4 text-5xl font-black tracking-tight text-[#B56DFF]">
+                      $0.15
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[#64607a]">
+                      Generated from this activity.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#eee7f7] pt-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7d7894]">
+                    Made possible by
+                  </p>
+                  <div className="mt-4 flex items-center gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#171717] text-sm font-black text-white">
+                      NS
+                    </div>
+                    <div>
+                      <p className="text-xl font-semibold text-[#171717]">
+                        Northside Stride Running Co.
+                      </p>
+                      <p className="mt-1 text-sm text-[#64607a]">
+                        Local sponsor
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
