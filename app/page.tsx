@@ -35,9 +35,9 @@ const FUNDRAISING_MAX_AMOUNT = 7000;
 export const revalidate = 604800;
 
 export const metadata: Metadata = {
-  title: "Giving the Distance | Turn Athletic Activity Into Charitable Giving",
+  title: "Giving the Distance | Make Your Athletic Activity Go Even Further",
   description:
-    "Connect Strava activity to charitable giving through a simple loop of athletes, local sponsors, and featured causes.",
+    "Connect Strava to Giving the Distance so your runs, rides, and walks automatically generate donations from local sponsors.",
 };
 
 export default async function Home() {
@@ -60,12 +60,13 @@ export default async function Home() {
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1fr_0.92fr] lg:px-8 lg:py-20">
             <div className="flex flex-col justify-center">
               <h1 className="max-w-3xl text-5xl font-black tracking-tight text-[#171717] sm:text-6xl lg:text-7xl">
-                Turn athletic activity into charitable giving.
+                Make your athletic activity go even further.
               </h1>
 
               <p className="mt-6 max-w-2xl text-xl leading-9 text-[#64607a]">
-                Every Strava run, ride, or walk can inspire support from local
-                sponsors for the charity you choose.
+                Once you connect Strava to Giving the Distance, your runs,
+                rides, and walks will automatically generate donations from
+                local sponsors.
               </p>
 
               <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-stretch">
@@ -107,13 +108,49 @@ export default async function Home() {
           </div>
         </section>
 
+        <section className="border-y border-black/5 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#8e89a3]">
+                Featured charities
+              </p>
+              <h2 className="mt-4 text-3xl font-black tracking-tight text-[#171717] sm:text-4xl">
+                Move for causes you believe in.
+              </h2>
+            </div>
+
+            <div className="featured-charity-marquee mt-12">
+              <div className="featured-charity-track">
+                {featuredCharityCarousel.map((charity, index) => (
+                  <div
+                    key={`${charity.name}-${index}`}
+                    className="featured-charity-item"
+                  >
+                    <div className="featured-charity-logo-wrap">
+                      <Image
+                        src={charity.src}
+                        alt={`${charity.name} logo`}
+                        width={160}
+                        height={72}
+                        className="featured-charity-logo"
+                      />
+                    </div>
+                    <span className="featured-charity-label">{charity.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:py-24">
           <div className="text-center">
             <h2 className="text-4xl font-black tracking-tight text-[#171717] sm:text-5xl">
-              Get noticed.
+              Get noticed, sponsors.
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-[#64607a]">
-              Sponsors show up inside the story of the activity itself.
+              Your sponsorship will show up inside of the story of the activity
+              itself.
             </p>
           </div>
 
@@ -179,41 +216,6 @@ export default async function Home() {
                   to donate to Katie&apos;s chosen charity,{" "}
                   <span className="font-semibold">NYC Youth Sports</span>.
                 </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-black/5 bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#8e89a3]">
-                Featured charities
-              </p>
-              <h2 className="mt-4 text-3xl font-black tracking-tight text-[#171717] sm:text-4xl">
-                Move for causes you trust.
-              </h2>
-            </div>
-
-            <div className="featured-charity-marquee mt-12">
-              <div className="featured-charity-track">
-                {featuredCharityCarousel.map((charity, index) => (
-                  <div
-                    key={`${charity.name}-${index}`}
-                    className="featured-charity-item"
-                  >
-                    <div className="featured-charity-logo-wrap">
-                      <Image
-                        src={charity.src}
-                        alt={`${charity.name} logo`}
-                        width={160}
-                        height={72}
-                        className="featured-charity-logo"
-                      />
-                    </div>
-                    <span className="featured-charity-label">{charity.name}</span>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
