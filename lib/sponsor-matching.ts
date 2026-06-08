@@ -89,6 +89,14 @@ interface StravaActivityLocationPayload {
   end_latlng?: [number, number] | [];
 }
 
+interface StravaLatLngStreamPayload {
+  latlng?: {
+    data?: unknown;
+  };
+}
+
+type LocationCoordinateSource = 'activity_summary' | 'activity_stream';
+
 type DescriptionUpdateResult =
   | {
       success: true;
@@ -763,6 +771,7 @@ async function checkActivityLocationEligibility(
       locationCheck: {
         startInBounds: boolean;
         endInBounds: boolean;
+        coordinateSource: LocationCoordinateSource;
       };
     }
   | {
@@ -773,6 +782,7 @@ async function checkActivityLocationEligibility(
         hasEnd: boolean;
         startInBounds: boolean;
         endInBounds: boolean;
+        coordinateSource: LocationCoordinateSource | null;
       };
     }
 > {
@@ -782,8 +792,24 @@ async function checkActivityLocationEligibility(
       accessToken
     );
 
-    const start = normalizeLatLng(activityData.start_latlng);
-    const end = normalizeLatLng(activityData.end_latlng);
+    let start = normalizeLatLng(activityData.start_latlng);
+    let end = normalizeLatLng(activityData.end_latlng);
+    let coordinateSource: LocationCoordinateSource | null =
+      start && end ? 'activity_summary' : null;
+
+    if (!start || !end) {
+      const streamCoordinates = await fetchStravaActivityEndpointCoordinates(
+        stravaActivityId,
+        accessToken
+      );
+
+      if (streamCoordinates) {
+        start = streamCoordinates.start;
+        end = streamCoordinates.end;
+        coordinateSource = 'activity_stream';
+      }
+    }
+
     const startInBounds = start ? isWithinRoughNycBounds(start) : false;
     const endInBounds = end ? isWithinRoughNycBounds(end) : false;
 
@@ -797,6 +823,7 @@ async function checkActivityLocationEligibility(
           hasEnd: !!end,
           startInBounds,
           endInBounds,
+          coordinateSource,
         },
       };
     }
@@ -811,6 +838,7 @@ async function checkActivityLocationEligibility(
           hasEnd: true,
           startInBounds,
           endInBounds,
+          coordinateSource,
         },
       };
     }
@@ -821,6 +849,7 @@ async function checkActivityLocationEligibility(
       locationCheck: {
         startInBounds,
         endInBounds,
+        coordinateSource: coordinateSource ?? 'activity_summary',
       },
     };
   } catch (error) {
@@ -835,15 +864,59 @@ async function checkActivityLocationEligibility(
         hasEnd: false,
         startInBounds: false,
         endInBounds: false,
+        coordinateSource: null,
       },
     };
   }
 }
 
+async function fetchStravaActivityEndpointCoordinates(
+  stravaActivityId: bigint,
+  accessToken: string
+): Promise<{
+  start: [number, number];
+  end: [number, number];
+} | null> {
+  const response = await fetch(
+    `https://www.strava.com/api/v3/activities/${stravaActivityId}/streams?keys=latlng&key_by_type=true`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as StravaLatLngStreamPayload;
+  const coordinates = normalizeLatLngStream(payload.latlng?.data);
+
+  if (coordinates.length === 0) {
+    return null;
+  }
+
+  return {
+    start: coordinates[0],
+    end: coordinates[coordinates.length - 1],
+  };
+}
+
+function normalizeLatLngStream(value: unknown): [number, number][] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((coordinate) => normalizeLatLng(coordinate))
+    .filter((coordinate): coordinate is [number, number] => coordinate !== null);
+}
+
 function normalizeLatLng(
-  value: StravaActivityLocationPayload['start_latlng']
+  value: unknown
 ): [number, number] | null {
-  if (!value || value.length !== 2) {
+  if (!Array.isArray(value) || value.length !== 2) {
     return null;
   }
 

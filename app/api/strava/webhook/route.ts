@@ -10,6 +10,7 @@ import { formatSkippedDescriptionUpdateMessage } from "@/lib/strava-description-
 import { recordStravaActivityHistory } from "@/lib/strava-activity-history";
 import { sendNewActivitySlackNotificationOnce } from "@/lib/activity-notifications";
 import { getLogger, scheduleLogFlush } from "@/lib/logger";
+import { getStravaActivityType } from "@/lib/strava-activity";
 
 const routeLogger = getLogger("api/strava/webhook");
 
@@ -490,12 +491,13 @@ export async function POST(request: NextRequest) {
         }
 
         const activity = await activityResponse.json();
+        const activityType = getStravaActivityType(activity);
         eventLogger.info("Fetched created activity from Strava API", {
           activitySummary: {
             id: activity.id,
             name: activity.name,
             private: activity.private,
-            type: activity.type,
+            type: activityType,
           },
         });
 
@@ -516,7 +518,7 @@ export async function POST(request: NextRequest) {
             stravaActivityId: BigInt(activity.id),
             shortcode: shortcode || undefined, // Use generated shortcode
             name: activity.name,
-            type: activity.type,
+            type: activityType,
             distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
             movingTimeSeconds: activity.moving_time,
             elapsedTimeSeconds: activity.elapsed_time,
@@ -536,7 +538,7 @@ export async function POST(request: NextRequest) {
           },
           update: {
             name: activity.name,
-            type: activity.type,
+            type: activityType,
             distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
             movingTimeSeconds: activity.moving_time,
             elapsedTimeSeconds: activity.elapsed_time,
@@ -567,7 +569,7 @@ export async function POST(request: NextRequest) {
           eventType: "activity_snapshot",
           aspectType: aspect_type,
           name: activity.name,
-          type: activity.type,
+          type: activityType,
           isPrivate: activity.private || false,
           visibility: activity.visibility ?? null,
           descriptionText: activity.description ?? "",
@@ -673,12 +675,13 @@ export async function POST(request: NextRequest) {
         }
 
         const activity = await activityResponse.json();
+        const activityType = getStravaActivityType(activity);
         eventLogger.info("Fetched updated activity from Strava API", {
           activitySummary: {
             id: activity.id,
             name: activity.name,
             private: activity.private,
-            type: activity.type,
+            type: activityType,
           },
         });
 
@@ -691,7 +694,7 @@ export async function POST(request: NextRequest) {
             userId: stravaAthlete.userId,
             stravaActivityId: BigInt(activity.id),
             name: activity.name,
-            type: activity.type,
+            type: activityType,
             distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
             movingTimeSeconds: activity.moving_time,
             elapsedTimeSeconds: activity.elapsed_time,
@@ -711,7 +714,7 @@ export async function POST(request: NextRequest) {
           },
           update: {
             name: activity.name,
-            type: activity.type,
+            type: activityType,
             distanceMeters: activity.distance ? parseFloat(activity.distance) : null,
             movingTimeSeconds: activity.moving_time,
             elapsedTimeSeconds: activity.elapsed_time,
@@ -741,7 +744,7 @@ export async function POST(request: NextRequest) {
           eventType: "activity_snapshot",
           aspectType: aspect_type,
           name: activity.name,
-          type: activity.type,
+          type: activityType,
           isPrivate: activity.private || false,
           visibility: activity.visibility ?? null,
           descriptionText: activity.description ?? "",
