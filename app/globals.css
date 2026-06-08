@@ -799,6 +799,10 @@ body {
   background: rgb(0 0 0 / 0.02);
 }
 
+.table-zebra-primary tbody tr:nth-child(even) {
+  background: rgb(181 109 255 / 0.1);
+}
+
 /* Mockup code */
 .mockup-code {
   background: #1e1e1e;

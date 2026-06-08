@@ -298,7 +298,7 @@ export default async function DashboardPage({
                 ) : (
                   <>
                     <div className="overflow-x-auto">
-                      <table className="table table-zebra">
+                      <table className="table table-zebra table-zebra-primary">
                         <thead>
                           <tr>
                             <th className="whitespace-nowrap">Date</th>
