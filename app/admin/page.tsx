@@ -46,6 +46,23 @@ export default async function AdminPage() {
       <main className="container mx-auto max-w-7xl px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Users Card */}
+          <Link
+            href="/admin/users"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
+          >
+            <div className="card-body">
+              <h2 className="card-title text-2xl">User Directory</h2>
+              <p className="opacity-70">
+                Browse users, connected services, activity totals, and charity
+                impact
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-primary">View Users →</button>
+              </div>
+            </div>
+          </Link>
+
           {/* Activities Card */}
           <Link
             href="/admin/activities"
