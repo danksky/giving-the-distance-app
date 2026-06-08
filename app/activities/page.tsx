@@ -178,10 +178,6 @@ export default async function ActivitiesPage({
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-3xl font-bold">All Activities</h1>
-            <p className="mt-2 text-sm opacity-70">
-              Browse your activity history with sorting, filtering, and
-              pagination.
-            </p>
           </div>
           <Link href="/dashboard" className="btn btn-outline btn-sm w-fit">
             ← Back to Dashboard
