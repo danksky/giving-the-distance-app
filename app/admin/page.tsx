@@ -112,6 +112,23 @@ export default async function AdminPage() {
             </div>
           </Link>
 
+          {/* Charity Impact Card */}
+          <Link
+            href="/admin/charity-impact"
+            className="card bg-base-100 hover:border-gray-300 transition-colors"
+          >
+            <div className="card-body">
+              <h2 className="card-title text-2xl">Charity Impact</h2>
+              <p className="opacity-70">
+                Compare accumulated commitments, supported activities, and
+                athlete participation by charity
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-primary">View Impact →</button>
+              </div>
+            </div>
+          </Link>
+
           {/* Webhooks Card */}
           <Link
             href="/admin/webhooks"
