@@ -95,7 +95,7 @@ resource "vercel_project_environment_variable" "better_stack_source_token" {
 resource "vercel_project_environment_variable" "managed" {
   for_each = var.vercel_project_environment_variables
 
-  project_id = vercel_project.app.id
+  project_id = local.vercel_project_id
   key        = each.value.key
   value      = each.value.value
   target     = each.value.target
