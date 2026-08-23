@@ -243,6 +243,9 @@ export default async function CharityImpactPage({
     ? await ensureUserHasSelectedCharity(user.id)
     : null;
   const impact = await getCharityImpact(charity.id);
+  const donationCount = await db.charityDonation.count({
+    where: { charityId: charity.id },
+  });
   const hasImpact = impact.activitiesSupported > 0;
 
   return (
@@ -311,6 +314,17 @@ export default async function CharityImpactPage({
                     aria-hidden="true"
                   />
                 </Link>
+                {donationCount > 0 && (
+                  <Link
+                    href={`/charities/${charity.id}/donations`}
+                    className="btn btn-outline"
+                  >
+                    See donations
+                    <span className="badge bg-white text-base-content">
+                      {donationCount}
+                    </span>
+                  </Link>
+                )}
               </div>
             </div>
           </div>

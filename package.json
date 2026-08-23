@@ -4,6 +4,7 @@
   "description": "Turn every mile into meaningful impact. Connect your Strava account and create sponsorships where sponsors pay per mile or kilometer you run.",
   "private": true,
   "scripts": {
+    "predev": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

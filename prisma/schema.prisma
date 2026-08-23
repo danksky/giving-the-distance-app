@@ -237,8 +237,28 @@ model Charity {
   users              User[]
   charitySelections  CharitySelection[]
   charityCommitments CharityCommitment[]
+  donations          CharityDonation[]
 
   @@map("charities")
+}
+
+model CharityDonation {
+  id                  String   @id
+  charityId           String
+  amountCents         Int
+  currency            String   @default("USD")
+  donatedAt           DateTime
+  provider            String
+  sourceReferenceHash String   @unique
+  publicReference     String
+  deliveryStatus      String   @default("DONATED_TO_INTERMEDIARY")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  charity Charity @relation(fields: [charityId], references: [id], onDelete: Cascade)
+
+  @@index([charityId, donatedAt(sort: Desc)])
+  @@map("charity_donations")
 }
 
 model CharitySelection {
