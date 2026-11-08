@@ -44,7 +44,7 @@ export async function generateMetadata({
 
   return {
     title: `${charity.name} Donations | Giving the Distance`,
-    description: `See verified donations made for ${charity.name} through Giving the Distance.`,
+    description: `See donations recorded for ${charity.name} through Giving the Distance.`,
   };
 }
 
@@ -99,7 +99,7 @@ export default async function CharityDonationsPage({
                   Donations for {charity.name}
                 </h1>
                 <p className="mt-2 max-w-2xl text-base-content/65">
-                  Verified contributions made through Giving the Distance.
+                  Contributions recorded through Giving the Distance.
                 </p>
               </div>
             </div>
@@ -110,7 +110,7 @@ export default async function CharityDonationsPage({
                 {currencyFormatter.format(totalDonated / 100)}
               </div>
               <div className="text-xs text-base-content/50">
-                {charity.donations.length} verified{" "}
+                {charity.donations.length} donation{" "}
                 {charity.donations.length === 1 ? "record" : "records"}
               </div>
             </div>
@@ -118,16 +118,17 @@ export default async function CharityDonationsPage({
         </section>
 
         <div className="mb-6 rounded-2xl border border-info/20 bg-info/5 p-5 text-sm leading-6 text-base-content/70">
-          These records confirm donations to PayPal Giving Fund for the named
-          charity. PayPal Giving Fund grants donated funds to charities on its
-          own delivery schedule, so a donation receipt is not proof of the
-          charity&apos;s final payout date.
+          Amounts reflect the gift designated for the charity, excluding any
+          separately covered processing fees. Donations made through PayPal
+          Giving Fund are granted to charities on its delivery schedule; the
+          donation date is not necessarily the date the charity receives funds.
+          Direct donations are identified by their payment method.
         </div>
 
         <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100">
           {charity.donations.length === 0 ? (
             <div className="px-6 py-12 text-center text-base-content/60">
-              No verified donations have been published for this charity yet.
+              No donations have been published for this charity yet.
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -151,17 +152,24 @@ export default async function CharityDonationsPage({
                           month: "short",
                           day: "numeric",
                           year: "numeric",
-                          timeZone: "America/Los_Angeles",
+                          timeZone: "America/New_York",
                         })}
                       </td>
                       <td className="whitespace-nowrap px-5 py-4 font-semibold">
                         {currencyFormatter.format(donation.amountCents / 100)}
+                        {donation.processingFeeCents > 0 && (
+                          <div className="text-xs font-normal text-base-content/60">
+                            {currencyFormatter.format(donation.processingFeeCents / 100)} processing fee also covered
+                          </div>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-5 py-4">
                         {donation.provider}
                       </td>
                       <td className="whitespace-nowrap px-5 py-4 font-mono text-sm text-base-content/65">
-                        Ending {donation.publicReference}
+                        {donation.publicReference
+                          ? `Ending ${donation.publicReference}`
+                          : "Not available"}
                       </td>
                     </tr>
                   ))}
