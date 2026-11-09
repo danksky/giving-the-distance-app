@@ -12,7 +12,7 @@ This directory is the Terraform starting point for infra that belongs with the a
 
 ## What this does not manage yet
 
-- DNS records outside Vercel
+- DNS records other than those in the Cloudflare configuration described below
 - Non-app Vercel team resources
 - App-side logging code
 
@@ -87,3 +87,28 @@ The default data region is `germany`, since Better Stack region availability is 
 ## Existing Vercel resources
 
 `terraform/import-vercel-existing.sh` imports the current linked Vercel project, custom domains, and environment variables into local Terraform state so Terraform reflects what already exists instead of trying to recreate it.
+
+## Cloudflare DNS
+
+`cloudflare/` is a separate Terraform root and local state for the
+`givingthedistance.org` Cloudflare DNS zone. It manages the imported website,
+email forwarding, verification, and Resend records. It does not manage the
+zone, registrar nameservers, DNSSEC, SSL settings, or the main Terraform root.
+
+The Cloudflare API token is stored in the macOS Keychain as the generic
+password `danielkawalsky-cloudflare-account-operator`. To work with the zone:
+
+```bash
+cd terraform/cloudflare
+export CLOUDFLARE_API_TOKEN="$(security find-generic-password -s danielkawalsky-cloudflare-account-operator -w)"
+terraform init
+terraform plan
+unset CLOUDFLARE_API_TOKEN
+```
+
+Review the plan before running `terraform apply`. Preserve the ignored local
+state files and keep them out of Git. Import blocks identify the existing
+records for recovery if the local state is missing; avoid operating on the
+same zone concurrently from multiple Terraform states. DNS changes in the
+Cloudflare zone do not become authoritative until registrar delegation and
+Cloudflare zone activation are complete.
