@@ -187,14 +187,13 @@ export default async function ActivitiesPage({
         {!hasStrava && (
           <div className="card bg-base-100">
             <div className="card-body">
-              <h2 className="card-title">Connect Strava to See Activities</h2>
+              <h2 className="card-title">Strava connections are paused</h2>
               <p className="text-sm opacity-70">
-                Once your Strava account is connected, your activities will
-                appear here automatically.
+                Giving the Distance is on pause, so new Strava connections are unavailable.
               </p>
               <div className="card-actions justify-start">
                 <Link href="/settings/strava" className="btn btn-primary btn-sm">
-                  Connect Strava
+                  Strava settings
                 </Link>
               </div>
             </div>

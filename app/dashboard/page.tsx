@@ -209,11 +209,10 @@ export default async function DashboardPage({
                   </div>
                   <div className="min-w-0">
                     <h2 className="card-title mb-1 text-xl sm:text-2xl">
-                      Connect Strava
+                      Strava connections are paused
                     </h2>
                     <p className="text-sm text-base-content/70">
-                      Sync with Strava so each new activity can generate
-                      donations for your cause.
+                      Giving the Distance is on pause. New Strava connections are unavailable.
                     </p>
                   </div>
                 </div>
@@ -221,7 +220,7 @@ export default async function DashboardPage({
                   href="/settings/strava"
                   className="btn btn-primary w-full sm:w-auto"
                 >
-                  Connect Strava
+                  Strava settings
                 </Link>
               </div>
             </div>

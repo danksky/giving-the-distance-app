@@ -2,13 +2,12 @@ import NextAuth from "next-auth"
 import { CustomPrismaAdapter } from "@/lib/custom-prisma-adapter"
 import { db } from "@/lib/db"
 import { authConfig } from "./auth.config"
-import { notifyNewUser, notifyStravaAuthSuccess, notifyStravaAuthFailure } from "@/lib/slack-notifications"
+import { notifyNewUser, notifyStravaAuthSuccess } from "@/lib/slack-notifications"
 import { ensureUserHasSelectedCharity } from "@/lib/charity-helpers"
 import { getLogger } from "@/lib/logger"
 import {
   getStoredCallbackScope,
   normalizeScopeString,
-  validateStravaScope,
 } from "@/lib/strava-scope"
 
 const hasDatabaseConfigured = Boolean(
@@ -47,74 +46,29 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ account, user }) {
-      // For Strava, validate permissions before allowing sign-in
-      if (account?.provider === "strava") {
-        authLogger.info("Validating Strava permissions during sign-in", {
-          provider: account.provider,
-          userEmail: user?.email,
-        })
-        
-        // Get scope from account object or from our stored callback scope
-        let scope = normalizeScopeString(account.scope) ?? undefined
-        
-        // If not in account, check the stored scope from callback URL
-        if (!scope) {
-          scope = getStoredCallbackScope() ?? undefined
-          authLogger.debug("Retrieved Strava scope from callback storage", {
-            hasScope: Boolean(scope),
-          })
+    async signIn({ account }) {
+      // Only existing Google accounts may sign in while the project is paused.
+      if (account?.provider === "google") {
+        if (!hasDatabaseConfigured || !account.providerAccountId) {
+          return "/auth/error?reason=signup-paused"
         }
-        
-        if (!scope) {
-          authLogger.error("No Strava scope found during sign-in", {
-            userEmail: user?.email,
-          })
-          const errorMsg = 'Authorization failed: No permissions received from Strava'
-          
-          // Send Slack notification for failed auth
-          await notifyStravaAuthFailure({
-            userName: user?.name,
-            userEmail: user?.email,
-            error: errorMsg,
-          });
-          
-          throw new Error(errorMsg)
-        }
-        
-        // Validate scopes
-        const { grantedScopes, missingScopes } = validateStravaScope(scope)
-        
-        authLogger.debug("Resolved Strava scopes for sign-in", {
-          grantedScopes,
-          userEmail: user?.email,
+        const existingAccount = await db.account.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: "google",
+              providerAccountId: account.providerAccountId,
+            },
+          },
+          select: { userId: true },
         })
-        
-        if (missingScopes.length > 0) {
-          authLogger.error("Missing required Strava permissions", {
-            grantedScopes,
-            missingScopes,
-            userEmail: user?.email,
-          })
-          const errorMsg = `Missing required permissions: ${missingScopes.join(', ')}. Please reconnect and grant ALL requested permissions.`
-          
-          // Send Slack notification for failed auth
-          await notifyStravaAuthFailure({
-            userName: user?.name,
-            userEmail: user?.email,
-            error: errorMsg,
-            missingScopes,
-          });
-          
-          throw new Error(errorMsg)
-        }
-        
-        authLogger.info("Strava permissions validated successfully", {
-          grantedScopes,
-          userEmail: user?.email,
-        })
+        if (!existingAccount) return "/auth/error?reason=signup-paused"
       }
-      
+
+      // Also reject callbacks from an authorization started before the pause.
+      if (account?.provider === "strava") {
+        return "/auth/error?reason=strava-paused"
+      }
+
       return true
     },
   },

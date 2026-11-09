@@ -98,7 +98,7 @@ export default async function Navbar({
             }}
           >
             <button type="submit" className="btn btn-primary navbar-action">
-              Sign Up
+              Sign In
             </button>
           </form>
         </div>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import PauseBanner from "@/components/PauseBanner";
 
 function getMetadataBase(): URL {
   const configured =
@@ -82,6 +83,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased flex flex-col min-h-screen`}
       >
+        <PauseBanner />
         {children}
         <Footer />
         <Script

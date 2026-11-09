@@ -106,7 +106,7 @@ export default async function StravaSettingsPage({
             <div className="card-body">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="card-title text-2xl">
-                  Connect Your Strava Account
+                  Strava connections are paused
                 </h2>
                 <div className="w-16 h-16 relative flex-shrink-0">
                   <Image
@@ -118,41 +118,8 @@ export default async function StravaSettingsPage({
                 </div>
               </div>
               <p className="mb-4">
-                Link your Strava to start tracking your activities and receiving
-                donations. We&apos;ll automatically add donation messages to
-                your activities.
+                Giving the Distance is on pause, so new Strava connections are unavailable.
               </p>
-              <div className="alert alert-info mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="stroke-current shrink-0 w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
-                <div>
-                  <div className="text-sm font-semibold mb-1">
-                    Required Permissions:
-                  </div>
-                  <ul className="text-xs list-disc list-inside">
-                    <li>Activity Read - View your activity data</li>
-                    <li>Profile Read - Access your profile information</li>
-                    <li>
-                      Activity Write - Update activity descriptions with
-                      donation info
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <a href="/api/strava/connect" className="btn btn-primary btn-lg">
-                Connect to Strava
-              </a>
             </div>
           </div>
         ) : (

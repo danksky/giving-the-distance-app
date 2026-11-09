@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { getCharityLogoSrc, isRemoteLogoUrl } from "@/lib/charity-logo";
 
 interface CharityLogoProps {
@@ -25,6 +28,7 @@ export default function CharityLogo({
 }: CharityLogoProps) {
   const { container, text, image } = sizeMap[size];
   const resolvedLogoSrc = getCharityLogoSrc({ charityId, logoUrl });
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   // Get initials from charity name (first letter of first two words)
   const getInitials = (name: string): string => {
@@ -35,7 +39,9 @@ export default function CharityLogo({
     return words[0]?.slice(0, 2).toUpperCase() || "??";
   };
 
-  if (resolvedLogoSrc) {
+  if (resolvedLogoSrc && resolvedLogoSrc !== failedSrc) {
+    const handleError = () => setFailedSrc(resolvedLogoSrc);
+
     if (isRemoteLogoUrl(resolvedLogoSrc)) {
       return (
         <div className={`relative ${container} ${className}`}>
@@ -46,6 +52,7 @@ export default function CharityLogo({
             width={image}
             height={image}
             className="h-full w-full rounded-lg object-cover"
+            onError={handleError}
           />
         </div>
       );
@@ -59,6 +66,7 @@ export default function CharityLogo({
           width={image}
           height={image}
           className="rounded-lg object-cover"
+          onError={handleError}
         />
       </div>
     );

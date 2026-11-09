@@ -3,10 +3,28 @@ import Link from "next/link";
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; reason?: string }>;
 }) {
   const params = await searchParams;
   const error = params.error;
+
+  if (params.reason === "signup-paused" || params.reason === "strava-paused") {
+    return (
+      <main className="hero min-h-screen bg-base-200">
+        <div className="hero-content text-center">
+          <div className="max-w-lg space-y-4">
+            <h1 className="text-3xl font-bold">Giving the Distance is on pause</h1>
+            <p>
+              {params.reason === "signup-paused"
+                ? "New signups are paused. Existing users can still sign in."
+                : "New Strava connections are paused."}
+            </p>
+            <Link href="/" className="btn btn-primary">Back to home</Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   // Check if this is a Strava permission error
   const isPermissionError = error?.toLowerCase().includes("permission");
